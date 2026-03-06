@@ -9,12 +9,12 @@ function Navbar() {
         <Link to="/">
           <img src={logo} alt="StrayCare Logo" className="logo" />
         </Link>
-
-        <Link to="/adopt">Adopt a dog</Link>
-        <Link to="/post">Post</Link>
+        <Link to="/">Home</Link>
         <Link to="/emergency" className="emergency">
           Emergency
         </Link>
+        <Link to="/adopt">Adopt a dog</Link>
+        <Link to="/post">Post</Link>
         <Link to="/track">Track</Link>
         <Link to="/about">About Us</Link>
         <Link to="/guide">Guide</Link>
