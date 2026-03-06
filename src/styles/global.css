@@ -1,0 +1,263 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffffe4;
+}
+
+/* NAVBAR */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 10px;
+  border-bottom: 5px solid #e6ffd9;
+  border-top: 5px solid #e6ffd9;
+  background: #ffffff;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  will-change: transform;
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-left .logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 30px;
+}
+
+.nav-left a,
+.nav-right a {
+  margin: 0 20px;
+  text-decoration: none;
+  color: #333;
+  font-size: 1.15rem;
+}
+
+.nav-left .emergency {
+  color: red;
+  font-weight: bold;
+}
+
+.btn {
+  background: #ebfee2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  width: 85px;
+  border-radius: 8px;
+  border: 2px solid #cffdb5;
+  margin-left: 20px;
+  font-size: 15px;
+}
+
+/* HERO */
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  padding: 60px 60px 70px 60px;
+  min-height: calc(100vh - 120px);
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.hero-left {
+  position: relative;
+  width: 600px;
+  min-width: 600px;
+}
+
+.main-circle {
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 10px solid #e6ffd9;
+}
+
+.small-circle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background-size: cover;
+  position: absolute;
+  border: 10px solid #e6ffd9;
+}
+
+.small-circle.top {
+  top: -50px;
+  left: 320px;
+}
+
+.small-circle.bottom {
+  bottom: -50px;
+  left: 320px;
+}
+
+.hero-message {
+  flex: 1;
+  margin-left: 80px;
+  background: #eee;
+  border-radius: 40px;
+  padding: 60px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ACTIONS */
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 300px);
+  grid-template-rows: auto auto;
+  gap: 40px;
+  justify-content: center;
+  margin: 1px 0;
+}
+
+.card {
+  background: #eae9e9;
+  height: 150px;
+  padding: 40px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 1px 1px 10px rgb(173, 248, 143);
+}
+
+.card:hover {
+  background: #aaa;
+}
+
+.card.emergency {
+  background: #e0645c;
+  box-shadow: 1px 1px 10px #e0645c;
+  color: white;
+}
+
+.card.emergency:hover {
+  background: #c75a5a;
+  box-shadow: 1px 1px 10px #e0645c;
+  color: white;
+}
+
+/* TESTIMONIAL */
+
+.testimonials {
+  text-align: center;
+}
+
+.testimonials h2 {
+  margin-top: 0;
+  padding-top: 40px;
+}
+
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 110px;
+  padding: 40px 40px 40px 120px;
+}
+
+.testimonial-card {
+  position: relative;
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 20px 20px 20px 120px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  /* Added slight shadow to make up for removed blurred background */
+}
+
+.testimonial-card .avatar {
+  position: absolute;
+  left: -90px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+
+.testimonial-card .content p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* MODAL */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal {
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.call-btn {
+  background: #e0645c;
+  color: white;
+}
+
+.close {
+  background: #ddd;
+}
+
+.footer {
+  background: #d9dcd4;
+  color: rgb(0, 0, 0);
+  padding: 20px;
+  margin-top: 50px;
+  text-align: center;
+}

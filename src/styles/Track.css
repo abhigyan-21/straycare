@@ -1,0 +1,367 @@
+.track-page {
+    padding: 40px 60px;
+    min-height: calc(100vh - 120px);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+}
+
+/* SEARCH BAR SECTION */
+.search-section {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    gap: 20px;
+    background-color: #ffffff;
+    border: 2px solid #e1fbc8;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-sizing: border-box;
+}
+
+.search-input {
+    flex: 1;
+    background-color: #f5f5f5;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 20px;
+    font-size: 1rem;
+    outline: none;
+    color: #333;
+}
+
+.search-input::placeholder {
+    color: #888;
+}
+
+.track-btn {
+    background-color: #edfacd;
+    border: none;
+    border-radius: 8px;
+    padding: 0 40px;
+    font-size: 1.1rem;
+    color: #555;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.track-btn:hover {
+    background-color: #def2b1;
+}
+
+/* MIDDLE SECTION: PET INFO + TIMELINE */
+.tracking-content {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    gap: 60px;
+    align-items: stretch;
+}
+
+/* PET CARD */
+.pet-info-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.pet-image-container {
+    width: 250px;
+    height: 250px;
+    border-radius: 30px;
+    border: 4px solid #cce1b5;
+    overflow: hidden;
+    background-color: #eee;
+}
+
+.pet-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pet-name-plate {
+    margin-top: 15px;
+    background-color: #dcdcdc;
+    border-radius: 20px;
+    padding: 5px 60px;
+    font-size: 1.2rem;
+    color: #333;
+    text-align: center;
+}
+
+.pet-id-pill {
+    margin-top: 10px;
+    background-color: #ffb74d;
+    /* yellow-orange */
+    color: #333;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* TIMELINE */
+.timeline-section {
+    flex: 1;
+    position: relative;
+    min-height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.timeline-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.timeline-path {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 15;
+    stroke-linecap: round;
+}
+
+.timeline-path-active {
+    fill: none;
+    stroke: #e6facd;
+    stroke-width: 15;
+    stroke-linecap: round;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawPath 3s ease forwards;
+}
+
+@keyframes drawPath {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.timeline-nodes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.node {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+    padding: 10px;
+    box-sizing: border-box;
+    transform: translate(-50%, -50%);
+    /* Center on the coordinate */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.node .node-text {
+    position: relative;
+    z-index: 3;
+}
+
+/* Fill animation for active nodes */
+.node.active::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: #e8facc;
+    z-index: 1;
+    animation: fillNode 1s ease forwards;
+    animation-delay: var(--delay);
+}
+
+.node.completed {
+    background-color: #e8facc;
+}
+
+@keyframes fillNode {
+    to {
+        height: 100%;
+    }
+}
+
+/* Positions for 5 nodes on the wavy path */
+.node-1 {
+    top: 25%;
+    left: 15%;
+}
+
+.node-2 {
+    top: 25%;
+    left: 55%;
+}
+
+.node-3 {
+    top: 45%;
+    left: 85%;
+}
+
+.node-4 {
+    top: 75%;
+    left: 55%;
+}
+
+.node-5 {
+    top: 75%;
+    left: 15%;
+}
+
+/* DETAILS TABLE */
+.details-section {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 20px;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #55acff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 2px #55acff;
+}
+
+.details-table th,
+.details-table td {
+    padding: 20px;
+    text-align: left;
+    border-bottom: 1px solid #999;
+}
+
+.details-table tr:last-child td {
+    border-bottom: none;
+}
+
+.details-table th {
+    background-color: #f2f2f2;
+    font-weight: normal;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.details-table td {
+    background-color: #f9f9f9;
+}
+
+/* Alternating rows based on the wireframe mock */
+.details-table tr:nth-child(even) td {
+    background-color: #f0f0f0;
+}
+
+.view-more-btn {
+    background: none;
+    border: none;
+    color: #55acff;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+}
+
+.view-more-btn:hover {
+    color: #3388dd;
+}
+
+/* History Modal */
+.history-modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.history-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.history-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 0.95rem;
+}
+
+.history-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    color: #555;
+    position: sticky;
+    top: 0;
+}
+
+.close-btn-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.close-btn {
+    background-color: #f2f2f2;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #333;
+}
+
+.close-btn:hover {
+    background-color: #e0e0e0;
+}
+
+@media (max-width: 900px) {
+    .tracking-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .timeline-section {
+        width: 100%;
+        min-height: 400px;
+    }
+
+    /* Mobile timeline positions for the wavy path might need adjusting or be vertical in a real app, 
+     but keeping the same layout conceptually based on the wireframe */
+}
