@@ -39,30 +39,45 @@ function Guide() {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTalking) return;
 
     // Add user message
     const userMessage = inputValue.trim();
     setMessages(prev => [...prev, { text: userMessage, sender: "user" }]);
     setInputValue("");
-
-    // Simulate bot thinking and responding
     setIsTalking(true);
 
-    setTimeout(() => {
-      // Mock dummy responses based on simple logic or random strings
-      const dummyResponses = [
-        "That's a great question about pets! Ensuring they have a balanced diet is very important.",
-        "If you see a stray dog in an emergency, you should use our Emergency page immediately.",
-        "Make sure your pet is vaccinated. It is crucial for their well-being.",
-        "I recommend visiting a local vet to get a proper checkup for that specific issue.",
-        "Adopting a dog is a wonderful thing! Have you checked our Adopt section?"
-      ];
-      const randomResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
+    const dummyResponses = [
+      "That's a great question about pets! Ensuring they have a balanced diet is very important.",
+      "If you see a stray dog in an emergency, you should use our Emergency page immediately.",
+      "Make sure your pet is vaccinated. It is crucial for their well-being.",
+      "I recommend visiting a local vet to get a proper checkup for that specific issue.",
+      "Adopting a dog is a wonderful thing! Have you checked our Adopt section?"
+    ];
+    const fullResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
+    const words = fullResponse.split(" ");
 
-      setMessages(prev => [...prev, { text: randomResponse, sender: "bot" }]);
-      setIsTalking(false);
-    }, 2000); // 2 seconds of simulated typing/talking
+    // Create an empty bot message first
+    setMessages(prev => [...prev, { text: "", sender: "bot" }]);
+
+    let currentWordIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentWordIndex < words.length) {
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          // Append the next word
+          lastMessage.text = (lastMessage.text + " " + words[currentWordIndex]).trim();
+          return newMessages;
+        });
+        currentWordIndex++;
+      } else {
+        // Finished typing
+        clearInterval(typingInterval);
+        setIsTalking(false);
+      }
+    }, 150); // Speed of typing per word
   };
 
   return (

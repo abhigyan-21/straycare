@@ -39,15 +39,22 @@ body {
 .nav-left a,
 .nav-right a,
 .nav-link-btn {
-  margin: 0 20px;
+  margin: 0 10px;
   text-decoration: none;
   color: #333;
   font-size: 1.2rem;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 6px 12px;
+  border-radius: 12px;
   font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.nav-left a.active {
+  box-shadow: 0 0 12px 2px rgb(173, 248, 143);
+  background-color: #ebfee2;
 }
 
 .nav-left .emergency {
