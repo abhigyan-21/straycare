@@ -1,0 +1,382 @@
+/* Adopt Page Layout */
+.adopt-page {
+    padding: 1rem 5%;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.adopt-toolbar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+}
+
+.btn-filter {
+    background-color: #d4feb2;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #333;
+}
+
+.btn-filter:hover {
+    background-color: #baef8c;
+}
+
+.adopt-content {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.carousel-section {
+    flex: 2;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+/* Pet Carousel */
+.pet-carousel-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    justify-content: space-between;
+}
+
+.carousel-view {
+    position: relative;
+    width: 400px;
+    height: 550px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pet-card {
+    position: absolute;
+    width: 320px;
+    height: 480px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.pet-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.pet-card-current {
+    z-index: 10;
+    transform: scale(1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 4px solid white;
+}
+
+.pet-card-prev {
+    z-index: 5;
+    transform: scale(0.85) translateX(-50%) rotate(-6deg);
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.pet-card-next {
+    z-index: 5;
+    transform: scale(0.85) translateX(50%) rotate(6deg);
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.pet-card-prev:hover,
+.pet-card-next:hover {
+    opacity: 0.8;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(220, 220, 220, 0.4);
+    z-index: 1;
+}
+
+/* Carousel Navigation */
+.nav-arrow {
+    background: transparent;
+    border: none;
+    font-size: 3rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0 10px;
+}
+
+.nav-arrow:hover:not(.disabled) {
+    color: #666;
+}
+
+.nav-arrow.disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.no-pets-message {
+    padding: 4rem;
+    text-align: center;
+    color: #666;
+    font-size: 1.2rem;
+}
+
+/* Pet Profile Card */
+.pet-profile-card {
+    background-color: #fafff0;
+    border: 4px solid #e1f5c4;
+    border-radius: 8px;
+    padding: 1.5rem 2rem 2rem 2rem;
+    height: 550px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.profile-title {
+    text-align: center;
+    color: #555;
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.profile-details {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+    font-size: 1.1rem;
+    color: #555;
+    overflow-y: auto;
+}
+
+.detail-row {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.span-full {
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.label {
+    font-weight: 600;
+    color: #666;
+}
+
+.value {
+    color: #444;
+}
+
+.block {
+    display: block;
+}
+
+.action-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-interested {
+    background-color: #f7df6f;
+    border: none;
+    padding: 10px 40px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-interested:hover {
+    transform: translateY(-2px);
+    background-color: #f1d34c;
+}
+
+.btn-interested.interested-marked {
+    background-color: #dcdcdc;
+    color: #888;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.btn-interested.interested-marked:hover {
+    transform: translateY(-2px);
+    background-color: #c8c8c8;
+}
+
+/* Filter Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.filter-modal {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #888;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #a0c4ff;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.modal-footer button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-clear {
+    background: white;
+    border: 1px solid #ccc;
+    color: #555;
+}
+
+.btn-clear:hover {
+    background: #f0f0f0;
+}
+
+.btn-apply {
+    background: #333;
+    border: 1px solid #333;
+    color: white;
+}
+
+.btn-apply:hover {
+    background: #444;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .adopt-content {
+        flex-direction: column;
+    }
+
+    .carousel-view {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .pet-card {
+        width: 240px;
+        height: 360px;
+    }
+
+    .pet-profile-card {
+        height: auto;
+    }
+}

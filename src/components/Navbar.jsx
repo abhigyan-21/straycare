@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import logo from "../assets/straycare_logo.png";
 
 // styles are handled globally via src/styles/global.css
-function Navbar() {
+function Navbar({ openAuthModal }) {
   return (
     <div className="navbar">
       <div className="nav-left">
@@ -21,8 +21,12 @@ function Navbar() {
       </div>
 
       <div className="nav-right">
-        <Link to="/signin" className="btn">sign in</Link>
-        <Link to="/signup" className="btn">sign up</Link>
+        <button onClick={() => openAuthModal('signin')} className="nav-link-btn">
+          sign in
+        </button>
+        <button onClick={() => openAuthModal('signup')} className="btn" style={{ background: '#d4feb2' }}>
+          sign up
+        </button>
       </div>
     </div>
   );

@@ -7,13 +7,22 @@ import Emergency from "./pages/Emergency";
 import Track from "./pages/Track";
 import About from "./pages/About";
 import Guide from "./pages/Guide";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
+import Post from "./pages/Post";
+import AuthModal from "./components/AuthModal";
+import { useState } from "react";
 
 function App() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
+
+  const openAuthModal = (mode) => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar openAuthModal={openAuthModal} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/adopt" element={<Adopt />} />
@@ -21,10 +30,14 @@ function App() {
         <Route path="/track" element={<Track />} />
         <Route path="/about" element={<About />} />
         <Route path="/guide" element={<Guide />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/post" element={<Post />} />
       </Routes>
       <Footer />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authMode}
+      />
     </BrowserRouter>
   );
 }

@@ -10,6 +10,8 @@ body {
   display: flex;
   justify-content: space-between;
   padding-left: 10px;
+  padding-right: 40px;
+  height: 90px;
   border-bottom: 5px solid #e6ffd9;
   border-top: 5px solid #e6ffd9;
   background: #ffffff;
@@ -32,15 +34,20 @@ body {
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 30px;
 }
 
 .nav-left a,
-.nav-right a {
+.nav-right a,
+.nav-link-btn {
   margin: 0 20px;
   text-decoration: none;
   color: #333;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
 }
 
 .nav-left .emergency {
@@ -53,12 +60,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 35px;
-  width: 85px;
-  border-radius: 8px;
-  border: 2px solid #cffdb5;
+  height: 40px;
+  width: 95px;
+  border-radius: 12px;
+  border: none;
   margin-left: 20px;
-  font-size: 15px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background: #cffdb5;
 }
 
 /* HERO */
