@@ -32,7 +32,7 @@ function App() {
         <Route path="/track" element={<Track />} />
         <Route path="/about" element={<About />} />
         <Route path="/guide" element={<Guide />} />
-        <Route path="/post" element={<Post />} />
+        <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
         <Route path="/help" element={<Help />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>

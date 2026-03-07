@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import '../styles/Profile.css';
 import '../styles/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../components/CreatePostModal';
+import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
+    const fileInputRef = useRef(null);
+
+    const { user: authUser, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('personal');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditingDetails, setIsEditingDetails] = useState(false);
+
+    const [user, setUser] = useState({
+        name: authUser?.name || 'John Doe',
+        email: authUser?.email || 'john.doe@example.com',
+        phone: '+91 77887 87665',
+        joined: 'January 2026',
+        avatar: 'https://i.pravatar.cc/150?img=11',
+    });
+
     const [mockPosts, setMockPosts] = useState([
         { id: 1, image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600' },
         { id: 2, image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=600' },
-        { id: 3, image: 'https://images.unsplash.com/photo-1537151608804-ea6f11ccfb76?auto=format&fit=crop&q=80&w=600' },
+        { id: 3, image: 'https://images.unsplash.com/photo-15371608804-ea6f11ccfb76?auto=format&fit=crop&q=80&w=600' },
         { id: 4, image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600' }
     ]);
 
@@ -27,25 +41,68 @@ const Profile = () => {
         setMockPosts([{ id: newPost.id, image: newPost.postImage }, ...mockPosts]);
     };
 
-    const user = {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+91 77887 87665',
-        joined: 'January 2026',
-        avatar: 'https://i.pravatar.cc/150?img=11',
-    };
-
-
-
-    const mockDonations = [
+    const [mockDonations, setMockDonations] = useState([
         { id: 1, amount: '$50', date: '2026-03-01', type: 'One-time', to: 'StrayCare General Fund' },
         { id: 2, amount: '$20', date: '2026-02-15', type: 'Monthly Autopay', to: 'Medical Fund' },
-    ];
+    ]);
 
-    const mockDocuments = [
+    const [mockDocuments, setMockDocuments] = useState([
         { id: 1, name: 'Luna_Vaccination_Record.pdf', dateAdded: '2026-02-20', type: 'Medical' },
         { id: 2, name: 'Adoption_Certificate.pdf', dateAdded: '2026-01-15', type: 'Legal' },
-    ];
+    ]);
+
+    const handleSaveDetails = (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        setUser({
+            ...user,
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+        });
+        setIsEditingDetails(false);
+    };
+
+    const handleDeletePost = (id) => {
+        if (window.confirm('Are you sure you want to delete this post?')) {
+            setMockPosts(mockPosts.filter(post => post.id !== id));
+        }
+    };
+
+    const handleCancelDonation = (id) => {
+        if (window.confirm('Are you sure you want to cancel this autopay?')) {
+            setMockDonations(mockDonations.filter(d => d.id !== id));
+        }
+    };
+
+    const handleDeleteDocument = (id) => {
+        if (window.confirm('Are you sure you want to delete this document?')) {
+            setMockDocuments(mockDocuments.filter(doc => doc.id !== id));
+        }
+    };
+
+    const handleDownloadDocument = (name) => {
+        alert(`Downloading ${name}... (Mock)`);
+    };
+
+    const handleMockUpload = () => {
+        // Trigger the hidden file input
+        fileInputRef.current.click();
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const newDoc = {
+                id: Date.now(),
+                name: file.name,
+                dateAdded: new Date().toISOString().split('T')[0],
+                type: 'Uploaded'
+            };
+            setMockDocuments([...mockDocuments, newDoc]);
+            alert(`File "${file.name}" uploaded successfully!`);
+        }
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -53,27 +110,53 @@ const Profile = () => {
                 return (
                     <div className="profile-section fade-in">
                         <h2>Personal Details</h2>
-                        <div className="details-card">
-                            <div className="detail-item">
-                                <span className="label">Full Name</span>
-                                <span className="value">{user.name}</span>
+                        {isEditingDetails ? (
+                            <form className="details-card edit-form" onSubmit={handleSaveDetails}>
+                                <div className="detail-item edit">
+                                    <label className="label">Full Name</label>
+                                    <input name="name" defaultValue={user.name} required className="edit-input" />
+                                </div>
+                                <div className="detail-item edit">
+                                    <label className="label">Email Address</label>
+                                    <input name="email" type="email" defaultValue={user.email} required className="edit-input" />
+                                </div>
+                                <div className="detail-item edit">
+                                    <label className="label">Phone Number</label>
+                                    <input name="phone" defaultValue={user.phone} required className="edit-input" />
+                                </div>
+                                <div className="detail-item">
+                                    <span className="label">Member Since</span>
+                                    <span className="value">{user.joined}</span>
+                                </div>
+                                <div className="edit-actions">
+                                    <button type="submit" className="btn save-btn">Save Changes</button>
+                                    <button type="button" className="btn cancel-btn" onClick={() => setIsEditingDetails(false)}>Cancel</button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div className="details-card">
+                                <div className="detail-item">
+                                    <span className="label">Full Name</span>
+                                    <span className="value">{user.name}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="label">Email Address</span>
+                                    <span className="value">{user.email}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="label">Phone Number</span>
+                                    <span className="value">{user.phone}</span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="label">Member Since</span>
+                                    <span className="value">{user.joined}</span>
+                                </div>
+                                <button className="btn edit-btn" onClick={() => setIsEditingDetails(true)}>Edit Details</button>
                             </div>
-                            <div className="detail-item">
-                                <span className="label">Email Address</span>
-                                <span className="value">{user.email}</span>
-                            </div>
-                            <div className="detail-item">
-                                <span className="label">Phone Number</span>
-                                <span className="value">{user.phone}</span>
-                            </div>
-                            <div className="detail-item">
-                                <span className="label">Member Since</span>
-                                <span className="value">{user.joined}</span>
-                            </div>
-                            <button className="btn edit-btn">Edit Details</button>
-                        </div>
+                        )}
                     </div>
                 );
+
             case 'posts':
                 return (
                     <div className="profile-section fade-in">
@@ -89,8 +172,8 @@ const Profile = () => {
                                     <div key={post.id} className="post-grid-item">
                                         <img src={post.image} alt="Post" />
                                         <div className="post-overlay">
-                                            <button className="icon-btn edit">✎</button>
-                                            <button className="icon-btn delete">🗑</button>
+                                            <button className="icon-btn edit" onClick={() => alert('Edit Post (Mock)')}>✎</button>
+                                            <button className="icon-btn delete" onClick={() => handleDeletePost(post.id)}>🗑</button>
                                         </div>
                                     </div>
                                 ))
@@ -115,7 +198,7 @@ const Profile = () => {
                                         <div className="item-amount">
                                             <span className="amount">{donation.amount}</span>
                                             {donation.type.includes('Autopay') && (
-                                                <button className="btn-small cancel-btn">Cancel</button>
+                                                <button className="btn-small cancel-btn" onClick={() => handleCancelDonation(donation.id)}>Cancel</button>
                                             )}
                                         </div>
                                     </div>
@@ -140,8 +223,8 @@ const Profile = () => {
                                             <span className="doc-meta">{doc.type} • {doc.dateAdded}</span>
                                         </div>
                                         <div className="doc-actions">
-                                            <button className="icon-btn download">⬇</button>
-                                            <button className="icon-btn delete">🗑</button>
+                                            <button className="icon-btn download" onClick={() => handleDownloadDocument(doc.name)}>⬇</button>
+                                            <button className="icon-btn delete" onClick={() => handleDeleteDocument(doc.id)}>🗑</button>
                                         </div>
                                     </div>
                                 ))
@@ -149,7 +232,13 @@ const Profile = () => {
                                 <p className="empty-state">No documents uploaded.</p>
                             )}
                         </div>
-                        <div className="upload-area">
+                        <div className="upload-area" onClick={handleMockUpload}>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                style={{ display: 'none' }}
+                                onChange={handleFileChange}
+                            />
                             <p>Drag & drop files here, or click to select</p>
                         </div>
                     </div>
@@ -199,7 +288,7 @@ const Profile = () => {
                     </nav>
 
                     <div className="sidebar-footer">
-                        <button className="logout-btn">Sign Out</button>
+                        <button className="logout-btn" onClick={logout}>Sign Out</button>
                     </div>
                 </div>
 

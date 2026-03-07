@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/AuthModal.css';
+import { useAuth } from '../context/AuthContext';
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     const [mode, setMode] = useState(initialMode);
+    const { login } = useAuth();
 
     // Reset mode when opened with a new initialMode
     useEffect(() => {
@@ -16,9 +18,16 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // In a real app, this would handle authentication
+        const userData = {
+            name: mode === 'signup' ? e.target[0].value : 'StrayCare User',
+            email: mode === 'signup' ? e.target[1].value : e.target[0].value
+        };
+
+        login(userData);
         alert(`${mode === 'signin' ? 'Sign In' : 'Sign Up'} successful!`);
         onClose();
     };
+
 
     const toggleMode = () => {
         setMode(prev => prev === 'signin' ? 'signup' : 'signin');

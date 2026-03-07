@@ -62,25 +62,38 @@ body {
   font-weight: bold;
 }
 
-.btn {
-  background: #ebfee2;
+.sign-btn {
+  background-color: #ffffff;
+  height: 40px;
+  width: 95px;
+
+}
+
+.sign-btn:hover {
+  background-color: #e6ffd9;
+}
+
+.sign-up-btn.sign-btn {
+  background: #c3faaa;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 40px;
-  width: 95px;
+  width: 100px;
   border-radius: 12px;
   border: none;
-  margin-left: 20px;
+  margin-left: 10px;
   font-size: 1.2rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.btn:hover {
-  background: #cffdb5;
+
+.sign-up-btn.sign-btn:hover {
+  background: #bafc94;
 }
+
 
 /* HERO */
 
@@ -324,4 +337,20 @@ body {
   padding: 20px;
   margin-top: 50px;
   text-align: center;
+}
+
+.footer-bottom {
+  margin-top: 10px;
+}
+
+.footer-Link {
+  text-decoration: none;
+  color: #333;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-family: inherit;
+  transition: all 0.3s ease;
 }

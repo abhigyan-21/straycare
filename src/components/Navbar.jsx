@@ -1,8 +1,11 @@
 import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/straycare_logo.png";
+import { useAuth } from "../context/AuthContext";
 
 // styles are handled globally via src/styles/global.css
 function Navbar({ openAuthModal }) {
+  const { isLoggedIn, logout } = useAuth();
+
   return (
     <div className="navbar">
       <div className="nav-left">
@@ -17,21 +20,35 @@ function Navbar({ openAuthModal }) {
         <NavLink to="/post">Post</NavLink>
         <NavLink to="/track">Track</NavLink>
         <NavLink to="/help">Support Us</NavLink>
-        <NavLink to="/about">About Us</NavLink>
         <NavLink to="/guide">Guide</NavLink>
-        <NavLink to="/profile" className="profile">Profile</NavLink>
       </div>
 
       <div className="nav-right">
-        <button onClick={() => openAuthModal('signin')} className="nav-link-btn">
-          sign in
-        </button>
-        <button onClick={() => openAuthModal('signup')} className="btn" style={{ background: '#d4feb2' }}>
-          sign up
-        </button>
+        {!isLoggedIn ? (
+          <>
+            <button onClick={() => openAuthModal('signin')} className="nav-link-btn sign-btn">
+              sign in
+            </button>
+            <button onClick={() => openAuthModal('signup')} className="sign-up-btn sign-btn">
+              sign up
+            </button>
+          </>
+        ) : (
+          <>
+            <button onClick={logout} className="nav-link-btn sign-btn">
+              logout
+            </button>
+            <NavLink to="/profile" className="sign-up-btn sign-btn">
+              Profile
+            </NavLink>
+          </>
+        )}
+
       </div>
+
     </div>
   );
 }
+
 
 export default Navbar;

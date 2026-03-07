@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/Post.css';
 import CreatePostModal from '../components/CreatePostModal';
+import { useAuth } from '../context/AuthContext';
 
 // Mock data for posts
 const initialPosts = [
@@ -33,7 +34,8 @@ const initialPosts = [
     }
 ];
 
-function Post() {
+function Post({ openAuthModal }) {
+    const { isLoggedIn, user: authUser } = useAuth();
     const [posts, setPosts] = useState(initialPosts);
     const [newComment, setNewComment] = useState({});
 
@@ -41,6 +43,10 @@ function Post() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const handleOpenCreateModal = () => {
+        if (!isLoggedIn) {
+            openAuthModal('signin');
+            return;
+        }
         setIsCreateModalOpen(true);
         document.body.style.overflow = 'hidden';
     };
@@ -51,10 +57,19 @@ function Post() {
     };
 
     const handleCreatePostSubmit = (newPost) => {
-        setPosts([newPost, ...posts]);
+        setPosts([{
+            ...newPost,
+            username: authUser?.name || 'current_user',
+            userImage: authUser?.avatar || 'https://i.pravatar.cc/150?img=11',
+            timestamp: 'Just now'
+        }, ...posts]);
     };
 
     const handleLike = (postId) => {
+        if (!isLoggedIn) {
+            openAuthModal('signin');
+            return;
+        }
         setPosts(posts.map(post => {
             if (post.id === postId) {
                 return {
@@ -73,6 +88,10 @@ function Post() {
 
     const submitComment = (e, postId) => {
         e.preventDefault();
+        if (!isLoggedIn) {
+            openAuthModal('signin');
+            return;
+        }
         if (!newComment[postId] || newComment[postId].trim() === '') return;
 
         setPosts(posts.map(post => {
@@ -81,7 +100,11 @@ function Post() {
                     ...post,
                     comments: [
                         ...post.comments,
-                        { id: Date.now(), username: 'current_user', text: newComment[postId] }
+                        {
+                            id: Date.now(),
+                            username: authUser?.name || 'current_user',
+                            text: newComment[postId]
+                        }
                     ]
                 };
             }
@@ -91,6 +114,7 @@ function Post() {
         // Clear input
         setNewComment({ ...newComment, [postId]: '' });
     };
+
 
     return (
         <div className="posts-container">
