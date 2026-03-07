@@ -5,7 +5,42 @@
     align-items: center;
     gap: 3rem;
     min-height: 80vh;
-    background-color: #fafafa;
+    background-color: #fff;
+}
+
+/* Create Post Button Area */
+.create-post-header {
+    position: fixed;
+    right: 40px;
+    bottom: 40px;
+    z-index: 100;
+}
+
+.create-post-btn {
+    background-color: #fce883;
+    color: #333;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.create-post-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background-color: #f5df6d;
+}
+
+.plus-icon {
+    font-size: 1.4rem;
+    line-height: 1;
 }
 
 .post-card {
@@ -226,4 +261,335 @@
     .post-details-section {
         min-height: 300px;
     }
+}
+
+/* Create Post Modal Styles */
+.create-post-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.create-post-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+.create-post-modal {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    /* Reduced width slightly */
+    max-height: 85vh;
+    /* Reduced height to ensure no overall scroll */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: modalSlideUp 0.3s ease-out;
+    overflow: hidden;
+    /* Added to contain inner scrolling */
+    transition: max-width 0.3s ease, height 0.3s ease;
+}
+
+.create-post-modal.preview-active {
+    max-width: 900px;
+    height: 600px;
+    /* same as post-card */
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #efefef;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    color: #262626;
+    margin: 0;
+    font-weight: 600;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #8e8e8e;
+    line-height: 1;
+    padding: 0;
+}
+
+.modal-close-btn:hover {
+    color: #262626;
+}
+
+.create-post-form {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    flex: 1;
+    /* Allow form to take remaining space but not overflow */
+    overflow: hidden;
+    /* Remove any internal scrolling */
+}
+
+.create-post-form.preview-mode {
+    padding: 0;
+}
+
+.image-upload-section {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    /* Wider aspect ratio so it doesn't take too much vertical space */
+    max-height: 250px;
+    /* Restricted max height */
+    background-color: #fafafa;
+    border: 2px dashed #dbdbdb;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    /* Ensures it perfectly overlaps the section */
+    top: 0;
+    left: 0;
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    color: #0095f6;
+    font-weight: 600;
+    padding: 20px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.upload-label:hover {
+    background-color: rgba(0, 149, 246, 0.05);
+}
+
+/* Remove upload-icon since it's deleted from JSX */
+
+.caption-input-section {
+    flex: 1;
+    /* Allow it to expand and take up remaining space */
+    display: flex;
+    flex-direction: column;
+}
+
+.caption-textarea {
+    width: 100%;
+    flex: 1;
+    /* Force textarea to fill its container's height */
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
+    /* ADDED to fix overflowing width */
+}
+
+.caption-textarea:focus {
+    border-color: #a8a8a8;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.cancel-btn,
+.submit-post-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border: none;
+}
+
+.cancel-btn {
+    background-color: transparent;
+    color: #262626;
+}
+
+.cancel-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.submit-post-btn {
+    background-color: #0095f6;
+    color: white;
+}
+
+.submit-post-btn:hover {
+    background-color: #1877f2;
+}
+
+.submit-post-btn:disabled {
+    background-color: #b2dffc;
+    cursor: not-allowed;
+}
+
+/* Cropping Styles */
+.crop-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    /* Dark background during crop */
+    position: relative;
+}
+
+.img-to-crop {
+    max-height: 250px;
+    object-fit: contain;
+}
+
+.ReactCrop {
+    max-height: 250px;
+}
+
+.crop-actions {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    z-index: 10;
+}
+
+.crop-btn {
+    background-color: #0095f6;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.crop-btn.cancel {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.crop-btn:hover {
+    opacity: 0.9;
+}
+
+/* Image Preview Styles */
+.image-preview-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Better to view whole image */
+    background: #000;
+}
+
+.preview-actions {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+}
+
+.preview-btn {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+    display: inline-block;
+    text-align: center;
+    width: 140px;
+}
+
+.preview-btn:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.mockup-textarea {
+    border: none;
+    box-shadow: none;
+    padding: 4px 8px;
+    background: transparent;
+}
+
+.mockup-textarea:focus {
+    border-color: transparent;
 }

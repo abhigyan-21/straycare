@@ -8,6 +8,8 @@ import Track from "./pages/Track";
 import About from "./pages/About";
 import Guide from "./pages/Guide";
 import Post from "./pages/Post";
+import Help from "./pages/Help";
+import Profile from "./pages/Profile";
 import AuthModal from "./components/AuthModal";
 import { useState } from "react";
 
@@ -31,6 +33,8 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/guide" element={<Guide />} />
         <Route path="/post" element={<Post />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
       <Footer />
       <AuthModal

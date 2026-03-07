@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const PetCarousel = ({ pets, currentIndex, onNext, onPrev }) => {
     if (!pets || pets.length === 0) {
@@ -17,8 +17,64 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev }) => {
     const hasPrev = prevIndex >= 0;
     const hasNext = nextIndex < pets.length;
 
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches ? e.targetTouches[0].clientX : e.clientX);
+        setIsDragging(true);
+    };
+
+    const onTouchMove = (e) => {
+        if (!isDragging && !e.targetTouches) return;
+        setTouchEnd(e.targetTouches ? e.targetTouches[0].clientX : e.clientX);
+    };
+
+    const onTouchEndHandler = () => {
+        setIsDragging(false);
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe && hasNext) {
+            onNext();
+        }
+        if (isRightSwipe && hasPrev) {
+            onPrev();
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowLeft' && hasPrev) {
+                onPrev();
+            } else if (e.key === 'ArrowRight' && hasNext) {
+                onNext();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [hasPrev, hasNext, onPrev, onNext]);
+
     return (
-        <div className="pet-carousel-container">
+        <div
+            className={`pet-carousel-container ${isDragging ? 'dragging' : ''}`}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEndHandler}
+            onMouseDown={onTouchStart}
+            onMouseMove={onTouchMove}
+            onMouseUp={onTouchEndHandler}
+            onMouseLeave={onTouchEndHandler}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        >
             <div className="carousel-nav left">
                 <button
                     onClick={onPrev}
@@ -37,8 +93,8 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev }) => {
                     </div>
                 )}
 
-                <div className="pet-card pet-card-current">
-                    <img src={pets[currentIndex].image} alt={pets[currentIndex].name} />
+                <div className="pet-card pet-card-current" style={{ pointerEvents: isDragging ? 'none' : 'auto' }}>
+                    <img src={pets[currentIndex].image} alt={pets[currentIndex].name} draggable="false" />
                 </div>
 
                 {hasNext && (

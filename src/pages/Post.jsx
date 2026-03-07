@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/Post.css';
+import CreatePostModal from '../components/CreatePostModal';
 
 // Mock data for posts
 const initialPosts = [
@@ -35,6 +36,23 @@ const initialPosts = [
 function Post() {
     const [posts, setPosts] = useState(initialPosts);
     const [newComment, setNewComment] = useState({});
+
+    // Create Post Modal State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const handleOpenCreateModal = () => {
+        setIsCreateModalOpen(true);
+        document.body.style.overflow = 'hidden';
+    };
+
+    const handleCloseCreateModal = () => {
+        setIsCreateModalOpen(false);
+        document.body.style.overflow = 'auto';
+    };
+
+    const handleCreatePostSubmit = (newPost) => {
+        setPosts([newPost, ...posts]);
+    };
 
     const handleLike = (postId) => {
         setPosts(posts.map(post => {
@@ -76,6 +94,13 @@ function Post() {
 
     return (
         <div className="posts-container">
+
+            <div className="create-post-header">
+                <button className="create-post-btn" onClick={handleOpenCreateModal}>
+                    <span className="plus-icon">+</span> Create a Post
+                </button>
+            </div>
+
             {posts.map(post => (
                 <div key={post.id} className="post-card">
                     {/* Left Side: Image */}
@@ -152,6 +177,12 @@ function Post() {
                     </div>
                 </div>
             ))}
+
+            <CreatePostModal
+                isOpen={isCreateModalOpen}
+                onClose={handleCloseCreateModal}
+                onSubmit={handleCreatePostSubmit}
+            />
         </div>
     );
 }

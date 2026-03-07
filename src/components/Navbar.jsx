@@ -13,11 +13,13 @@ function Navbar({ openAuthModal }) {
         <NavLink to="/emergency" className="emergency">
           Emergency
         </NavLink>
-        <NavLink to="/adopt">Adopt a dog</NavLink>
+        <NavLink to="/adopt">Adopt a pet</NavLink>
         <NavLink to="/post">Post</NavLink>
         <NavLink to="/track">Track</NavLink>
+        <NavLink to="/help">Support Us</NavLink>
         <NavLink to="/about">About Us</NavLink>
         <NavLink to="/guide">Guide</NavLink>
+        <NavLink to="/profile" className="profile">Profile</NavLink>
       </div>
 
       <div className="nav-right">
