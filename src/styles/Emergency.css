@@ -14,7 +14,7 @@
     max-width: 500px;
     aspect-ratio: 1;
     /* Make it a square */
-    background-color: #d1d1d1;
+    background-color: #ebebeb;
     border-radius: 40px;
     display: flex;
     align-items: center;
@@ -25,7 +25,8 @@
 }
 
 .emergency-left:hover {
-    background-color: #c4c4c4;
+    transition: 0.2s;
+    background-color: #e4e4e4;
 }
 
 .emergency-left.has-image {
@@ -153,14 +154,13 @@
 .report-button-container {
     display: flex;
     justify-content: center;
-    margin-top: 10px;
 }
 
 .report-btn {
     background-color: #edfacd;
     border: none;
     border-radius: 12px;
-    padding: 12px 40px;
+    padding: 10px 40px;
     font-size: 1.1rem;
     color: #555;
     cursor: pointer;
