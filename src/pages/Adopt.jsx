@@ -83,20 +83,14 @@ function Adopt() {
                             currentIndex={currentPetIndex}
                             onNext={handleNext}
                             onPrev={handlePrev}
+                            onInterested={handleInterested}
+                            isInterested={interestedPets.has(filteredPets[currentPetIndex].id)}
                         />
                     ) : (
                         <div className="no-pets-message">
                             <p>No pets found matching your criteria. Please adjust your filters.</p>
                         </div>
                     )}
-                </div>
-
-                <div className="profile-section">
-                    <PetProfile
-                        pet={filteredPets[currentPetIndex]}
-                        onInterested={handleInterested}
-                        isInterested={filteredPets.length > 0 && interestedPets.has(filteredPets[currentPetIndex].id)}
-                    />
                 </div>
             </div>
 

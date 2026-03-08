@@ -646,4 +646,19 @@
         position: static;
         margin-top: 16px;
     }
+
+    .profile-page {
+        padding: 20px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-content {
+        padding: 20px 15px;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+    }
 }

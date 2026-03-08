@@ -191,3 +191,37 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+    .guide-page {
+        padding: 1rem;
+    }
+
+    .guide-container {
+        flex-direction: column;
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .character-section {
+        flex: 0 0 auto;
+    }
+
+    .character-image {
+        max-height: 250px;
+    }
+
+    .message-bubble {
+        max-width: 90%;
+        font-size: 1rem;
+        padding: 0.8rem 1.2rem;
+    }
+
+    .chat-input-container {
+        padding: 0.5rem;
+    }
+
+    .chat-input {
+        padding: 0.8rem;
+    }
+}

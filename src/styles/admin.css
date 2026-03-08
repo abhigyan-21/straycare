@@ -561,3 +561,47 @@
 .admin-empty-text {
     color: #777;
 }
+
+/* Responsiveness */
+@media (max-width: 900px) {
+    .admin-container {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 5px solid #e6ffd9;
+    }
+
+    .admin-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow-x: auto;
+    }
+
+    .admin-nav a {
+        font-size: 1rem;
+        padding: 8px 12px;
+        white-space: nowrap;
+    }
+
+    .admin-header {
+        padding: 0 20px;
+    }
+
+    .admin-content-area {
+        padding: 20px;
+    }
+
+    .admin-table-container {
+        overflow-x: auto;
+    }
+
+    .admin-req-grid {
+        grid-template-columns: 1fr;
+    }
+}

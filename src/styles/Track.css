@@ -365,3 +365,31 @@
     /* Mobile timeline positions for the wavy path might need adjusting or be vertical in a real app, 
      but keeping the same layout conceptually based on the wireframe */
 }
+
+@media (max-width: 768px) {
+    .track-page {
+        padding: 30px 20px;
+        gap: 30px;
+    }
+
+    .search-section {
+        flex-direction: column;
+    }
+
+    .track-btn {
+        padding: 10px 40px;
+    }
+
+    .pet-image-container {
+        width: 200px;
+        height: 200px;
+    }
+
+    .history-modal-content {
+        padding: 20px;
+    }
+
+    .details-section {
+        overflow-x: auto;
+    }
+}

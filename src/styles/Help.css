@@ -264,3 +264,25 @@
         gap: 1rem;
     }
 }
+
+@media (max-width: 768px) {
+    .help-content-wrapper {
+        padding: 2rem 1rem;
+    }
+
+    .help-card {
+        min-height: 250px;
+        padding: 1.5rem;
+    }
+
+    .expanded-card {
+        padding: 2rem 1.5rem;
+        min-height: 400px;
+    }
+
+    .close-btn {
+        top: 0.5rem;
+        right: 1rem;
+        font-size: 2rem;
+    }
+}

@@ -143,3 +143,27 @@
         padding: 40px;
     }
 }
+
+@media (max-width: 768px) {
+    .about-container {
+        padding: 40px 20px;
+    }
+
+    .about-card {
+        padding: 30px 20px;
+        border-radius: 20px;
+    }
+
+    .about-card h1 {
+        font-size: 2rem;
+        margin-bottom: 25px;
+    }
+
+    .about-section h2 {
+        font-size: 1.3rem;
+    }
+
+    .about-section p {
+        font-size: 1rem;
+    }
+}

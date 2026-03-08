@@ -593,3 +593,23 @@
 .mockup-textarea:focus {
     border-color: transparent;
 }
+
+@media (max-width: 768px) {
+    .create-post-modal {
+        max-height: 90vh;
+    }
+
+    .create-post-header {
+        right: 20px;
+        bottom: 20px;
+    }
+
+    .create-post-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .image-upload-section {
+        max-height: 200px;
+    }
+}

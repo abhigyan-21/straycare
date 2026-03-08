@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const PetCarousel = ({ pets, currentIndex, onNext, onPrev }) => {
+const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInterested }) => {
     if (!pets || pets.length === 0) {
         return (
             <div className="pet-carousel empty">
@@ -63,6 +63,8 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev }) => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [hasPrev, hasNext, onPrev, onNext]);
 
+    const currentPet = pets[currentIndex];
+
     return (
         <div
             className={`pet-carousel-container ${isDragging ? 'dragging' : ''}`}
@@ -94,7 +96,47 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev }) => {
                 )}
 
                 <div className="pet-card pet-card-current" style={{ pointerEvents: isDragging ? 'none' : 'auto' }}>
-                    <img src={pets[currentIndex].image} alt={pets[currentIndex].name} draggable="false" />
+                    <div className="pet-card-image-wrapper">
+                        <img src={currentPet.image} alt={currentPet.name} draggable="false" />
+                    </div>
+                    <div className="pet-details-overlay">
+                        <div className="pet-details-scrollable">
+                            <h3 className="desktop-profile-title">Profile</h3>
+
+                            <h2 className="pet-name mobile-only-item">{currentPet.name}</h2>
+                            <div className="pet-detail-row desktop-only-item">
+                                <span className="detail-label">Name:</span> {currentPet.name}
+                            </div>
+
+                            <div className="pet-detail-row">
+                                <span className="detail-label">Breed:</span> {currentPet.breed}
+                            </div>
+                            <div className="pet-detail-row">
+                                <span className="detail-label">Age:</span> {currentPet.age}
+                            </div>
+                            <div className="pet-detail-row">
+                                <span className="detail-label">Sex:</span> {currentPet.sex}
+                            </div>
+
+                            <div className="pet-detail-row full-width mt-2">
+                                <span className="detail-label block">Medical history:</span> {currentPet.medicalHistory}
+                            </div>
+                            <div className="pet-detail-row full-width mt-2">
+                                <span className="detail-label block">Hobbies:</span> {currentPet.hobbies}
+                            </div>
+                            <div className="pet-detail-row full-width mt-2">
+                                <span className="detail-label block">Talents:</span> {currentPet.talents}
+                            </div>
+                        </div>
+                        <div className="action-container-overlay">
+                            <button
+                                className={`btn-interested-overlay ${isInterested ? 'interested-marked' : ''}`}
+                                onClick={() => onInterested(currentPet)}
+                            >
+                                {isInterested ? 'Marked as interested' : 'Interested'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {hasNext && (
