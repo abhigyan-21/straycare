@@ -1,37 +1,46 @@
-# StrayCare Frontend 🐾
+# StrayCare 🐾
 
-This is the frontend portion of the **StrayCare** platform, a web application connecting people for stray animal reporting, rescues, and adoptions.
+A comprehensive platform designed to assist stray animals by connecting people who find them with rescuers, veterinarians, and people looking to adopt. 
 
-## 🚀 Getting Started
+StrayCare handles everything from the initial report (including geolocation and photos) to medical tracking, adoption workflows, and crowdfunding for specific animals' treatments. It also features a community feed to keep users engaged and updated.
 
-First, install the dependencies:
+## 🌟 Features
 
-```bash
-npm install
-```
+- **Stray Reporting & Tracking**: Submit stray reports with photos, geolocation, and descriptions. Track their lifecycle status from rescue to adoption.
+- **Rescue & Medical Updates**: Rescuers and veterinarians can update records and treatment history.
+- **Adoption & Fostering**: Swipe and explore pets needing homes. Detailed application forms with conditional approval workflows.
+- **Community Feed**: Logged-in users can create posts, share updates, and interact with the stray care community.
+- **Crowdfunding**: NGOs and Admins can create campaigns to raise funds via Stripe for injured strays.
+- **Pet Chatbot Guide**: An automated AI guide to help users resolve quick queries regarding strays.
+- **Admin Dashboard**: Manage user roles, moderate community posts, verify NGOs/clinics, and oversee financials.
 
-Then, run the development server:
+## 📂 Project Structure
 
-```bash
-npm run dev
-```
+This project is divided into the following directories:
 
-Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
+- `/straycare-frontend`: The main React application built with Vite and vanilla CSS.
+- `/backend`: The server handling the API, database connectivity, auth, and external integrations (currently in planning phase as per SRS).
 
-## 🛠️ Features included
+## 🛠️ Tech Stack
 
-- Interactive Map & Stray Reporting 
-- Adoption pages with swipe and arrow-key navigation
-- Community Feed for logged-in users
-- Interactive AI Pet Chatbot Guide
-- Real-time updates and notifications (Sockets/APIs)
-- Clean, glowing Navigation bar and Admin Dashboard consistent with global themes
-
-## 🧩 Technologies Used
-- React v19
+**Frontend:**
+- React 19
 - Vite
-- React Router v7
-- Lucide React (Icons)
-- Vanilla CSS for styling
+- React Router DOM
+- Vanilla CSS
+- Lucide React
 
-Please refer to the Root README for more overview regarding the overall application structure, user roles, and backend configurations.
+**Backend (Planned):**
+- Node.js / Express
+- PostgreSQL
+- Firebase/Auth0 (Authentication)
+- Stripe (Donations)
+- AWS S3 / Cloudinary (Media Storage)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please create a pull request or open an issue for major changes to discuss what you'd like to change.
+
+## 📄 License
+
+This project is licensed under the MIT License.
