@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import '../styles/Track.css';
 
 // Mock Data
@@ -29,12 +30,24 @@ const STAGES = [
 ];
 
 function Track() {
+    const location = useLocation();
     const [trackingId, setTrackingId] = useState("");
     const [petData, setPetData] = useState(null);
     const [animateTimeline, setAnimateTimeline] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
 
+    useEffect(() => {
+        if (location.state && location.state.trackingId) {
+            setTrackingId(location.state.trackingId);
+            // Auto trigger tracking if we navigated from Reports
+            setPetData(MOCK_PET); // In real app, fetch based on trackingId
+            setAnimateTimeline(false);
+            setTimeout(() => setAnimateTimeline(true), 100);
+        }
+    }, [location.state]);
+
     const handleTrack = () => {
+        if (!trackingId) return;
         // Simulate fetching
         setPetData(MOCK_PET);
         setAnimateTimeline(false);

@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Profile.css';
 import '../styles/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../components/CreatePostModal';
 import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
+    const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
     const { user: authUser, logout } = useAuth();
@@ -25,6 +27,11 @@ const Profile = () => {
         { id: 2, image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=600' },
         { id: 3, image: 'https://images.unsplash.com/photo-15371608804-ea6f11ccfb76?auto=format&fit=crop&q=80&w=600' },
         { id: 4, image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600' }
+    ]);
+
+    const [mockReports, setMockReports] = useState([
+        { id: '4435', image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60', name: 'Bizoo', location: 'Sector 14, Main Road', date: 'Oct 12, 2026' },
+        { id: '1092', image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=500', name: 'Rusty', location: 'Palm Grove Avenue', date: 'Sep 28, 2026' }
     ]);
 
     const handleOpenCreateModal = () => {
@@ -157,6 +164,35 @@ const Profile = () => {
                     </div>
                 );
 
+            case 'reports':
+                return (
+                    <div className="profile-section fade-in">
+                        <div className="section-header">
+                            <h2>My Reports</h2>
+                        </div>
+                        <div className="post-grid">
+                            {mockReports.length > 0 ? (
+                                mockReports.map((report) => (
+                                    <div
+                                        key={report.id}
+                                        className="post-grid-item"
+                                        onClick={() => navigate('/track', { state: { trackingId: report.id } })}
+                                    >
+                                        <img src={report.image} alt={report.name} />
+                                        <div className="post-overlay" style={{ flexDirection: 'column', color: 'white' }}>
+                                            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem' }}>{report.name}</h3>
+                                            <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>ID: {report.id}</span>
+                                            <span style={{ fontSize: '0.8rem', marginTop: '12px', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '12px' }}>Click to Track</span>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="empty-state">You haven't reported any stray pets yet.</p>
+                            )}
+                        </div>
+                    </div>
+                );
+
             case 'posts':
                 return (
                     <div className="profile-section fade-in">
@@ -272,6 +308,12 @@ const Profile = () => {
                             onClick={() => setActiveTab('posts')}
                         >
                             <span className="icon">📝</span> Manage Posts
+                        </button>
+                        <button
+                            className={`nav-btn ${activeTab === 'reports' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('reports')}
+                        >
+                            <span className="icon">📋</span> My Reports
                         </button>
                         <button
                             className={`nav-btn ${activeTab === 'donations' ? 'active' : ''}`}
