@@ -19,11 +19,20 @@ import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminAdoptions from "./pages/admin/AdminAdoptions";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminUsers from "./pages/admin/AdminUsers";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import doctorClosed from "./assets/images/doctor-closed.png";
+import doctorOpen from "./assets/images/doctor-open.png";
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
+
+  useEffect(() => {
+    const img1 = new Image();
+    img1.src = doctorClosed;
+    const img2 = new Image();
+    img2.src = doctorOpen;
+  }, []);
 
   const openAuthModal = (mode) => {
     setAuthMode(mode);

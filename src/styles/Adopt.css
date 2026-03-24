@@ -1,18 +1,17 @@
 /* Adopt Page Layout */
 .adopt-page {
     padding: 1rem 5%;
-    min-height: 80vh;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     overflow-x: hidden;
 }
 
-.adopt-toolbar {
+/* .adopt-toolbar {
     display: flex;
     justify-content: flex-start;
     margin-bottom: 1rem;
-}
+} */
 
 .btn-filter {
     background-color: #d4feb2;
@@ -412,6 +411,16 @@
 
 /* Responsive Mobile Design */
 @media (max-width: 768px) {
+    .adopt-page {
+        padding: 0.5rem 5% 1.5rem;
+        gap: 0.5rem;
+        min-height: auto;
+    }
+
+    .adopt-toolbar {
+        margin-bottom: 0px;
+    }
+
     .adopt-content {
         flex-direction: column;
     }
@@ -419,7 +428,7 @@
     .carousel-view {
         width: 100%;
         max-width: 380px;
-        height: 550px;
+        height: 510px;
     }
 
     .pet-card {
