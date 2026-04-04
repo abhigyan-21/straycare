@@ -12,6 +12,7 @@ import Help from "./pages/Help";
 import Profile from "./pages/Profile";
 import AuthModal from "./components/AuthModal";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Register from "./pages/Register";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminTracking from "./pages/admin/AdminTracking";
@@ -52,6 +53,7 @@ function App() {
         <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
         <Route path="/help" element={<Help />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Admin Section Paths */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin', 'partner', 'ngo']} />}>

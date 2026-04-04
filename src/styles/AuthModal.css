@@ -127,6 +127,12 @@
     color: #0d47a1;
 }
 
+.auth-divider {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #666;
+}
+
 @media (max-width: 768px) {
     .auth-modal-content {
         padding: 2rem 1.5rem;

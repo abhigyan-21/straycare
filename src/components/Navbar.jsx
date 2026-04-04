@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/straycare_logo.png";
 import { useAuth } from "../context/AuthContext";
+import ProfileDropdown from "./ProfileDropdown";
 
 function Navbar({ openAuthModal }) {
   const { isLoggedIn, logout } = useAuth();
@@ -29,26 +30,15 @@ function Navbar({ openAuthModal }) {
           <NavLink to="/track" onClick={closeMenu}>Track</NavLink>
           <NavLink to="/help" onClick={closeMenu}>Support Us</NavLink>
           <NavLink to="/guide" onClick={closeMenu}>Guide</NavLink>
+          <NavLink to="/register" onClick={closeMenu}>Register</NavLink>
 
           <div className="mobile-only-auth">
             {!isLoggedIn ? (
-              <>
-                <button onClick={() => { openAuthModal('signin'); closeMenu(); }} className="nav-link-btn sign-btn" style={{ marginBottom: '10px' }}>
-                  sign in
-                </button>
-                <button onClick={() => { openAuthModal('signup'); closeMenu(); }} className="sign-up-btn sign-btn">
-                  sign up
-                </button>
-              </>
+              <button onClick={() => { openAuthModal('signin'); closeMenu(); }} className="sign-up-btn sign-btn" style={{ marginBottom: '10px' }}>
+                LOGIN
+              </button>
             ) : (
-              <>
-                <button onClick={() => { logout(); closeMenu(); }} className="nav-link-btn sign-btn" style={{ marginBottom: '10px' }}>
-                  logout
-                </button>
-                <NavLink to="/profile" className="sign-up-btn sign-btn" onClick={closeMenu}>
-                  Profile
-                </NavLink>
-              </>
+              <ProfileDropdown closeMenu={closeMenu} />
             )}
           </div>
         </div>
@@ -61,23 +51,11 @@ function Navbar({ openAuthModal }) {
 
         <div className="desktop-only-auth">
           {!isLoggedIn ? (
-            <>
-              <button onClick={() => openAuthModal('signin')} className="nav-link-btn sign-btn">
-                sign in
-              </button>
-              <button onClick={() => openAuthModal('signup')} className="sign-up-btn sign-btn">
-                sign up
-              </button>
-            </>
+            <button onClick={() => openAuthModal('signin')} className="sign-up-btn sign-btn">
+              LOGIN
+            </button>
           ) : (
-            <>
-              <button onClick={logout} className="nav-link-btn sign-btn">
-                logout
-              </button>
-              <NavLink to="/profile" className="sign-up-btn sign-btn">
-                Profile
-              </NavLink>
-            </>
+            <ProfileDropdown />
           )}
         </div>
 
