@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Quicksand", sans-serif;
   background: #ffffffe4;
   overflow-x: hidden;
 }
@@ -8,11 +8,12 @@ body {
 /* NAVBAR */
 
 .navbar {
+  font-weight: 400;
   display: flex;
   justify-content: space-between;
   padding-left: 10px;
   padding-right: 40px;
-  height: 90px;
+  height: 75px;
   border-bottom: 5px solid #e6ffd9;
   border-top: 5px solid #e6ffd9;
   background: #ffffff;
@@ -31,8 +32,8 @@ body {
 }
 
 .nav-left .logo {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -60,46 +61,93 @@ body {
 
 .nav-right .emergency {
   color: #3b3a3a;
-  background-color: #fc786f;
-  font-weight: bold;
-  padding: 8px 16px;
-  border-radius: 12px;
+  background-color: #fc9e9791;
+  border: 2px solid #fc786f;
+  border-radius: 0.9em;
+  cursor: pointer;
+  padding: 0.5em 1em 0.5em 1em;
+  transition: all ease-in-out 0.2s;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .nav-right .emergency:hover {
-  background-color: #d1554d;
+  background-color: #fa6f63;
+  color: white;
+  /* box-shadow: 0px 0px 10px 2px rgb(250, 111, 99); */
 }
 
 .sign-btn {
-  background-color: #ffffff;
-  height: 40px;
-  width: 95px;
+  --primary-color: #d1fabe;
+  --secondary-color: #333;
+  --hover-color: #b9f198;
+  --hover-text: #fff;
+  --arrow-width: 10px;
+  --arrow-stroke: 2px;
 
-}
-
-.sign-btn:hover {
-  background-color: #e6ffd9;
-}
-
-.sign-up-btn.sign-btn {
-  background: #d1fabe;
+  color: var(--secondary-color);
+  background-color: var(--primary-color);
+  border: 2px solid #6ff8258d;
+  border-radius: 0.6em;
+  cursor: pointer;
+  padding: 0.5em 1em 0.5em 1em;
+  transition: all ease-in-out 0.2s;
+  font-size: 15px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  width: 100px;
-  border-radius: 12px;
-  border: none;
   margin-left: 10px;
-  font-size: 1.2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  height: auto;
+  width: auto;
+  gap: 0.6em;
 }
 
+.sign-btn:hover {
+  background-color: var(--hover-color);
+  color: var(--hover-text);
+  border-color: #bafc94;
+}
 
-.sign-up-btn.sign-btn:hover {
-  background: #bafc94;
+.sign-btn .arrow-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sign-btn .arrow {
+  margin-top: 1px;
+  width: var(--arrow-width);
+  background: transparent;
+  height: var(--arrow-stroke);
+  position: relative;
+  transition: 0.2s;
+}
+
+.sign-btn .arrow::before {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  border: solid var(--secondary-color);
+  border-width: 0 var(--arrow-stroke) var(--arrow-stroke) 0;
+  display: inline-block;
+  top: -3px;
+  right: 3px;
+  transition: 0.2s;
+  padding: 3px;
+  transform: rotate(-45deg);
+}
+
+.sign-btn:hover .arrow {
+  background: var(--hover-text);
+}
+
+.sign-btn:hover .arrow:before {
+  border-color: var(--hover-text);
+  right: 0;
 }
 
 

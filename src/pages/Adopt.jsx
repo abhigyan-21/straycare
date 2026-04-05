@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import '../styles/Adopt.css';
 import { mockPets } from '../data/mockPets';
 import PetCarousel from '../components/PetCarousel';
-import PetProfile from '../components/PetProfile';
 import FilterModal from '../components/FilterModal';
 
 function Adopt() {

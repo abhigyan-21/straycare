@@ -34,7 +34,7 @@ function Navbar({ openAuthModal }) {
 
           <div className="mobile-only-auth">
             {!isLoggedIn ? (
-              <button onClick={() => { openAuthModal('signin'); closeMenu(); }} className="sign-up-btn sign-btn" style={{ marginBottom: '10px' }}>
+              <button onClick={() => { openAuthModal('signin'); closeMenu(); }} className="sign-btn" style={{ marginBottom: '10px' }}>
                 LOGIN
               </button>
             ) : (
@@ -51,8 +51,12 @@ function Navbar({ openAuthModal }) {
 
         <div className="desktop-only-auth">
           {!isLoggedIn ? (
-            <button onClick={() => openAuthModal('signin')} className="sign-up-btn sign-btn">
-              LOGIN
+            <button onClick={() => openAuthModal('signin')} className="sign-btn">
+              Login
+              <div className="arrow-wrapper">
+                <div className="arrow"></div>
+
+              </div>
             </button>
           ) : (
             <ProfileDropdown />

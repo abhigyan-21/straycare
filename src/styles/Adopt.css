@@ -91,7 +91,7 @@
     z-index: 10;
     transform: scale(1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 3px solid #f8fdf4;
+    border: 3px solid #e7f7ce; /* Light green border applied to outer card directly */
 }
 
 .pet-card-prev {
@@ -150,72 +150,48 @@
     font-size: 1.2rem;
 }
 
-/* Pet Profile Card Desktop Default Design */
-.pet-card-image-wrapper {
-    width: 70%;
+/* Pet Profile Card Desktop Default Design (60-40 Flex Split) */
+.pet-image-side {
+    width: 60%;
     height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
+    flex-shrink: 0;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
     z-index: 1;
-    -webkit-mask-image: linear-gradient(to right,
-            rgba(0, 0, 0, 1) 0%,
-            rgba(0, 0, 0, 1) 50%,
-            rgba(0, 0, 0, 0.9) 60%,
-            rgba(0, 0, 0, 0.7) 70%,
-            rgba(0, 0, 0, 0.3) 80%,
-            rgba(0, 0, 0, 0.15) 90%,
-            rgba(0, 0, 0, 0) 100%);
-    mask-image: linear-gradient(to right,
-            rgba(0, 0, 0, 1) 0%,
-            rgba(0, 0, 0, 1) 50%,
-            rgba(0, 0, 0, 0.9) 60%,
-            rgba(0, 0, 0, 0.7) 70%,
-            rgba(0, 0, 0, 0.3) 80%,
-            rgba(0, 0, 0, 0.15) 90%,
-            rgba(0, 0, 0, 0) 100%);
 }
 
-.pet-card-image-wrapper img {
+.pet-image-side img {
     width: 100%;
     height: 100%;
+    object-fit: cover;
     object-position: center top;
 }
 
-.pet-details-overlay {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50%;
+.pet-profile-side {
+    width: 40%;
     height: 100%;
-    background: transparent;
-    z-index: 2;
-    padding-left: 6rem;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    box-sizing: border-box;
+    background: #f8fdf4;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    padding: 1.5rem 2rem 2rem 2rem;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pet-card-current.interested-state .pet-image-side {
+    transform: translateX(66.666%);
+    filter: grayscale(100%);
+}
+
+.pet-card-current.interested-state .pet-profile-side {
+    transform: translateX(-150%);
 }
 
 .pet-details-scrollable {
     flex: 1;
-    overflow-y: auto;
-    padding-right: 15px;
-}
-
-/* Custom scrollbar for overlay */
-.pet-details-scrollable::-webkit-scrollbar {
-    width: 6px;
-}
-
-.pet-details-scrollable::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.pet-details-scrollable::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
 }
 
 .desktop-profile-title {
@@ -288,9 +264,9 @@
 }
 
 .btn-interested-overlay.interested-marked {
-    background-color: #e0e0e0;
-    color: #777;
-    cursor: default;
+    background-color: #d1d1d1;
+    color: #444;
+    cursor: pointer;
     box-shadow: none;
     transform: none;
 }
@@ -450,30 +426,36 @@
         font-size: 2rem;
     }
 
-    .pet-card-image-wrapper {
-        width: 100%;
-        height: 100%;
-        -webkit-mask-image: none;
-        mask-image: none;
+    .pet-card.pet-card-current {
+        flex-direction: column;
     }
 
-    .pet-details-overlay {
-        left: 0;
-        right: auto;
-        top: auto;
-        bottom: 0;
+    .pet-image-side {
         width: 100%;
-        height: 48%;
+        height: 52%;
+        position: relative;
+    }
+
+    .pet-profile-side {
+        width: 100%;
+        height: 48%; /* or auto if we merge height: auto from below */
+        position: relative;
         background: rgba(255, 255, 255, 0.45);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         padding: 1.5rem;
+        border: none;
         border-top: 1px solid rgba(255, 255, 255, 0.7);
         border-radius: 0 0 20px 20px;
+        box-shadow: none;
     }
 
-    .pet-card-current:hover .pet-details-overlay {
+    .pet-card-current:hover .pet-profile-side {
         height: 60%;
+    }
+    
+    .pet-card-current:hover .pet-image-side {
+        height: 40%;
     }
 
     .desktop-profile-title {
@@ -518,7 +500,15 @@
         background-color: #a5eb6c;
     }
 
-    .pet-profile-card {
+    .pet-profile-side {
         height: auto;
+    }
+
+    .pet-card-current.interested-state .pet-image-side {
+        transform: none;
+    }
+
+    .pet-card-current.interested-state .pet-profile-side {
+        transform: none;
     }
 }

@@ -95,45 +95,56 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
                     </div>
                 )}
 
-                <div className="pet-card pet-card-current" style={{ pointerEvents: isDragging ? 'none' : 'auto' }}>
-                    <div className="pet-card-image-wrapper">
+                <div className={`pet-card pet-card-current ${isInterested ? 'interested-state' : ''}`} style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div className="pet-image-side">
                         <img src={currentPet.image} alt={currentPet.name} draggable="false" />
                     </div>
-                    <div className="pet-details-overlay">
+                    <div className="pet-profile-side">
                         <div className="pet-details-scrollable">
-                            <h3 className="desktop-profile-title">Profile</h3>
+                            {isInterested ? (
+                                <div className="interested-message-content" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', textAlign: 'center' }}>
+                                    <h3 style={{ fontSize: '1.8rem', color: '#444', marginBottom: '15px', fontWeight: '500', lineHeight:'1.4' }}>
+                                        Thanks for showing your<br/>interest in<br/>{currentPet.name}
+                                    </h3>
+                                    <p style={{ fontSize: '1.2rem', color: '#666' }}>You'll receive update soon</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <h3 className="desktop-profile-title">Profile</h3>
 
-                            <h2 className="pet-name mobile-only-item">{currentPet.name}</h2>
-                            <div className="pet-detail-row desktop-only-item">
-                                <span className="detail-label">Name:</span> {currentPet.name}
-                            </div>
+                                    <h2 className="pet-name mobile-only-item">{currentPet.name}</h2>
+                                    <div className="pet-detail-row desktop-only-item">
+                                        <span className="detail-label">Name:</span> {currentPet.name}
+                                    </div>
 
-                            <div className="pet-detail-row">
-                                <span className="detail-label">Breed:</span> {currentPet.breed}
-                            </div>
-                            <div className="pet-detail-row">
-                                <span className="detail-label">Age:</span> {currentPet.age}
-                            </div>
-                            <div className="pet-detail-row">
-                                <span className="detail-label">Sex:</span> {currentPet.sex}
-                            </div>
+                                    <div className="pet-detail-row">
+                                        <span className="detail-label">Breed:</span> {currentPet.breed}
+                                    </div>
+                                    <div className="pet-detail-row">
+                                        <span className="detail-label">Age:</span> {currentPet.age}
+                                    </div>
+                                    <div className="pet-detail-row">
+                                        <span className="detail-label">Sex:</span> {currentPet.sex}
+                                    </div>
 
-                            <div className="pet-detail-row full-width mt-2">
-                                <span className="detail-label block">Medical history:</span> {currentPet.medicalHistory}
-                            </div>
-                            <div className="pet-detail-row full-width mt-2">
-                                <span className="detail-label block">Hobbies:</span> {currentPet.hobbies}
-                            </div>
-                            <div className="pet-detail-row full-width mt-2">
-                                <span className="detail-label block">Talents:</span> {currentPet.talents}
-                            </div>
+                                    <div className="pet-detail-row full-width mt-2">
+                                        <span className="detail-label block">Medical history:</span> {currentPet.medicalHistory}
+                                    </div>
+                                    <div className="pet-detail-row full-width mt-2">
+                                        <span className="detail-label block">Hobbies:</span> {currentPet.hobbies}
+                                    </div>
+                                    <div className="pet-detail-row full-width mt-2">
+                                        <span className="detail-label block">Talents:</span> {currentPet.talents}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div className="action-container-overlay">
                             <button
                                 className={`btn-interested-overlay ${isInterested ? 'interested-marked' : ''}`}
                                 onClick={() => onInterested(currentPet)}
                             >
-                                {isInterested ? 'Marked as interested' : 'Interested'}
+                                {isInterested ? "I'll adopt someone else" : 'Interested'}
                             </button>
                         </div>
                     </div>
