@@ -4,14 +4,14 @@
     padding: 2rem;
     min-height: calc(100vh - 80px);
     /* Adjust based on navbar height */
-    background-color: #fff;
+    background-color: #fcfdf9;
 }
 
 .guide-container {
     display: flex;
     width: 90%;
     max-width: 1200px;
-    background-color: #f7f7f7;
+    background-color: #fff;
     border-radius: 24px;
     padding: 2rem;
     gap: 2rem;
