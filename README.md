@@ -1,45 +1,83 @@
 # StrayCare 🐾
 
-A comprehensive platform designed to assist stray animals by connecting people who find them with rescuers, veterinarians, and people looking to adopt. 
+A comprehensive digital ecosystem dedicated to the welfare of stray animals. StrayCare bridges the gap between stray animals in need and the community of rescuers, veterinarians, and adopters throughout their journey of recovery and rehoming.
 
-StrayCare handles everything from the initial report (including geolocation and photos) to medical tracking, adoption workflows, and crowdfunding for specific animals' treatments. It also features a community feed to keep users engaged and updated.
+## 🌟 Key Features
 
-## 🌟 Features
+### 🏡 Community & Impact
+- **Journey & Impact Stories**: Dynamic storytelling section on the homepage highlighting successful rescues and community efforts.
+- **Top Supporters**: Celebrating the heroes who contribute most to our cause.
+- **Latest Campaigns**: Real-time progress tracking for specialized drives like "Winter Warmth."
 
-- **Stray Reporting & Tracking**: Submit stray reports with photos, geolocation, and descriptions. Track their lifecycle status from rescue to adoption.
-- **Rescue & Medical Updates**: Rescuers and veterinarians can update records and treatment history.
-- **Adoption & Fostering**: Swipe and explore pets needing homes. Detailed application forms with conditional approval workflows.
-- **Community Feed**: Logged-in users can create posts, share updates, and interact with the stray care community.
-- **Crowdfunding**: NGOs and Admins can create campaigns to raise funds via Stripe for injured strays.
-- **Pet Chatbot Guide**: An automated AI guide to help users resolve quick queries regarding strays.
-- **Admin Dashboard**: Manage user roles, moderate community posts, verify NGOs/clinics, and oversee financials.
+### 🆘 Interactive Help Center
+- **Infinite Support Carousel**: A premium, seamless carousel on the Help page where users can choose to support feeding, treatment, or shelter initiatives.
+- **Volunteer Integration**: Dedicated flow for users to join active campaigns and volunteer their time.
+- **Emergency SOS**: Quick-access reporting for animals in critical condition.
 
-## 📂 Project Structure
-
-This project is divided into the following directories:
-
-- `/straycare-frontend`: The main React application built with Vite and vanilla CSS.
-- `/backend`: The server handling the API, database connectivity, auth, and external integrations (currently in planning phase as per SRS).
+### 📊 Management & Tracking
+- **Admin Dashboard**: Comprehensive hub for managing stray tracking, document verification, adoptions, and community content.
+- **Protected Routes**: Secure access levels for Admins, Partners, and NGOs.
+- **Report Lifecycle**: End-to-end tracking from initial report to final adoption status.
 
 ## 🛠️ Tech Stack
 
-**Frontend:**
-- React 19
-- Vite
-- React Router DOM
-- Vanilla CSS
-- Lucide React
+### Frontend
+- **Framework**: React 19 (Vite)
+- **Styling**: Premium Vanilla CSS (Custom light theme: `#fcfdf9`)
+- **Navigation**: React Router DOM v7
+- **Design Principles**: High-fidelity glassmorphism, smooth micro-animations, and responsive layouts.
 
-**Backend (Planned):**
-- Node.js / Express
-- PostgreSQL
-- Firebase/Auth0 (Authentication)
-- Stripe (Donations)
-- AWS S3 / Cloudinary (Media Storage)
+### Backend
+- **Server**: Node.js / Express
+- **Database**: PostgreSQL (via Prisma ORM)
+- **Security**: JWT-based Authentication, Bcrypt password hashing, and Rate Limiting.
+- **Architecture**: Modular feature-based routing and controllers.
+
+## 📂 Project Structure
+
+```text
+StrayCare/
+├── frontend/           # React client application
+│   ├── src/
+│   │   ├── components/ # Modular UI components (Navbar, Hero, Carousel, etc.)
+│   │   ├── pages/      # Main page views (Home, Help, Admin, Profile)
+│   │   ├── styles/     # Global and component-specific Vanilla CSS
+│   │   └── data/       # Mock data and configuration files
+├── backend/            # Express server & API
+│   ├── features/       # Feature-specific routes and controllers
+│   ├── prisma/         # Database schema and migrations
+│   └── index.js        # Server entry point
+└── README.md
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- PostgreSQL instance
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/abhigyan-21/straycare.git
+   ```
+2. Setup Backend:
+   ```bash
+   cd backend
+   npm install
+   npx prisma generate
+   npm run dev
+   ```
+3. Setup Frontend:
+   ```bash
+   cd ../frontend
+   npm install
+   npm run dev
+   ```
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please create a pull request or open an issue for major changes to discuss what you'd like to change.
+We welcome contributions to help make the world a better place for our furry friends! Please feel free to open issues or submit pull requests.
 
 ## 📄 License
 
