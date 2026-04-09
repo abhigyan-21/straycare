@@ -27,6 +27,7 @@ enum ReportStatus {
 
 enum AdoptionStatus {
   PENDING
+  INTERVIEW_SCHEDULED
   APPROVED
   REJECTED
 }
@@ -55,21 +56,21 @@ enum SubscriptionType {
 //////////////////////
 
 model User {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  password      String
-  role          Role     @default(USER)
-  avatarUrl     String?
-  isVerified    Boolean  @default(false)
-  refreshToken  String?
+  id           String  @id @default(uuid())
+  name         String
+  email        String  @unique
+  password     String
+  role         Role    @default(USER)
+  avatarUrl    String?
+  isVerified   Boolean @default(false)
+  refreshToken String?
 
-  clinicId      String?
-  clinic        Clinic?  @relation(fields: [clinicId], references: [id])
+  clinicId String?
+  clinic   Clinic? @relation(fields: [clinicId], references: [id])
 
-  reports       AnimalReport[]
-  posts         FeedPost[]
-  comments      Comment[]
+  reports  AnimalReport[]
+  posts    FeedPost[]
+  comments Comment[]
 
   donations     Donation[]
   subscriptions Subscription[]
@@ -77,8 +78,10 @@ model User {
 
   adoptionRequests AdoptionRequest[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  medicalRecords MedicalRecord[]
+  campaigns      Campaign[]
 }
 
 //////////////////////
@@ -86,21 +89,22 @@ model User {
 //////////////////////
 
 model Clinic {
-  id          String   @id @default(uuid())
-  name        String
-  address     String?
-  city        String?
-  contact     String?
-  isVerified  Boolean  @default(false)
+  id         String  @id @default(uuid())
+  name       String
+  address    String?
+  city       String?
+  contact    String?
+  isVerified Boolean @default(false)
 
-  users       User[]
-  reports     AnimalReport[]
-  pets        Pet[]
-  campaigns   Campaign[]
+  users          User[]
+  reports        AnimalReport[]
+  pets           Pet[]
+  campaigns      Campaign[]
   medicalRecords MedicalRecord[]
-  subscriptions Subscription[]
+  subscriptions  Subscription[]
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime   @default(now())
+  donations Donation[]
 }
 
 //////////////////////
@@ -108,31 +112,31 @@ model Clinic {
 //////////////////////
 
 model AnimalReport {
-  id                String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  reporterId        String
-  reporter          User     @relation(fields: [reporterId], references: [id])
+  reporterId String
+  reporter   User   @relation(fields: [reporterId], references: [id])
 
-  status            ReportStatus @default(REPORTED)
+  status ReportStatus @default(REPORTED)
 
-  locationLat       Float
-  locationLng       Float
-  description       String
-  mediaUrls         String[]
+  locationLat Float
+  locationLng Float
+  description String
+  mediaUrls   String[]
 
   assignedRescuerId String?
   assignedVetId     String?
   assignedClinicId  String?
 
-  clinic            Clinic? @relation(fields: [assignedClinicId], references: [id])
+  clinic Clinic? @relation(fields: [assignedClinicId], references: [id])
 
-  medicalRecords    MedicalRecord[]
-  pet               Pet?
+  medicalRecords MedicalRecord[]
+  pet            Pet?
 
-  campaigns         Campaign[]
+  campaigns Campaign[]
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //////////////////////
@@ -140,16 +144,16 @@ model AnimalReport {
 //////////////////////
 
 model MedicalRecord {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  reportId  String
-  report    AnimalReport @relation(fields: [reportId], references: [id])
+  reportId String
+  report   AnimalReport @relation(fields: [reportId], references: [id])
 
-  vetId     String
-  vet       User     @relation(fields: [vetId], references: [id])
+  vetId String
+  vet   User   @relation(fields: [vetId], references: [id])
 
-  clinicId  String
-  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
   diagnosis String?
   treatment String?
@@ -162,19 +166,22 @@ model MedicalRecord {
 //////////////////////
 
 model Pet {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  reportId  String   @unique
-  report    AnimalReport @relation(fields: [reportId], references: [id])
+  reportId String       @unique
+  report   AnimalReport @relation(fields: [reportId], references: [id])
 
-  clinicId  String
-  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
-  name      String?
-  breed     String?
-  age       Int?
+  name        String?
+  breed       String?
+  age         Int?
+  gender      String?
+  size        String?
+  description String?
 
-  status    String   @default("AVAILABLE")
+  status String @default("AVAILABLE")
 
   adoptionRequests AdoptionRequest[]
 
@@ -186,16 +193,20 @@ model Pet {
 //////////////////////
 
 model AdoptionRequest {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  petId     String
-  pet       Pet      @relation(fields: [petId], references: [id])
+  petId String
+  pet   Pet    @relation(fields: [petId], references: [id])
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  status    AdoptionStatus @default(PENDING)
+  status      AdoptionStatus @default(PENDING)
   formDetails Json
+
+  interviewDate     DateTime?
+  interviewTime     String?
+  interviewLocation String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -206,29 +217,29 @@ model AdoptionRequest {
 //////////////////////
 
 model Campaign {
-  id             String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  title          String
-  description    String
-  goalAmount     Float
-  raisedAmount   Float    @default(0)
+  title        String
+  description  String
+  goalAmount   Float
+  raisedAmount Float  @default(0)
 
-  clinicId       String
-  clinic         Clinic   @relation(fields: [clinicId], references: [id])
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
-  reportId       String?
-  report         AnimalReport? @relation(fields: [reportId], references: [id])
+  reportId String?
+  report   AnimalReport? @relation(fields: [reportId], references: [id])
 
-  createdBy      String
-  creator        User     @relation(fields: [createdBy], references: [id])
+  createdBy String
+  creator   User   @relation(fields: [createdBy], references: [id])
 
-  status         CampaignStatus @default(PENDING)
+  status CampaignStatus @default(PENDING)
 
-  donations      Donation[]
-  volunteers     Volunteer[]
+  donations  Donation[]
+  volunteers Volunteer[]
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //////////////////////
@@ -236,24 +247,24 @@ model Campaign {
 //////////////////////
 
 model Donation {
-  id              String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  amount          Float
-  type            DonationType
+  amount Float
+  type   DonationType
 
-  clinicId        String?
-  clinic          Clinic?  @relation(fields: [clinicId], references: [id])
+  clinicId String?
+  clinic   Clinic? @relation(fields: [clinicId], references: [id])
 
-  campaignId      String?
-  campaign        Campaign? @relation(fields: [campaignId], references: [id])
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
 
-  paymentIntentId String   @unique
-  status          String   @default("PENDING")
+  paymentIntentId String @unique
+  status          String @default("PENDING")
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 //////////////////////
@@ -261,24 +272,24 @@ model Donation {
 //////////////////////
 
 model Subscription {
-  id                   String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId               String
-  user                 User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  clinicId             String
-  clinic               Clinic   @relation(fields: [clinicId], references: [id])
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
-  type                 SubscriptionType
+  type SubscriptionType
 
-  stripeSubscriptionId String   @unique
+  stripeSubscriptionId String @unique
   amount               Float
 
-  status               String   @default("ACTIVE")
-  nextCheckout         DateTime
+  status       String   @default("ACTIVE")
+  nextCheckout DateTime
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //////////////////////
@@ -286,17 +297,17 @@ model Subscription {
 //////////////////////
 
 model Volunteer {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  campaignId  String
-  campaign    Campaign @relation(fields: [campaignId], references: [id])
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
 
-  status      String   @default("APPLIED")
+  status String @default("APPLIED")
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([userId, campaignId])
 }
@@ -306,32 +317,32 @@ model Volunteer {
 //////////////////////
 
 model FeedPost {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
 
-  content     String
-  mediaUrls   String[]
+  content   String
+  mediaUrls String[]
 
-  likesCount  Int      @default(0)
+  likesCount Int @default(0)
 
-  comments    Comment[]
+  comments Comment[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Comment {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  postId    String
-  post      FeedPost @relation(fields: [postId], references: [id])
+  postId String
+  post   FeedPost @relation(fields: [postId], references: [id])
 
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
 
-  content   String
+  content String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
