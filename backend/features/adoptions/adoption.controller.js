@@ -12,6 +12,13 @@ const listPets = async (req, res) => {
       include: {
         clinic: true,
         report: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
       },
     });
     res.json({ status: 'success', data: pets });
@@ -32,6 +39,13 @@ const getPetDetails = async (req, res) => {
       include: {
         clinic: true,
         report: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
       },
     });
     if (!pet) {
@@ -44,46 +58,63 @@ const getPetDetails = async (req, res) => {
 };
 
 /**
- * @desc List a stray for adoption (from AnimalReport)
+ * @desc List a pet for adoption (from AnimalReport or directly)
  * @route POST /api/adoptions/pets
- * @access Vet/Admin
+ * @access Rescuer/Vet/Admin
  */
 const listPetForAdoption = async (req, res) => {
   try {
     const { reportId, name, breed, age, gender, size, description } = req.body;
+    const ownerId = req.user.id;
     
-    // Check if report exists
-    const report = await prisma.animalReport.findUnique({
-      where: { id: reportId },
-    });
+    let clinicId = req.user.clinicId || null;
 
-    if (!report) {
-      return res.status(404).json({ status: 'error', message: 'Animal report not found' });
+    // Validation: Must be associated with a clinic OR be a registered Rescuer
+    if (!clinicId && req.user.role !== 'RESCUER' && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ 
+        status: 'error', 
+        message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer.' 
+      });
     }
 
-    // Check if user is associated with the clinic assigned to the report
-    // In this simplified version, we'll check if the user has a clinicId or is ADMIN
-    if (req.user.role !== 'ADMIN' && (!req.user.clinicId || req.user.clinicId !== report.assignedClinicId)) {
-      return res.status(403).json({ status: 'error', message: 'You are not authorized to list this animal for adoption' });
+    // If linked to a report
+    if (reportId) {
+      const report = await prisma.animalReport.findUnique({
+        where: { id: reportId },
+      });
+
+      if (!report) {
+        return res.status(404).json({ status: 'error', message: 'Animal report not found' });
+      }
+
+      // If report has a clinic, use it, unless the user is an admin or the rescuer assigned to it
+      clinicId = report.assignedClinicId || clinicId;
+
+      // Check authorization for report-linked pets
+      if (req.user.role !== 'ADMIN' && 
+          clinicId !== req.user.clinicId && 
+          report.assignedRescuerId !== ownerId) {
+        return res.status(403).json({ 
+          status: 'error', 
+          message: 'You are not authorized to list this specific reported stray for adoption.' 
+        });
+      }
     }
 
     const pet = await prisma.pet.create({
       data: {
-        reportId,
-        clinicId: report.assignedClinicId,
+        reportId: reportId || null,
+        clinicId,
+        ownerId,
         name,
         breed,
-        age: parseInt(age),
+        age: age ? parseInt(age) : null,
         gender,
         size,
         description,
         status: 'AVAILABLE',
       },
     });
-
-    // Update report status to ADOPTED if it was not already (maybe wait until actually adopted)
-    // Actually, maybe keep it TREATED or similar until adoption is finalized.
-    // For now, let's just make it available.
 
     res.status(201).json({ status: 'success', data: pet });
   } catch (error) {
@@ -101,7 +132,6 @@ const submitAdoptionRequest = async (req, res) => {
     const { petId, formDetails } = req.body;
     const userId = req.user.id;
 
-    // Check if pet is available
     const pet = await prisma.pet.findUnique({
       where: { id: petId },
     });
@@ -119,9 +149,6 @@ const submitAdoptionRequest = async (req, res) => {
       },
     });
 
-    // Note: User feedback mentioned skipping notifications for now, 
-    // but in a real app, this would trigger a notification for the clinic.
-
     res.status(201).json({ status: 'success', data: request });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
@@ -129,7 +156,7 @@ const submitAdoptionRequest = async (req, res) => {
 };
 
 /**
- * @desc Get adoption requests for a clinic (Vet/Admin) or User (User)
+ * @desc Get adoption requests
  * @route GET /api/adoptions/requests
  * @access Private
  */
@@ -138,9 +165,16 @@ const getAdoptionRequests = async (req, res) => {
     let whereClause = {};
     if (req.user.role === 'USER') {
       whereClause.userId = req.user.id;
-    } else if (req.user.clinicId) {
+    }
+    else if (req.user.role === 'RESCUER') {
+      // Rescuers see requests for pets they listed
+      whereClause.pet = { ownerId: req.user.id };
+    }
+    else if (req.user.clinicId) {
+      // Vets/Clinic Admins see requests for the clinic's pets
       whereClause.pet = { clinicId: req.user.clinicId };
-    } else if (req.user.role !== 'ADMIN') {
+    }
+    else if (req.user.role !== 'ADMIN') {
       return res.status(403).json({ status: 'error', message: 'Unauthorized' });
     }
 
@@ -166,9 +200,9 @@ const getAdoptionRequests = async (req, res) => {
 };
 
 /**
- * @desc Update adoption request status (Interview/Approve/Reject)
+ * @desc Update adoption request status
  * @route PATCH /api/adoptions/requests/:id
- * @access Vet/Admin
+ * @access Rescuer/Vet/Admin
  */
 const updateRequestStatus = async (req, res) => {
   try {
@@ -184,9 +218,12 @@ const updateRequestStatus = async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'Adoption request not found' });
     }
 
-    // Check authorization
-    if (req.user.role !== 'ADMIN' && (!req.user.clinicId || req.user.clinicId !== request.pet.clinicId)) {
-      return res.status(403).json({ status: 'error', message: 'Unauthorized' });
+    // Check authorization: Owner of pet, or member of assigned clinic, or ADMIN
+    const isOwner = request.pet.ownerId === req.user.id;
+    const isInClinic = req.user.clinicId && request.pet.clinicId === req.user.clinicId;
+    
+    if (req.user.role !== 'ADMIN' && !isOwner && !isInClinic) {
+      return res.status(403).json({ status: 'error', message: 'Unauthorized to update this request' });
     }
 
     const updatedRequest = await prisma.adoptionRequest.update({
@@ -199,17 +236,17 @@ const updateRequestStatus = async (req, res) => {
       },
     });
 
-    // If approved, mark pet as ADOPTED (or similar)
     if (status === 'APPROVED') {
       await prisma.pet.update({
         where: { id: request.petId },
         data: { status: 'ADOPTED' },
       });
-      // Also update the report status
-      await prisma.animalReport.update({
-        where: { id: request.pet.reportId },
-        data: { status: 'ADOPTED' },
-      });
+      if (request.pet.reportId) {
+        await prisma.animalReport.update({
+          where: { id: request.pet.reportId },
+          data: { status: 'ADOPTED' },
+        });
+      }
     }
 
     res.json({ status: 'success', data: updatedRequest });
