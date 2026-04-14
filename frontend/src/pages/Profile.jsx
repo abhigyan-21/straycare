@@ -11,6 +11,7 @@ const Profile = () => {
 
     const { user: authUser, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('personal');
+    const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
 
@@ -56,6 +57,39 @@ const Profile = () => {
     const [mockDocuments, setMockDocuments] = useState([
         { id: 1, name: 'Luna_Vaccination_Record.pdf', dateAdded: '2026-02-20', type: 'Medical' },
         { id: 2, name: 'Adoption_Certificate.pdf', dateAdded: '2026-01-15', type: 'Legal' },
+    ]);
+
+    const [mockAdoptions, setMockAdoptions] = useState([
+        {
+            id: 'a1',
+            petName: 'Rusty',
+            petBreed: 'Beagle',
+            petImage: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=500',
+            status: 'Interview Scheduled',
+            statusType: 'interview',
+            date: 'Oct 24, 2026',
+            clinic: 'Healthy Paws Clinic'
+        },
+        {
+            id: 'a2',
+            petName: 'Bizoo',
+            petBreed: 'Golden Retriever',
+            petImage: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+            status: 'Pending Review',
+            statusType: 'pending',
+            date: 'Oct 15, 2026',
+            clinic: 'StrayCare Center'
+        },
+        {
+            id: 'a3',
+            petName: 'Luna',
+            petBreed: 'Siamese Cat',
+            petImage: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400',
+            status: 'Successfully Adopted',
+            statusType: 'adopted',
+            date: 'Jan 10, 2026',
+            clinic: 'Nurture Center'
+        }
     ]);
 
     const handleSaveDetails = (e) => {
@@ -279,6 +313,63 @@ const Profile = () => {
                         </div>
                     </div>
                 );
+            case 'adoptions':
+                const filteredAdoptions = mockAdoptions.filter(a =>
+                    adoptionSubTab === 'interested' ? a.statusType !== 'adopted' : a.statusType === 'adopted'
+                );
+
+                return (
+                    <div className="profile-section fade-in">
+                        <div className="section-header">
+                            <h2>My Adoptions</h2>
+                            <div className="sub-tab-toggle">
+                                <button
+                                    className={`sub-tab-btn ${adoptionSubTab === 'interested' ? 'active' : ''}`}
+                                    onClick={() => setAdoptionSubTab('interested')}
+                                >
+                                    Interested in Adopting
+                                </button>
+                                <button
+                                    className={`sub-tab-btn ${adoptionSubTab === 'adopted' ? 'active' : ''}`}
+                                    onClick={() => setAdoptionSubTab('adopted')}
+                                >
+                                    Adopted
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="adoption-list">
+                            {filteredAdoptions.length > 0 ? (
+                                filteredAdoptions.map((item) => (
+                                    <div key={item.id} className="adoption-card">
+                                        <div className="adoption-pet-img">
+                                            <img src={item.petImage} alt={item.petName} />
+                                        </div>
+                                        <div className="adoption-card-info">
+                                            <div className="adoption-card-main">
+                                                <h3>{item.petName}</h3>
+                                                <span className="pet-breed">{item.petBreed}</span>
+                                                <p className="clinic-info">Listed by: <strong>{item.clinic}</strong></p>
+                                            </div>
+                                            <div className="adoption-card-status">
+                                                <span className={`status-badge ${item.statusType}`}>
+                                                    {item.status}
+                                                </span>
+                                                <span className="adoption-date">{item.date}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="empty-state">
+                                    {adoptionSubTab === 'interested' 
+                                        ? "You haven't applied for any pets yet." 
+                                        : "You haven't adopted any pets yet."}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                );
             default:
                 return null;
         }
@@ -326,6 +417,12 @@ const Profile = () => {
                             onClick={() => setActiveTab('documents')}
                         >
                             <span className="icon">📁</span> Pet Documents
+                        </button>
+                        <button
+                            className={`nav-btn ${activeTab === 'adoptions' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('adoptions')}
+                        >
+                            <span className="icon">🐾</span> Adoptions
                         </button>
                     </nav>
 

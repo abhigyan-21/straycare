@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Post.css';
 import CreatePostModal from '../components/CreatePostModal';
 import { useAuth } from '../context/AuthContext';
+import { Heart, MessageCircle, Share2, MapPin, Send } from 'lucide-react';
 
 // Mock data for posts
 const initialPosts = [
@@ -17,7 +18,8 @@ const initialPosts = [
             { id: 1, username: 'doglover99', text: 'She is so cute!! 😍' },
             { id: 2, username: 'mark_t', text: 'What breed is she?' }
         ],
-        timestamp: '2 hours ago'
+        timestamp: '2 hours ago',
+        location: 'Beverly Hills, CA'
     },
     {
         id: 2,
@@ -30,7 +32,8 @@ const initialPosts = [
         comments: [
             { id: 1, username: 'catlady4ever', text: 'I want her! Sending a DM.' }
         ],
-        timestamp: '5 hours ago'
+        timestamp: '5 hours ago',
+        location: 'Central Park, NY'
     }
 ];
 
@@ -42,18 +45,28 @@ function Post({ openAuthModal }) {
     // Create Post Modal State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+    // Scroll Lock Effect (Fix for trackpad scrolling)
+    useEffect(() => {
+        if (isCreateModalOpen) {
+            document.documentElement.classList.add('no-scroll');
+        } else {
+            document.documentElement.classList.remove('no-scroll');
+        }
+        return () => {
+            document.documentElement.classList.remove('no-scroll');
+        };
+    }, [isCreateModalOpen]);
+
     const handleOpenCreateModal = () => {
         if (!isLoggedIn) {
             openAuthModal('signin');
             return;
         }
         setIsCreateModalOpen(true);
-        document.body.style.overflow = 'hidden';
     };
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
-        document.body.style.overflow = 'auto';
     };
 
     const handleCreatePostSubmit = (newPost) => {
@@ -61,8 +74,28 @@ function Post({ openAuthModal }) {
             ...newPost,
             username: authUser?.name || 'current_user',
             userImage: authUser?.avatar || 'https://i.pravatar.cc/150?img=11',
-            timestamp: 'Just now'
+            timestamp: 'Just now',
+            location: newPost.location || null
         }, ...posts]);
+    };
+
+    const handleShare = async (post) => {
+        const shareData = {
+            title: `Check out this post from ${post.username} on StrayCare!`,
+            text: post.caption,
+            url: window.location.origin + '/post/' + post.id
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareData.url);
+                alert('Link copied to clipboard!');
+            }
+        } catch (err) {
+            console.error('Error sharing:', err);
+        }
     };
 
     const handleLike = (postId) => {
@@ -139,7 +172,14 @@ function Post({ openAuthModal }) {
                             <img src={post.userImage} alt="User profile" className="post-user-img" />
                             <div className="post-user-info">
                                 <span className="post-username">{post.username}</span>
-                                <span className="post-time">{post.timestamp}</span>
+                                <div className="post-meta-line">
+                                    {post.location && (
+                                        <span className="post-location">
+                                            <MapPin size={12} className="meta-icon" /> {post.location}
+                                        </span>
+                                    )}
+                                    <span className="post-time">{post.timestamp}</span>
+                                </div>
                             </div>
                         </div>
 
@@ -168,13 +208,23 @@ function Post({ openAuthModal }) {
                         <div className="post-footer">
                             <div className="post-actions">
                                 <button
-                                    className={`action-btn like-btn ${post.isLiked ? 'liked' : ''}`}
+                                    className={`post-action-btn like-btn ${post.isLiked ? 'liked' : ''}`}
                                     onClick={() => handleLike(post.id)}
+                                    title="Like"
                                 >
-                                    {post.isLiked ? '❤️' : '🤍'}
+                                    <Heart 
+                                        size={22} 
+                                        color={post.isLiked ? "#ed4956" : "#262626"} 
+                                        fill={post.isLiked ? "#ed4956" : "none"} 
+                                        strokeWidth={2.5}
+                                    />
                                 </button>
-                                <button className="action-btn comment-btn">💬</button>
-                                <button className="action-btn share-btn">📤</button>
+                                <button className="post-action-btn comment-btn" title="Comment">
+                                    <MessageCircle size={22} color="#262626" strokeWidth={2.5} />
+                                </button>
+                                <button className="post-action-btn share-btn" onClick={() => handleShare(post)} title="Share">
+                                    <Share2 size={22} color="#262626" strokeWidth={2.5} />
+                                </button>
                             </div>
                             <div className="post-likes-count">
                                 <strong>{post.likes.toLocaleString()} likes</strong>

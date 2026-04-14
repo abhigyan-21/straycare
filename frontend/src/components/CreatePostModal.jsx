@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { MapPin } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import '../styles/Post.css';
@@ -10,6 +11,9 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
     const [completedCrop, setCompletedCrop] = useState(null);
     const [isCropMode, setIsCropMode] = useState(false);
     const [newPostImagePreview, setNewPostImagePreview] = useState(null);
+    const [location, setLocation] = useState(null);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+    const [shareLocation, setShareLocation] = useState(true);
     const imgRef = useRef(null);
 
     if (!isOpen) return null;
@@ -21,6 +25,8 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
         setCompletedCrop(null);
         setIsCropMode(false);
         setNewPostImagePreview(null);
+        setLocation(null);
+        setIsFetchingLocation(false);
         onClose();
     };
 
@@ -53,6 +59,35 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
         );
         setCrop(crop);
     }
+
+    const fetchLocation = () => {
+        setIsFetchingLocation(true);
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
+                    );
+                    const data = await response.json();
+                    const city = data.address.city || data.address.town || data.address.village;
+                    const state = data.address.state;
+                    setLocation({ name: `${city}, ${state}` });
+                } catch (error) {
+                    console.error("Error fetching location name:", error);
+                    setLocation({ name: "Unknown Location" });
+                } finally {
+                    setIsFetchingLocation(false);
+                }
+            }, (error) => {
+                console.error("Error getting geolocation:", error);
+                setIsFetchingLocation(false);
+                alert("Could not get your location. Please try again.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+            setIsFetchingLocation(false);
+        }
+    };
 
     const getCroppedImg = () => {
         if (!completedCrop || !imgRef.current) return;
@@ -94,7 +129,8 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
             likes: 0,
             isLiked: false,
             comments: [],
-            timestamp: 'Just now'
+            timestamp: 'Just now',
+            location: (shareLocation && location) ? location.name : null
         };
 
         onSubmit(newPost);
@@ -181,7 +217,29 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
                                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User profile" className="post-user-img" />
                                 <div className="post-user-info">
                                     <span className="post-username">straycare_user</span>
-                                    <span className="post-time">New Post</span>
+                                    <div className="location-toggle-row">
+                                        <label className="switch">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={shareLocation} 
+                                                onChange={(e) => setShareLocation(e.target.checked)}
+                                            />
+                                            <span className="slider"></span>
+                                        </label>
+                                        {shareLocation && (
+                                            <button 
+                                                type="button" 
+                                                className="modal-location-trigger"
+                                                onClick={fetchLocation}
+                                                disabled={isFetchingLocation}
+                                            >
+                                                <MapPin size={14} className="meta-icon" />
+                                                <span>
+                                                    {isFetchingLocation ? 'Fetching...' : location ? location.name : 'Add location...'}
+                                                </span>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="post-content-scroll" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -205,7 +263,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
                                     />
                                 </div>
                             </div>
-                            <div className="modal-footer" style={{ borderTop: '1px solid #efefef', margin: 0, padding: '16px', backgroundColor: 'white', zIndex: 10, justifyContent: 'space-between' }}>
+                            <div className="modal-footer">
                                 <button type="button" className="cancel-btn" onClick={handleClose}>Cancel</button>
                                 <button
                                     type="submit"

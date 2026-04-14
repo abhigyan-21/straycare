@@ -4,6 +4,14 @@ body {
   font-family: "Quicksand", sans-serif;
   background: #fcfdf9;
   overflow-x: hidden;
+}
+
+.no-scroll {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+html {
   overscroll-behavior: none;
 }
 
@@ -297,49 +305,86 @@ body {
 /* TESTIMONIAL */
 
 .testimonials {
-  margin: 20px auto 0;
+  margin: 40px 0 0;
   text-align: center;
-  max-width: 1200px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .testimonials h2 {
   font-size: 2rem;
   margin-top: 0;
   padding-top: 10px;
+  margin-bottom: 40px;
 }
 
-.testimonial-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 110px;
-  padding: 40px 40px 40px 120px;
+.testimonial-marquee {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  padding: 20px 0;
+}
+
+.marquee-row {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  width: 100%;
+}
+
+.marquee-inner {
+  display: flex;
+  flex-shrink: 0;
+  gap: 120px; /* Large gap to accommodate negative avatar margin */
+  padding-left: 60px; /* Initial offset */
+}
+
+.marquee-left .marquee-inner {
+  animation: scroll-right 40s linear infinite;
+}
+
+.marquee-right .marquee-inner {
+  animation: scroll-left 40s linear infinite;
 }
 
 .testimonial-card {
   position: relative;
   background: #f0f0f0;
   border-radius: 20px;
-  padding: 20px 20px 20px 120px;
+  padding: 20px 20px 20px 110px; /* Reduced left padding slightly */
   height: 200px;
+  min-width: 450px; /* Ensure cards have a decent width */
   display: flex;
   align-items: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  /* Added slight shadow to make up for removed blurred background */
 }
 
 .testimonial-card .avatar {
   position: absolute;
-  left: -90px;
-  width: 180px;
-  height: 180px;
+  left: -60px; /* Less extreme negative margin for horizontal layout */
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background: #ccc;
   flex-shrink: 0;
+  border: 5px solid #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .testimonial-card .content p {
   margin: 0;
   font-size: 0.95rem;
+  text-align: left;
+}
+
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes scroll-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
 }
 
 /* MODAL */
@@ -574,22 +619,25 @@ body {
     padding: 0 20px;
   }
 
-  .testimonial-grid {
-    grid-template-columns: 1fr;
-    gap: 70px;
-    padding: 20px 20px 40px 60px;
+  .testimonial-marquee {
+    gap: 40px;
+  }
+
+  .marquee-inner {
+    padding-left: 40px;
   }
 
   .testimonial-card {
-    padding: 15px 15px 15px 80px;
+    padding: 15px 15px 15px 70px;
     height: auto;
     min-height: 120px;
+    min-width: 300px; /* Smaller cards for mobile */
   }
 
   .testimonial-card .avatar {
     width: 100px;
     height: 100px;
-    left: -50px;
+    left: -40px;
   }
 
   .modal {
