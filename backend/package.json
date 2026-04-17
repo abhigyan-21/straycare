@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.6.0",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
@@ -18,7 +19,8 @@
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
