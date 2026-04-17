@@ -11,10 +11,13 @@ const feedRoutes = require('./features/feed/feed.route');
 const fundingRoutes = require('./features/funding/funding.route');
 
 const app = express();
+
+// ── Middleware Setup ────────────────────────────────────────
+
 app.use(cors());
 app.use(express.json());
 
-// Apply Routes
+// ── Apply Routes ─────────────────────────────────────────────
 app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
