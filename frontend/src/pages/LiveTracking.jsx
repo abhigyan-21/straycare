@@ -9,7 +9,7 @@ import '../styles/LiveTracking.css';
 // Asset Imports
 import ambulanceImg from '../assets/images/ambulance.png';
 import hospitalImg from "../assets/images/Hospital.png";
-import pickupImg from '../assets/images/pickup.png';
+import pickupImg from '../assets/images/Pickup.png';
 import rescuerAvatar from '../assets/images/doctor-open.png';
 
 // Fix for default marker icons in Leaflet with React
