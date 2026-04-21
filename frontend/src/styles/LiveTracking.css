@@ -1,0 +1,184 @@
+.live-tracking-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+/* Header Progress Bar */
+.tracking-header {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.hospital-track {
+  width: calc(100% - 100px); /* Tighter track */
+  height: 10px;
+  background: #ebebeb;
+  border-radius: 5px;
+  position: relative;
+  margin: 40px auto;
+}
+
+.hospital-track-progress {
+  position: absolute;
+  height: 100%;
+  background: #8BC34A;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 12px rgba(139, 195, 74, 0.4);
+}
+
+.track-img {
+  position: absolute;
+  top: -30px;
+  transform: translateX(-50%);
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.track-img.start { 
+    left: -5px;
+    z-index: 10; /* Above the bar */
+}
+.track-img.end { 
+    right: -55px;
+    z-index: 10; /* Above the bar */
+}
+.track-img.rescuer-img { 
+  top: -45px; 
+  height: 75px; /* Ambulance is slightly larger */
+  transition: left 0.5s ease;
+  z-index: 5;
+}
+
+.flipped {
+  transform: translateX(-50%) scaleX(-1) !important;
+}
+
+/* For the map marker icon specifically */
+.ambulance-map-icon.flipped {
+    transform: scaleX(-1);
+}
+
+/* Main Layout */
+.tracking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 30px;
+  align-items: start;
+}
+
+/* Status Card */
+.status-card {
+  background: #3eba11;
+  color: white;
+  padding: 40px 20px;
+  border-radius: 30px;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(139, 195, 74, 0.3);
+  margin-bottom: 20px;
+}
+
+.status-card h2 {
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-card .arrival-time {
+  font-size: 1.8rem;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+/* Info Card */
+.info-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.rescuer-avatar-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 5px solid white;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background: #f0f0f0;
+  flex-shrink: 0;
+}
+
+.rescuer-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.details-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.6rem;
+  color: #2e7d32; /* StrayCare Green */
+}
+
+.specialty {
+  margin: 0 0 15px 0;
+  color: #666;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-item strong {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 0.5px;
+}
+
+.detail-item span {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 600;
+}
+
+/* Map Section */
+.map-container {
+  height: 500px;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border: 8px solid white;
+}
+
+@media (max-width: 900px) {
+  .tracking-grid {
+    grid-template-columns: 1fr;
+  }
+}

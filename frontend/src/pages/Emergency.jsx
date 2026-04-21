@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Mic } from 'lucide-react';
+import { Plus, Mic, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Emergency.css';
 
 function Emergency() {
+    const navigate = useNavigate();
     const [imagePreview, setImagePreview] = useState(null);
     const [location, setLocation] = useState('Fetching location...');
+    const [isReporting, setIsReporting] = useState(false);
 
     useEffect(() => {
         if ("geolocation" in navigator) {
@@ -29,6 +32,7 @@ function Emergency() {
             setLocation('Geolocation not supported by browser');
         }
     }, []);
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -42,9 +46,26 @@ function Emergency() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Report submitted");
-        // Connect to backend later
+        setIsReporting(true);
+        
+        // Final redirection after 2 seconds
+        setTimeout(() => {
+            const mockReportId = "demo-" + Math.random().toString(36).substr(2, 9);
+            navigate(`/live-track/${mockReportId}`);
+        }, 2000);
     };
+
+    if (isReporting) {
+        return (
+            <div className="reporting-loader-overlay">
+                <div className="loader-content">
+                    <CheckCircle size={80} color="#8BC34A" className="check-icon-anim" />
+                    <h1>REPORTED</h1>
+                    <p>Redirecting to live tracking...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="emergency-page">
@@ -69,6 +90,7 @@ function Emergency() {
                         <textarea
                             placeholder="Describe the emergency in brief"
                             aria-label="Emergency description"
+                            required
                         ></textarea>
                         <button type="button" className="mic-button" aria-label="Use voice input">
                             <Mic size={20} />

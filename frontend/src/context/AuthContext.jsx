@@ -5,13 +5,18 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const savedUser = localStorage.getItem('straycare_user');
         if (savedUser) {
             setIsLoggedIn(true);
-            setUser(JSON.parse(savedUser));
+            const userData = JSON.parse(savedUser);
+            // Ensure role exists for ProtectedRoute logic
+            if (!userData.role) userData.role = 'user';
+            setUser(userData);
         }
+        setIsLoading(false);
     }, []);
 
     const login = (userData) => {
@@ -27,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, user, login, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

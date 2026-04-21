@@ -104,6 +104,9 @@ model Clinic {
   medicalRecords MedicalRecord[]
   subscriptions  Subscription[]
 
+  lat            Float?
+  lng            Float?
+
   createdAt DateTime   @default(now())
   donations Donation[]
 }
@@ -135,6 +138,10 @@ model AnimalReport {
   pet            Pet?
 
   campaigns Campaign[]
+
+  rescuerLat  Float?
+  rescuerLng  Float?
+  lastTracked DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

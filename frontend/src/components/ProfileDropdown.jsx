@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import '../styles/ProfileDropdown.css';
 
 function ProfileDropdown({ closeMenu }) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+
+  const isRescuerMode = location.pathname.startsWith('/rescuer');
   const dropdownRef = useRef(null);
 
   const toggleDropdown = () => {
@@ -62,15 +66,30 @@ function ProfileDropdown({ closeMenu }) {
           
           <div className="dropdown-group">
             <div className="dropdown-label">Switch Profile</div>
-            <button className="dropdown-item sub-item active" onClick={() => setIsOpen(false)}>
+            <button 
+              className={`dropdown-item sub-item ${!isRescuerMode ? 'active' : ''}`} 
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/');
+              }}
+            >
               User
             </button>
-            <button className="dropdown-item sub-item" onClick={() => setIsOpen(false)}>
+            {/* Demo Bypass: Showing Rescuer option to all users for testing */}
+            <button 
+              className={`dropdown-item sub-item ${isRescuerMode ? 'active' : ''}`} 
+              onClick={() => {
+                setIsOpen(false);
+                navigate('/rescuer/dashboard');
+              }}
+            >
               Rescuer
             </button>
-            <button className="dropdown-item sub-item" onClick={() => setIsOpen(false)}>
-              Vet/Clinic
-            </button>
+            {user?.role === 'vet' && (
+              <button className="dropdown-item sub-item" onClick={() => setIsOpen(false)}>
+                Vet/Clinic
+              </button>
+            )}
           </div>
           <div className="logout-wrapper">
             <button className="dropdown-item profile-logout-btn" onClick={handleLogout}>

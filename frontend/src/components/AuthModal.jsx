@@ -22,7 +22,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         // In a real app, this would handle authentication
         const userData = {
             name: mode === 'signup' ? e.target[0].value : 'StrayCare User',
-            email: mode === 'signup' ? e.target[1].value : e.target[0].value
+            email: mode === 'signup' ? e.target[1].value : e.target[0].value,
+            role: 'user' // Default role for demo/testing access
         };
 
         login(userData);

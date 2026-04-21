@@ -1,0 +1,173 @@
+.rescue-floating-container {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 9999;
+    cursor: pointer;
+    filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.2));
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rescue-floating-container:hover {
+    transform: scale(1.04) translateY(-10px);
+    filter: drop-shadow(0 25px 30px rgba(0, 0, 0, 0.25));
+}
+
+.rescue-floating-container:active {
+    transform: scale(0.98);
+}
+
+.rescue-pill {
+    background: #f1bf42;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    padding: 10px 14px 10px 40px;
+    gap: 35px;
+    min-width: 150px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.rescue-pill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
+    transition: 0.5s;
+}
+
+.rescue-floating-container:hover .rescue-pill::before {
+    left: 100%;
+    transition: 0.8s;
+}
+
+.rescue-text-section {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.rescue-eta {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.01em;
+}
+
+.rescue-destination {
+    font-size: 1rem;
+    font-weight: 400;
+    opacity: 0.9;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+}
+
+.rescue-icon-circle {
+    background-color: rgba(255, 255, 255, 0.25);
+    padding: 4px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.rescue-icon-circle.pulsing::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    z-index: -1;
+    animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.8;
+    }
+
+    80%,
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+.white-inner-circle {
+    background-color: white;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ambulance-icon-small {
+    width: 58px;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.rescue-floating-container:hover .ambulance-icon-small {
+    transform: rotate(-5deg) scale(1.1);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(100px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .rescue-floating-container {
+        right: 20px;
+        bottom: 20px;
+    }
+
+    .rescue-pill {
+        min-width: 280px;
+        padding: 10px 12px 10px 25px;
+        gap: 20px;
+    }
+
+    .rescue-eta {
+        font-size: 1.5rem;
+    }
+
+    .rescue-destination {
+        font-size: 1.2rem;
+    }
+
+    .white-inner-circle {
+        width: 60px;
+        height: 60px;
+    }
+
+    .ambulance-icon-small {
+        width: 42px;
+    }
+}

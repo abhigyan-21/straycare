@@ -10,7 +10,39 @@ const adoptionRoutes = require('./features/adoptions/adoption.route');
 const feedRoutes = require('./features/feed/feed.route');
 const fundingRoutes = require('./features/funding/funding.route');
 
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  }
+});
+
+// Socket.io Logic for Tracking
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  socket.on('join-track', (reportId) => {
+    socket.join(`track-${reportId}`);
+    console.log(`Socket ${socket.id} joined tracking room: ${reportId}`);
+  });
+
+  socket.on('update-location', (data) => {
+    // Expected data: { reportId, lat, lng, arrivalTime }
+    io.to(`track-${data.reportId}`).emit('location-updated', {
+      lat: data.lat,
+      lng: data.lng,
+      arrivalTime: data.arrivalTime
+    });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
 
 // ── Middleware Setup ────────────────────────────────────────
 
@@ -32,6 +64,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Backend server with Socket.io running on port ${PORT}`);
 });

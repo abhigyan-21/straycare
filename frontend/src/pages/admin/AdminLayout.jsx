@@ -1,5 +1,5 @@
-import { Outlet, NavLink } from "react-router-dom";
-import { useAuth } from "../../components/ProtectedRoute";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { LayoutDashboard, Target, FileText, HeartHandshake, Users, Edit3, LogOut } from "lucide-react";
 import "../../styles/admin.css";
 

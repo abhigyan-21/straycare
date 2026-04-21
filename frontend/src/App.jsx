@@ -10,6 +10,7 @@ import Guide from "./pages/Guide";
 import Post from "./pages/Post";
 import Help from "./pages/Help";
 import Profile from "./pages/Profile";
+import LiveTracking from "./pages/LiveTracking";
 import AuthModal from "./components/AuthModal";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
@@ -20,9 +21,13 @@ import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminAdoptions from "./pages/admin/AdminAdoptions";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminUsers from "./pages/admin/AdminUsers";
+import RescuerDashboard from "./pages/RescuerDashboard";
+import RescuerNavigation from "./pages/RescuerNavigation";
 import { useState, useEffect } from "react";
 import doctorClosed from "./assets/images/doctor-closed.png";
 import doctorOpen from "./assets/images/doctor-open.png";
+import { RescueProvider } from "./context/RescueContext";
+import FloatingRescueButton from "./components/FloatingRescueButton";
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -41,42 +46,52 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <Navbar openAuthModal={openAuthModal} />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/adopt" element={<Adopt />} />
-        <Route path="/emergency" element={<Emergency />} />
-        <Route path="/track" element={<Track />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/guide" element={<Guide />} />
-        <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/register" element={<Register />} />
+    <RescueProvider>
+      <BrowserRouter>
+        <Navbar openAuthModal={openAuthModal} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/adopt" element={<Adopt />} />
+          <Route path="/emergency" element={<Emergency />} />
+          <Route path="/track" element={<Track />} />
+          <Route path="/live-track/:reportId" element={<LiveTracking />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/guide" element={<Guide />} />
+          <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Admin Section Paths */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin', 'partner', 'ngo']} />}>
-          <Route element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="tracking" element={<AdminTracking />} />
-            <Route path="documents" element={<AdminDocuments />} />
-            <Route path="adoptions" element={<AdminAdoptions />} />
+          {/* Rescuer Section Paths (Temporarily allowing 'user' for demo/testing) */}
+          <Route path="/rescuer" element={<ProtectedRoute allowedRoles={['rescuer', 'admin', 'user']} />}>
+            <Route path="dashboard" element={<RescuerDashboard />} />
+            <Route path="nav/:reportId" element={<RescuerNavigation />} />
+          </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-              <Route path="content" element={<AdminContent />} />
-              <Route path="users" element={<AdminUsers />} />
+          {/* Admin Section Paths */}
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin', 'partner', 'ngo']} />}>
+            <Route element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="tracking" element={<AdminTracking />} />
+              <Route path="documents" element={<AdminDocuments />} />
+              <Route path="adoptions" element={<AdminAdoptions />} />
+
+              <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                <Route path="content" element={<AdminContent />} />
+                <Route path="users" element={<AdminUsers />} />
+              </Route>
             </Route>
           </Route>
-        </Route>
-      </Routes>
-      <Footer />
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        initialMode={authMode}
-      />
-    </BrowserRouter>
+        </Routes>
+        <Footer />
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          initialMode={authMode}
+        />
+        <FloatingRescueButton />
+      </BrowserRouter>
+    </RescueProvider>
   );
 }
 

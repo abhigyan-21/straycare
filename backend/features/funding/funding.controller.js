@@ -2,10 +2,15 @@ const crypto = require('crypto');
 const prisma = require('../../db/prisma');
 const Razorpay = require('razorpay');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+} else {
+  console.warn('⚠️ Razorpay keys missing. Funding features will be disabled.');
+}
 
 /**
  * @desc  Create a Razorpay order for a one-time donation
@@ -42,6 +47,9 @@ const createDonationOrder = async (req, res) => {
     }
 
     // ── Create Razorpay Order ───────────────────────────────────
+    if (!razorpay) {
+      return res.status(503).json({ error: 'Payment gateway unavailable.' });
+    }
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100), // Razorpay expects paise
       currency: 'INR',
