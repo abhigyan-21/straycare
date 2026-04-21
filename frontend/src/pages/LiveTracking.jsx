@@ -8,7 +8,7 @@ import '../styles/LiveTracking.css';
 
 // Asset Imports
 import ambulanceImg from '../assets/images/ambulance.png';
-import hospitalImg from '../assets/images/hospital.png';
+import hospitalImg from "../assets/images/Hospital.png";
 import pickupImg from '../assets/images/pickup.png';
 import rescuerAvatar from '../assets/images/doctor-open.png';
 
@@ -36,10 +36,10 @@ const SOCKET_URL = 'http://localhost:5000';
 function LiveTracking() {
   const { reportId } = useParams();
   const { startRescue, updateRescueEta, endRescue } = useRescue();
-  
+
   const hospitalPos = [30.7500, 76.8000];
   const userPos = [30.7200, 76.7600];
-  
+
   const [rescuerPos, setRescuerPos] = useState(hospitalPos);
   const [fullRoute, setFullRoute] = useState([]);
   const [journeyStage, setJourneyStage] = useState('EN_ROUTE');
@@ -51,7 +51,7 @@ function LiveTracking() {
 
   const socketRef = useRef();
   const routeIndexRef = useRef(0); // Use Ref for smooth interval movement
-  
+
   const ambIconNormal = useMemo(() => createAmbulanceIcon(false), []);
   const ambIconFlipped = useMemo(() => createAmbulanceIcon(true), []);
 
@@ -61,11 +61,11 @@ function LiveTracking() {
       try {
         const start = journeyStage === 'EN_ROUTE' ? hospitalPos : userPos;
         const end = journeyStage === 'EN_ROUTE' ? userPos : hospitalPos;
-        
+
         const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
         const res = await fetch(url);
         const data = await res.json();
-        
+
         if (data.routes && data.routes[0]) {
           const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
           setFullRoute(coords);
@@ -105,14 +105,14 @@ function LiveTracking() {
 
     const interval = setInterval(() => {
       const idx = routeIndexRef.current;
-      
+
       if (idx < fullRoute.length - 1) {
         const nextIndex = idx + 1;
         const nextPos = fullRoute[nextIndex];
-        
+
         routeIndexRef.current = nextIndex;
         setRescuerPos(nextPos);
-        
+
         const currentProgress = Math.round((nextIndex / (fullRoute.length - 1)) * 100);
         setProgress(currentProgress);
 
@@ -123,7 +123,7 @@ function LiveTracking() {
           stage: journeyStage,
           arrivalTime: Math.max(1, Math.round(10 - (currentProgress / 10)))
         });
-        
+
         updateRescueEta(Math.max(1, Math.round(10 - (currentProgress / 10))));
       } else {
         // Destination Reached
@@ -141,8 +141,8 @@ function LiveTracking() {
     return () => clearInterval(interval);
   }, [isSimulating, fullRoute, journeyStage, reportId]);
 
-  const leftPosition = journeyStage === 'EN_ROUTE' 
-    ? Math.max(5, Math.min(95, 100 - progress)) 
+  const leftPosition = journeyStage === 'EN_ROUTE'
+    ? Math.max(5, Math.min(95, 100 - progress))
     : Math.max(5, Math.min(95, progress));
 
   return (
@@ -150,19 +150,19 @@ function LiveTracking() {
       <div className="tracking-header">
         <div className="hospital-track">
           <img src={pickupImg} className="track-img start" alt="pickup" />
-          <div 
-            className="hospital-track-progress" 
-            style={{ 
-              width: `${progress}%`, 
+          <div
+            className="hospital-track-progress"
+            style={{
+              width: `${progress}%`,
               left: journeyStage === 'RESCUING' ? '0' : 'auto',
               right: journeyStage === 'EN_ROUTE' ? '0' : 'auto'
             }}
           ></div>
-          <img 
-            src={ambulanceImg} 
-            className={`track-img rescuer-img ${isFlipped ? 'flipped' : ''}`} 
-            style={{ left: `${leftPosition}%` }} 
-            alt="rescuer" 
+          <img
+            src={ambulanceImg}
+            className={`track-img rescuer-img ${isFlipped ? 'flipped' : ''}`}
+            style={{ left: `${leftPosition}%` }}
+            alt="rescuer"
           />
           <img src={hospitalImg} className="track-img end" alt="hospital" />
         </div>
@@ -173,9 +173,9 @@ function LiveTracking() {
           <div className="status-card">
             <h2>{status}</h2>
             <div className="arrival-time">
-                {journeyStage === 'EN_ROUTE' ? 
-                  `ARRIVING IN ${Math.max(1, 10 - Math.floor(progress/10))} MINS` : 
-                  'HEADING TO CLINIC'}
+              {journeyStage === 'EN_ROUTE' ?
+                `ARRIVING IN ${Math.max(1, 10 - Math.floor(progress / 10))} MINS` :
+                'HEADING TO CLINIC'}
             </div>
           </div>
 
@@ -186,7 +186,7 @@ function LiveTracking() {
             <div className="details-content">
               <h3>Dr. Aman Sharma</h3>
               <p className="specialty">Certified Lead Rescuer</p>
-              
+
               <div className="details-grid">
                 <div className="detail-item">
                   <strong>Vehicle:</strong> <span>Ambulance CH01-SC-2024</span>
@@ -203,7 +203,7 @@ function LiveTracking() {
               </div>
             </div>
           </div>
-          
+
           <button className="sim-toggle-btn" onClick={() => setIsSimulating(!isSimulating)}>
             {isSimulating ? 'Pause Simulation' : 'Resume Simulation'}
           </button>
@@ -212,27 +212,27 @@ function LiveTracking() {
         <div className="tracking-right">
           <div className="map-container">
             <MapContainer center={rescuerPos} zoom={14} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
-              <TileLayer 
-                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
-              
+
               {fullRoute.length > 0 && (
                 <Polyline positions={fullRoute} color="#8BC34A" weight={6} opacity={0.8} />
               )}
 
               <Marker position={userPos} icon={userIcon}><Popup>Your Location</Popup></Marker>
               <Marker position={hospitalPos} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
-              
+
               {/* Force rescuer marker to be on top with higher zIndexOffset */}
-              <Marker 
-                position={rescuerPos} 
+              <Marker
+                position={rescuerPos}
                 icon={isFlipped ? ambIconFlipped : ambIconNormal}
                 zIndexOffset={1000}
               >
                 <Popup>Rescuer ({journeyStage === 'EN_ROUTE' ? 'To You' : 'To Clinic'})</Popup>
               </Marker>
-              
+
               <MapRecenter center={rescuerPos} />
             </MapContainer>
           </div>
