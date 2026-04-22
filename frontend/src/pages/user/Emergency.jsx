@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Mic, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Emergency.css';
+import '../../styles/user/Emergency.css';
 
 function Emergency() {
     const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
-import '../../styles/VetRequestCard.css';
+import '../../styles/vet/VetRequestCard.css';
 
 function VetRequestCard({ req, isNew = false, onAccept, onReject, onSetTime }) {
     return (

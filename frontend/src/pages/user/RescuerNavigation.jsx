@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRescue } from '../context/RescueContext';
+import { useRescue } from '../../context/RescueContext';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import '../styles/RescuerPages.css';
+import '../../styles/user/RescuerPages.css';
 
 // Reuse Icons from LiveTracking
-import ambulanceImg from '../assets/images/ambulance.png';
-import hospitalImg from '../assets/images/Hospital.png';
-import pickupImg from '../assets/images/Pickup.png';
+import ambulanceImg from '../../assets/images/ambulance.png';
+import hospitalImg from '../../assets/images/Hospital.png';
+import pickupImg from '../../assets/images/Pickup.png';
 
 const ambulanceIcon = new L.Icon({ iconUrl: ambulanceImg, iconSize: [60, 40], iconAnchor: [30, 20] });
 const hospitalIcon = new L.Icon({ iconUrl: hospitalImg, iconSize: [50, 50], iconAnchor: [25, 50] });

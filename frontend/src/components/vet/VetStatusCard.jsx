@@ -1,6 +1,6 @@
 import React from 'react';
 import StatusDropdown from '../StatusDropdown';
-import '../../styles/VetStatus.css';
+import '../../styles/vet/VetStatus.css';
 
 function VetStatusCard({ id, status, onChange, options, image = null }) {
     return (

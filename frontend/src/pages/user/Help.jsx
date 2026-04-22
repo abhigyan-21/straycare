@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../styles/Help.css';
-import { mockPets } from '../data/mockPets';
-import { highlightsData } from '../data/highlightsData';
-import SupportCarousel from '../components/user/SupportCarousel';
-import HighlightCard from '../components/user/HighlightCard';
-import SupportModal from '../components/user/SupportModal';
+import '../../styles/user/Help.css';
+import { mockPets } from '../../data/mockPets';
+import { highlightsData } from '../../data/highlightsData';
+import SupportCarousel from '../../components/user/SupportCarousel';
+import HighlightCard from '../../components/user/HighlightCard';
+import SupportModal from '../../components/user/SupportModal';
 
 function Help() {
     const [expandedCard, setExpandedCard] = useState(null);

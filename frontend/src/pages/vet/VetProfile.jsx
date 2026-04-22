@@ -17,7 +17,7 @@ import {
     Activity
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import '../../styles/VetProfile.css';
+import '../../styles/vet/VetProfile.css';
 
 const VetProfile = () => {
     const { user: authUser, logout } = useAuth();

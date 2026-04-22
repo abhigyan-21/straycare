@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import '../../styles/Post.css';
+import '../../styles/user/Post.css';
 
 const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
     const [newPostCaption, setNewPostCaption] = useState('');

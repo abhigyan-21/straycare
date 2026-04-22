@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/VetDashboard.css';
+import '../../styles/vet/VetDashboard.css';
 import LiveStatusView from '../../components/vet/LiveStatusView';
 import VetStatCard from '../../components/vet/VetStatCard';
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import '../styles/VetStatus.css';
+import '../styles/vet/VetStatus.css';
 
 function StatusDropdown({ value, onChange, options }) {
     const [isOpen, setIsOpen] = useState(false);

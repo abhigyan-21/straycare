@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useRescue } from '../context/RescueContext';
+import { useRescue } from '../../context/RescueContext';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import io from 'socket.io-client';
-import '../styles/LiveTracking.css';
+import '../../styles/user/LiveTracking.css';
 
 // Asset Imports
-import ambulanceImg from '../assets/images/ambulance.png';
-import hospitalImg from "../assets/images/Hospital.png";
-import pickupImg from '../assets/images/Pickup.png';
-import rescuerAvatar from '../assets/images/doctor-open.png';
+import ambulanceImg from '../../assets/images/ambulance.png';
+import hospitalImg from "../../assets/images/Hospital.png";
+import pickupImg from '../../assets/images/Pickup.png';
+import rescuerAvatar from '../../assets/images/doctor-open.png';
 
 // Fix for default marker icons in Leaflet with React
 delete L.Icon.Default.prototype._getIconUrl;

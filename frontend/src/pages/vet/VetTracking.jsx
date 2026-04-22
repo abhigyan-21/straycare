@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { User, Phone, MapPin, Ambulance, Info, ArrowLeft, FileText } from 'lucide-react';
-import '../../styles/VetTracking.css';
+import '../../styles/vet/VetTracking.css';
 
 // Icons
 import ambulanceImg from '../../assets/images/ambulance.png';

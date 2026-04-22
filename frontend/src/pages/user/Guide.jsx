@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import doctorClosed from "../assets/images/doctor-closed.png";
-import doctorOpen from "../assets/images/doctor-open.png";
-import "../styles/Guide.css";
+import doctorClosed from "../../assets/images/doctor-closed.png";
+import doctorOpen from "../../assets/images/doctor-open.png";
+import "../../styles/user/Guide.css";
 
 const TypingIndicator = () => {
   const [dotCount, setDotCount] = useState(0);

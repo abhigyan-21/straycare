@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import '../../styles/VetDashboard.css';
-import '../../styles/VetAdopt.css';
-import '../../styles/VetStatus.css';
+import '../../styles/vet/VetDashboard.css';
+import '../../styles/vet/VetAdopt.css';
+import '../../styles/vet/VetStatus.css';
 import { Calendar, AlertTriangle, Plus } from 'lucide-react';
 import VetStatusCard from '../../components/vet/VetStatusCard';
 import VetRequestCard from '../../components/vet/VetRequestCard';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/VetDashboard.css';
+import '../../styles/vet/VetDashboard.css';
 
 function LiveStatusView({ rescues, title = "current pet being rescued" }) {
     const navigate = useNavigate();

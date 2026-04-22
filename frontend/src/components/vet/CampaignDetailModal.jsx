@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Calendar, MapPin, Target, Users, Clock, Info } from 'lucide-react';
-import '../../styles/VetAdopt.css'; // Reuse modal-overlay styles
+import '../../styles/vet/VetAdopt.css'; // Reuse modal-overlay styles
 
 const CampaignDetailModal = ({ campaign, onClose }) => {
     if (!campaign) return null;

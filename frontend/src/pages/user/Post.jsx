@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/Post.css';
-import CreatePostModal from '../components/user/CreatePostModal';
-import { useAuth } from '../context/AuthContext';
-import PostCard from '../components/user/PostCard';
+import '../../styles/user/Post.css';
+import CreatePostModal from '../../components/user/CreatePostModal';
+import { useAuth } from '../../context/AuthContext';
+import PostCard from '../../components/user/PostCard';
 
 const initialPosts = [
     {

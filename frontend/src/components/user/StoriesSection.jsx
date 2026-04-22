@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/StoriesSection.css';
+import '../../styles/user/StoriesSection.css';
 import { storiesData } from '../../data/storiesData';
 
 const StoriesSection = () => {

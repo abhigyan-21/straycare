@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import '../../styles/VetDashboard.css';
-import '../../styles/VetCampaign.css';
-import '../../styles/VetAdopt.css';
+import '../../styles/vet/VetDashboard.css';
+import '../../styles/vet/VetCampaign.css';
+import '../../styles/vet/VetAdopt.css';
 import { Plus, Type, FileText, Target, Calendar, MapPin, Info } from 'lucide-react';
 import CampaignHeroCard from '../../components/vet/CampaignHeroCard';
 import CampaignListItem from '../../components/vet/CampaignListItem';

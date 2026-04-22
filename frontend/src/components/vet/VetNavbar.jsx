@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/straycare_logo.png";
 import { useAuth } from "../../context/AuthContext";
 import { User, LogOut } from "lucide-react";
-import "../../styles/VetDashboard.css";
+import "../../styles/vet/VetDashboard.css";
 
 function VetNavbar() {
   const { logout } = useAuth();

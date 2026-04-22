@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/RescuerPages.css';
+import '../../styles/user/RescuerPages.css';
 
 const MOCK_REPORTS = [
   {
