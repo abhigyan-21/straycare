@@ -7,7 +7,7 @@ import VetCampaign from "./pages/vet/VetCampaign";
 import VetProfile from "./pages/vet/VetProfile";
 import VetTracking from "./pages/vet/VetTracking";
 import VetNavbar from "./components/vet/VetNavbar";
-import Guide from "./pages/Guide"
+import Guide from "./pages/user/Guide"
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
 import './styles/global.css'

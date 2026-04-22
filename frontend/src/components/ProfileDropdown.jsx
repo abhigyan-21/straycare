@@ -86,30 +86,7 @@ function ProfileDropdown({ closeMenu }) {
               Rescuer
             </button>
             
-            {/* Professional Portal Links */}
-            {['admin', 'partner', 'ngo'].includes(user?.role) && (
-              <button 
-                className="dropdown-item sub-item" 
-                onClick={() => {
-                  setIsOpen(false);
-                  window.location.href = '/admin.html';
-                }}
-              >
-                Admin Portal
-              </button>
-            )}
-            
-            {['vet', 'clinic', 'ngo'].includes(user?.role) && (
-              <button 
-                className="dropdown-item sub-item" 
-                onClick={() => {
-                  setIsOpen(false);
-                  window.location.href = '/vet.html';
-                }}
-              >
-                Vet Portal
-              </button>
-            )}
+
           </div>
           <div className="logout-wrapper">
             <button className="dropdown-item profile-logout-btn" onClick={handleLogout}>
