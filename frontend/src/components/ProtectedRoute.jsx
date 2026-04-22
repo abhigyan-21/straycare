@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ allowedRoles }) => {
+const ProtectedRoute = ({ allowedRoles, redirectTo = "/", unauthorizedRedirect, children }) => {
     const { user, isLoggedIn, isLoading } = useAuth();
 
     if (isLoading) {
@@ -9,16 +9,17 @@ const ProtectedRoute = ({ allowedRoles }) => {
     }
 
     if (!isLoggedIn || !user) {
-        // If user is not logged in, redirect to home.
-        return <Navigate to="/" replace />;
+        // If user is not logged in, redirect to specified path (usually /login)
+        return <Navigate to={redirectTo} replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        // If logged in but doesn't have the required role, redirect to safe zone
-        return <Navigate to="/" replace />;
+        // If logged in but doesn't have the required role
+        // Redirect to unauthorized page if provided, otherwise to the main redirectTo path
+        return <Navigate to={unauthorizedRedirect || redirectTo} replace />;
     }
 
-    return <Outlet />;
+    return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;

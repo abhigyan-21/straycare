@@ -1,7 +1,7 @@
-import Hero from "../components/Hero";
-import ActionCards from "../components/ActionCards";
-import Testimonials from "../components/Testimonials";
-import StoriesSection from "../components/StoriesSection";
+import Hero from "../components/user/Hero";
+import ActionCards from "../components/user/ActionCards";
+import Testimonials from "../components/user/Testimonials";
+import StoriesSection from "../components/user/StoriesSection";
 
 function Home() {
   return (

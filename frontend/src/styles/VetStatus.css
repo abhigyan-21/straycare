@@ -1,0 +1,186 @@
+/* VetStatus.css - Rewritten for clean dropdown styling */
+
+/* Custom Dropdown Styling */
+.custom-dropdown-container {
+    position: relative;
+    width: 220px;
+    font-family: inherit;
+}
+
+.custom-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 26px;
+}
+
+.custom-dropdown-trigger .selected-label {
+    flex: 1;
+    text-align: center;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+    margin-left: 10px;
+}
+
+.dropdown-arrow.open {
+    transform: rotate(180deg);
+}
+
+/* Trigger Background Colors */
+.custom-dropdown-trigger.treated {
+    background-color: #BDFF9E !important;
+    color: #155724 !important;
+}
+
+.custom-dropdown-trigger.under-treatment {
+    background-color: #FFFFFF !important;
+    color: #333 !important;
+}
+
+.custom-dropdown-trigger.up-for-adoption {
+    background-color: #FFF2C5 !important;
+    color: #856404 !important;
+}
+
+.custom-dropdown-trigger.adopted {
+    background-color: #D7EBD1 !important;
+    color: #155724 !important;
+}
+
+.custom-dropdown-trigger.remove {
+    background-color: #FFFFFF !important;
+    color: #333 !important;
+    border: 1px solid #ddd !important;
+}
+
+/* Dropdown Menu */
+.custom-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.custom-dropdown-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    transition: background-color 0.2s ease;
+}
+
+.custom-dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+.custom-dropdown-item.active {
+    background-color: #E0E0E0; /* Grey for active status */
+    font-weight: 700;
+}
+
+/* Page Layout & Card Tweaks */
+.status-page-list {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.status-card {
+    background: #faf9f9 !important; /* Clean light gray */
+    border-radius: 24px;
+    border: 1px solid #faf9f9f8;
+    padding: 20px 25px;
+    display: flex;
+    min-height: 100px;
+    width: 1000px;
+    max-width: 95%; /* Responsive safety */
+    align-items: center;
+    justify-content: space-between;
+}
+
+.status-card .pic-placeholder {
+    width: 140px;
+    height: 70px;
+    background: #fff;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #999;
+}
+
+.status-card .pic-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 24px;
+}
+
+.status-card .card-details {
+    margin-left: 40px;
+    flex: 1;
+}
+
+.status-card .label {
+    font-weight: 700;
+    color: #000;
+    font-size: 1.2rem;
+}
+
+.status-card .value {
+    color: #666;
+    font-size: 1.2em;
+    margin-left: 10px;
+    font-weight: 500;
+}
+
+.status-control {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 250px;
+    gap: 4px;
+}
+
+ .status-label {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #5c5b5b;
+    margin-right: 15px;
+}
+
+.status-card .custom-select-wrapper {
+    position: relative;
+    width: 220px;
+}
+
+.status-card .select-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}

@@ -1,0 +1,443 @@
+/* VetAdopt.css */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+.vet-adopt-page {
+    /* Inherits padding and base styles from .vet-dashboard */
+    max-width: none;
+    margin: 0;
+}
+
+/* Tabs Styling */
+.adopt-tabs {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    justify-content: center;
+}
+
+.tab-btn {
+    padding: 12px 30px;
+    border-radius: 12px;
+    border: none;
+    background-color: #E2E2E2;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 160px;
+}
+
+.tab-btn.active {
+    background-color: #D7EBD1;
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(215, 235, 209, 0.5);
+}
+
+.tab-btn:hover:not(.active) {
+    background-color: #ebebeb;
+}
+
+/* Reusing Rescue Section Styles */
+.adopt-interview-section {
+    margin-bottom: 40px !important;
+}
+
+.adopt-interview-section .rescue-card-white {
+    /* Height and base padding inherited from VetDashboard.css */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Explicitly ensure the pet image container matches dashboard exactly */
+.adopt-interview-section .pet-image-container {
+    width: 250px;
+    height: 200px;
+    flex-shrink: 0;
+}
+
+/* Timing section matches VetDashboard.css .status-section */
+.status-badge.status-transit {
+    text-transform: uppercase;
+    /* Match dashboard style but uppercase for timing */
+}
+
+/* List Component Styling */
+.adopt-list-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.adopt-list-container .status-card,
+.adopt-list-container .vet-request-card {
+    margin: 0;
+    /* Removed width: 100% to let cards use their own 1000px width */
+}
+
+/* Status Controls (Remaining for Live Adoptions) */
+
+
+
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 32px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-icon {
+    margin-bottom: 20px;
+}
+
+.modal-icon.warning {
+    color: #FF5C00;
+}
+
+.modal-icon.info {
+    color: #4A90E2;
+}
+
+.input-group {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #666;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-family: inherit;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.confirm-btn {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.cancel-btn {
+    background: #f0f0f0;
+    color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .adopt-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .card-details {
+        margin-left: 0;
+    }
+
+    .status-control {
+        align-items: center;
+        width: 100%;
+    }
+}
+
+/* New Create Adoption Section Styles */
+.section-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 4px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-title {
+    text-align: center;
+    width: 100%;
+}
+
+.floating-create-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #4b4b4b;
+    color: #fff;
+    padding: 16px 32px;
+    border-radius: 50px;
+    /* Pill shape */
+    border: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+}
+
+.floating-create-btn:hover {
+    background: #333;
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.floating-create-btn span {
+    font-family: 'Outfit', sans-serif;
+}
+
+.create-adoption-modal {
+    overflow-y: auto;
+    max-height: 600px;
+    max-width: 750px !important;
+    /* Increased width for better layout */
+    text-align: left !important;
+    padding: 40px !important;
+    border-radius: 32px !important;
+    margin: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 20px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-title h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.header-icon {
+    color: #FF5C00;
+}
+
+.close-btn {
+    background: #f5f5f5;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: #e0e0e0;
+    color: #000;
+}
+
+.adoption-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    /* Fixed width for image upload */
+    gap: 40px;
+    margin-bottom: 25px;
+}
+
+.input-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.input-row .input-group {
+    flex: 1;
+}
+
+.input-group {
+    margin: 0 35px 24px 0;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.adoption-form input,
+.adoption-form select,
+.adoption-form textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1.5px solid #EAEAEA;
+    background: #Fcfcfc;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.adoption-form input::placeholder,
+.adoption-form textarea::placeholder {
+    color: #aaa;
+}
+
+.adoption-form input:focus,
+.adoption-form select:focus,
+.adoption-form textarea:focus {
+    border-color: #1a1a1a;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.image-upload-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.upload-box {
+    border: 2px dashed #D0D0D0;
+    border-radius: 24px;
+    flex: 1;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #777;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #Fcfcfc;
+    position: relative;
+    padding: 20px;
+    text-align: center;
+}
+
+.upload-box:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+    background: #fff;
+}
+
+.upload-box span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.adoption-form .modal-actions {
+    margin-top: 30px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 30px;
+    display: flex;
+    gap: 20px;
+}
+
+.adoption-form .confirm-btn {
+    flex: 2;
+    padding: 16px;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.adoption-form .cancel-btn {
+    flex: 1;
+    padding: 16px;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 800px) {
+    .adoption-form .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .create-adoption-modal {
+        padding: 30px !important;
+        margin: 20px;
+        width: auto;
+    }
+
+    .upload-box {
+        min-height: 180px;
+    }
+}

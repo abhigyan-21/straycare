@@ -14,13 +14,6 @@ import LiveTracking from "./pages/LiveTracking";
 import AuthModal from "./components/AuthModal";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminTracking from "./pages/admin/AdminTracking";
-import AdminDocuments from "./pages/admin/AdminDocuments";
-import AdminAdoptions from "./pages/admin/AdminAdoptions";
-import AdminContent from "./pages/admin/AdminContent";
-import AdminUsers from "./pages/admin/AdminUsers";
 import RescuerDashboard from "./pages/RescuerDashboard";
 import RescuerNavigation from "./pages/RescuerNavigation";
 import { useState, useEffect } from "react";
@@ -68,20 +61,7 @@ function App() {
             <Route path="nav/:reportId" element={<RescuerNavigation />} />
           </Route>
 
-          {/* Admin Section Paths */}
-          <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin', 'partner', 'ngo']} />}>
-            <Route element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="tracking" element={<AdminTracking />} />
-              <Route path="documents" element={<AdminDocuments />} />
-              <Route path="adoptions" element={<AdminAdoptions />} />
 
-              <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-                <Route path="content" element={<AdminContent />} />
-                <Route path="users" element={<AdminUsers />} />
-              </Route>
-            </Route>
-          </Route>
         </Routes>
         <Footer />
         <AuthModal

@@ -1,0 +1,131 @@
+/* VetRequestCard.css */
+
+.vet-request-card {
+    background: #faf9f9 !important;
+    border-radius: 20px;
+    padding: 12px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    width: 1000px;
+    max-width: 95%;
+    margin: 0;
+    min-height: 80px;
+}
+
+.request-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.request-info-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.request-label {
+    font-weight: 700;
+    color: #000;
+    font-size: 1rem;
+    min-width: 70px;
+}
+
+.request-value {
+    color: #666;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.request-status-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    min-width: 250px;
+}
+
+.status-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #444;
+    margin-right: 10px;
+}
+
+.request-status-badge {
+    padding: 10px 35px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-align: center;
+    min-width: 160px;
+    text-transform: capitalize;
+}
+
+.request-status-badge.interview {
+    background-color: #BDFF9E;
+    color: #000;
+}
+
+.request-status-badge.cancelled {
+    background-color: #D6D6D6;
+    color: #666;
+}
+
+/* Action Buttons for New Requests */
+.request-action-btns {
+    display: flex;
+    gap: 12px;
+}
+
+.request-action-btn {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.request-action-btn.accept-btn {
+    background-color: #BDFF9E;
+    padding: 10px;
+}
+
+.request-action-btn.reject-btn {
+    background-color: #FF5C00;
+    padding: 10px;
+    color: #fff;
+}
+
+.request-action-btn.time-btn {
+    background-color: #D6D6D6;
+    padding: 10px 25px;
+    font-weight: 700;
+    color: #333;
+}
+
+.request-action-btn:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .vet-request-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 25px;
+        gap: 25px;
+    }
+
+    .request-status-section {
+        align-items: flex-start;
+        width: 100%;
+        min-width: 0;
+    }
+}

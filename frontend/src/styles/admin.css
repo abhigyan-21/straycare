@@ -341,6 +341,33 @@
     display: block;
 }
 
+/* Tabs */
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    background-color: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.admin-tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-tab.active {
+    background-color: #fff;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 /* Search input */
 .admin-search-wrapper {
     position: relative;
@@ -562,8 +589,84 @@
     color: #777;
 }
 
+.admin-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.admin-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+    color: #475569;
+}
+
+.quick-action-btn:hover {
+    background-color: #ebfee2;
+    border-color: #c3faaa;
+    color: #333;
+    transform: translateY(-2px);
+}
+
+.quick-action-btn span {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.admin-date-input {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.admin-date-input label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.admin-date-input input {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.admin-chart-placeholder {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8fafc;
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    gap: 12px;
+}
+
 /* Responsiveness */
 @media (max-width: 900px) {
+    .admin-grid-2 {
+        grid-template-columns: 1fr;
+    }
     .admin-container {
         flex-direction: column;
         overflow-y: auto;

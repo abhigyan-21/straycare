@@ -1,6 +1,6 @@
 import React from 'react';
-import '../styles/StoriesSection.css';
-import { storiesData } from '../data/storiesData';
+import '../../styles/StoriesSection.css';
+import { storiesData } from '../../data/storiesData';
 
 const StoriesSection = () => {
     return (

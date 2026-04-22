@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import '../styles/Adopt.css';
 import { mockPets } from '../data/mockPets';
-import PetCarousel from '../components/PetCarousel';
-import FilterModal from '../components/FilterModal';
+import PetCarousel from '../components/user/PetCarousel';
+import FilterModal from '../components/user/FilterModal';
 
 function Adopt() {
     const [currentPetIndex, setCurrentPetIndex] = useState(0);

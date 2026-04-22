@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { LayoutDashboard, Target, FileText, HeartHandshake, Users, Edit3, LogOut } from "lucide-react";
+import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2 } from "lucide-react";
 import "../../styles/admin.css";
 
 const AdminLayout = () => {
@@ -19,17 +19,9 @@ const AdminLayout = () => {
                         <LayoutDashboard size={20} />
                         Dashboard
                     </NavLink>
-                    <NavLink to="/admin/tracking" className={({ isActive }) => (isActive ? "active" : "")}>
-                        <Target size={20} />
-                        Pet Tracking
-                    </NavLink>
                     <NavLink to="/admin/documents" className={({ isActive }) => (isActive ? "active" : "")}>
                         <FileText size={20} />
                         Documents
-                    </NavLink>
-                    <NavLink to="/admin/adoptions" className={({ isActive }) => (isActive ? "active" : "")}>
-                        <HeartHandshake size={20} />
-                        Adoption Requests
                     </NavLink>
 
                     {/* Admin Exclusive Links */}
@@ -45,12 +37,16 @@ const AdminLayout = () => {
                                 <Users size={20} />
                                 Manage Users
                             </NavLink>
+                            <NavLink to="/admin/reports" className={({ isActive }) => (isActive ? "active" : "")}>
+                                <BarChart2 size={20} />
+                                Reports & Analytics
+                            </NavLink>
                         </>
                     )}
                 </nav>
 
                 <div className="admin-sidebar-footer">
-                    <button className="logout-btn">
+                    <button className="logout-btn" onClick={() => window.location.href = '/'}>
                         <LogOut size={20} />
                         Exit Admin
                     </button>

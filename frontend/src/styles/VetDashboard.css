@@ -1,0 +1,266 @@
+/* VetDashboard.css */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+:root {
+  --vet-primary: #FFD21E;
+  --vet-reached: #4CAF50;
+  /* Green for reached clinic */
+  --vet-pickup: #F44336;
+  /* Red for pickup */
+  --vet-bg-section: #E5E5E5;
+  /* The gray container background from mockup */
+  --vet-bg-page: #FFFFFF;
+  --vet-card-bg: #FFFFFF;
+  /* The white card background */
+  --vet-text: #1a1a1a;
+  --vet-text-muted: #666;
+  --vet-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.body{
+  overflow-x: hidden;
+}
+
+.vet-dashboard {
+  padding: 40px 20px;
+  min-height: 100vh;
+  font-family: 'Outfit', "Quicksand", sans-serif;
+  background-color: var(--vet-bg-page);
+}
+
+.section-title {
+  font-size: 1.75rem;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+  font-weight: 800;
+  text-align: center;
+  font-style: bold;
+}
+
+/* Main Rescue Container */
+.main-rescue-section {
+  background-color: #d7ebd1;
+  border-radius: 40px;
+  padding: 20px 30px 20px 30px;
+  margin: 0 auto 40px auto;
+  max-width: 1200px;
+  position: relative;
+}
+
+.rescues-scroll-wrapper {
+  border-radius: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.rescues-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  height: 250px;
+  /* Matched to card height */
+  padding-right: 25px;
+  scroll-snap-type: y mandatory;
+  /* Enable snapping */
+  scrollbar-width: thin;
+  /* Thin scrollbar for modern browsers */
+  scrollbar-color: #1a1a1a transparent;
+  width: 100%;
+}
+
+/* White Rescue Card */
+.rescue-card-white {
+  display: flex;
+  width: auto;
+  height: 250px;
+  background: var(--vet-card-bg);
+  border-radius: 32px;
+  padding: 25px;
+  align-items: center;
+  gap: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  scroll-snap-align: start;
+  /* Snap point */
+  position: relative;
+}
+
+.pet-image-container {
+  width: 250px;
+  /* Slightly reduced to save space */
+  height: 200px;
+  flex-shrink: 0;
+  background: #f8f8f8;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.placeholder-rect {
+  width: 80%;
+  height: 70%;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.rescue-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%; /* Take full height to allow vertical centering of content */
+}
+
+.info-item {
+  margin-bottom: 12px;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-right: 8px;
+}
+
+.info-value {
+  font-size: 1.2rem;
+  color: #555;
+  font-weight: 400;
+  /* width: 80px; removed problematic width */
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  align-self: center;
+  margin: 0;
+}
+
+.status-label {
+  font-size: 1.1rem; /* Slightly smaller for better balance */
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.status-badge {
+  padding: 16px 40px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-transform: lowercase;
+  color: #000;
+  transition: all 0.3s ease;
+  min-width: 180px;
+  text-align: center;
+}
+
+/* Dynamic Status Colors */
+.status-transit {
+  background-color: var(--vet-primary);
+  box-shadow: 0 8px 25px rgba(255, 210, 30, 0.4);
+}
+
+.status-clinic {
+  background-color: var(--vet-reached);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.status-pickup {
+  background-color: var(--vet-pickup);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat-card {
+  background: #fcfcfc;
+  padding: 35px;
+  border-radius: 28px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.03);
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 25px;
+  display: block;
+}
+
+.stat-value {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: var(--vet-text);
+  line-height: 1;
+}
+
+.stat-value.date {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.campaign-detail {
+  font-size: 0.9rem;
+  color: #999;
+  margin-top: 8px;
+}
+
+/* Tablet / Mobile Adjustments */
+@media (max-width: 1024px) {
+  .rescue-card-white {
+    flex: 0 0 90%;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .status-section {
+    align-items: center;
+    margin-top: 20px;
+  }
+}
+
+.logout-btn {
+  border: 1px solid #f92d16;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #f93816;
+  font-weight: 600;
+  padding: 8px 15px;
+  border-radius: 12px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #f3533b;
+  color: #fff;
+}

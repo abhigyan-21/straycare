@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Post.css';
-import CreatePostModal from '../components/CreatePostModal';
+import CreatePostModal from '../components/user/CreatePostModal';
 import { useAuth } from '../context/AuthContext';
-import { Heart, MessageCircle, Share2, MapPin, Send } from 'lucide-react';
+import PostCard from '../components/user/PostCard';
 
-// Mock data for posts
 const initialPosts = [
     {
         id: 1,
@@ -41,11 +40,8 @@ function Post({ openAuthModal }) {
     const { isLoggedIn, user: authUser } = useAuth();
     const [posts, setPosts] = useState(initialPosts);
     const [newComment, setNewComment] = useState({});
-
-    // Create Post Modal State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    // Scroll Lock Effect (Fix for trackpad scrolling)
     useEffect(() => {
         if (isCreateModalOpen) {
             document.documentElement.classList.add('no-scroll');
@@ -144,14 +140,11 @@ function Post({ openAuthModal }) {
             return post;
         }));
 
-        // Clear input
         setNewComment({ ...newComment, [postId]: '' });
     };
 
-
     return (
         <div className="posts-container">
-
             <div className="create-post-header">
                 <button className="create-post-btn" onClick={handleOpenCreateModal}>
                     <span className="plus-icon">+</span> Create a Post
@@ -159,97 +152,15 @@ function Post({ openAuthModal }) {
             </div>
 
             {posts.map(post => (
-                <div key={post.id} className="post-card">
-                    {/* Left Side: Image */}
-                    <div className="post-image-section">
-                        <img src={post.postImage} alt="Post content" className="post-main-image" />
-                    </div>
-
-                    {/* Right Side: Details */}
-                    <div className="post-details-section">
-                        {/* Header: User Info */}
-                        <div className="post-header">
-                            <img src={post.userImage} alt="User profile" className="post-user-img" />
-                            <div className="post-user-info">
-                                <span className="post-username">{post.username}</span>
-                                <div className="post-meta-line">
-                                    {post.location && (
-                                        <span className="post-location">
-                                            <MapPin size={12} className="meta-icon" /> {post.location}
-                                        </span>
-                                    )}
-                                    <span className="post-time">{post.timestamp}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Scrollable Content Area */}
-                        <div className="post-content-scroll">
-                            <div className="post-caption-block">
-                                <img src={post.userImage} alt="User profile" className="post-user-img-small" />
-                                <div className="caption-text">
-                                    <span className="post-username">{post.username}</span>
-                                    {' '}
-                                    {post.caption}
-                                </div>
-                            </div>
-
-                            <div className="post-comments">
-                                {post.comments.map(comment => (
-                                    <div key={comment.id} className="comment">
-                                        <span className="comment-username">{comment.username}</span>
-                                        <span className="comment-text">{comment.text}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Interaction Footer */}
-                        <div className="post-footer">
-                            <div className="post-actions">
-                                <button
-                                    className={`post-action-btn like-btn ${post.isLiked ? 'liked' : ''}`}
-                                    onClick={() => handleLike(post.id)}
-                                    title="Like"
-                                >
-                                    <Heart 
-                                        size={22} 
-                                        color={post.isLiked ? "#ed4956" : "#262626"} 
-                                        fill={post.isLiked ? "#ed4956" : "none"} 
-                                        strokeWidth={2.5}
-                                    />
-                                </button>
-                                <button className="post-action-btn comment-btn" title="Comment">
-                                    <MessageCircle size={22} color="#262626" strokeWidth={2.5} />
-                                </button>
-                                <button className="post-action-btn share-btn" onClick={() => handleShare(post)} title="Share">
-                                    <Share2 size={22} color="#262626" strokeWidth={2.5} />
-                                </button>
-                            </div>
-                            <div className="post-likes-count">
-                                <strong>{post.likes.toLocaleString()} likes</strong>
-                            </div>
-
-                            <div className="post-add-comment">
-                                <form onSubmit={(e) => submitComment(e, post.id)}>
-                                    <input
-                                        type="text"
-                                        placeholder="Add a comment..."
-                                        value={newComment[post.id] || ''}
-                                        onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="post-btn"
-                                        disabled={!newComment[post.id] || newComment[post.id].trim() === ''}
-                                    >
-                                        Post
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <PostCard 
+                    key={post.id} 
+                    post={post} 
+                    onLike={handleLike}
+                    onShare={handleShare}
+                    onCommentChange={handleCommentChange}
+                    onSubmitComment={submitComment}
+                    newComment={newComment[post.id]}
+                />
             ))}
 
             <CreatePostModal
@@ -262,3 +173,4 @@ function Post({ openAuthModal }) {
 }
 
 export default Post;
+

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SOSModal from "./SOSModal";
+import SOSModal from "../SOSModal";
 
 const actionCardsData = [
   {

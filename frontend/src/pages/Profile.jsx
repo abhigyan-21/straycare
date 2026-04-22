@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Profile.css';
 import '../styles/Post.css'; // For create-post-btn styles
-import CreatePostModal from '../components/CreatePostModal';
+import CreatePostModal from '../components/user/CreatePostModal';
 import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {

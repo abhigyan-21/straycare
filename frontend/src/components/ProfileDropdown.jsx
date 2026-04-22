@@ -85,9 +85,29 @@ function ProfileDropdown({ closeMenu }) {
             >
               Rescuer
             </button>
-            {user?.role === 'vet' && (
-              <button className="dropdown-item sub-item" onClick={() => setIsOpen(false)}>
-                Vet/Clinic
+            
+            {/* Professional Portal Links */}
+            {['admin', 'partner', 'ngo'].includes(user?.role) && (
+              <button 
+                className="dropdown-item sub-item" 
+                onClick={() => {
+                  setIsOpen(false);
+                  window.location.href = '/admin.html';
+                }}
+              >
+                Admin Portal
+              </button>
+            )}
+            
+            {['vet', 'clinic', 'ngo'].includes(user?.role) && (
+              <button 
+                className="dropdown-item sub-item" 
+                onClick={() => {
+                  setIsOpen(false);
+                  window.location.href = '/vet.html';
+                }}
+              >
+                Vet Portal
               </button>
             )}
           </div>

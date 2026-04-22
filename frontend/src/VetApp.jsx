@@ -1,0 +1,52 @@
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import VetDashboard from "./pages/vet/VetDashboard";
+import VetAdopt from "./pages/vet/VetAdopt";
+import VetLogin from "./pages/vet/VetLogin";
+import VetStatus from "./pages/vet/VetStatus";
+import VetCampaign from "./pages/vet/VetCampaign";
+import VetProfile from "./pages/vet/VetProfile";
+import VetTracking from "./pages/vet/VetTracking";
+import VetNavbar from "./components/vet/VetNavbar";
+import Guide from "./pages/Guide"
+import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from './context/AuthContext';
+import './styles/global.css'
+import Footer from "./components/Footer";
+
+function VetApp() {
+  const { isLoggedIn, user, isLoading } = useAuth();
+
+  // Authorized roles: vet, clinic, or ngo
+  const isAuthorized = isLoggedIn && user && ['vet', 'clinic', 'ngo'].includes(user.role);
+
+  if (isLoading) return <div>Loading Portal...</div>;
+
+  return (
+    <Router>
+      {isAuthorized && <VetNavbar />}
+      <Routes>
+        <Route
+          path="/login"
+          element={isAuthorized ? <Navigate to="/dashboard" replace /> : <VetLogin />}
+        />
+
+        {/* Centralized protection for all professional vet, clinic, and NGO routes */}
+        <Route element={<ProtectedRoute allowedRoles={['vet', 'clinic', 'ngo']} redirectTo="/login" unauthorizedRedirect="/login" />}>
+          <Route path="/dashboard" element={<VetDashboard />} />
+          <Route path="/adopt" element={<VetAdopt />} />
+          <Route path="/status" element={<VetStatus />} />
+          <Route path="/campaign" element={<VetCampaign />} />
+          <Route path="/profile" element={<VetProfile />} />
+          <Route path="/tracking/:id" element={<VetTracking />} />
+          <Route path="/guide" element={<Guide />} />
+          {/* Add more protected routes here */}
+        </Route>
+
+        <Route path="*" element={<Navigate to={isAuthorized ? "/dashboard" : "/login"} replace />} />
+      </Routes>
+      <Footer />
+    </Router>
+  );
+}
+
+export default VetApp;

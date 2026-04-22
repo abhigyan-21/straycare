@@ -69,6 +69,17 @@ html {
   background-color: #ebfee2;
 }
 
+/* VET MODE NAVBAR STYLES */
+.vet-status-link.active {
+  background-color: #ff4d4d !important;
+  color: white !important;
+  box-shadow: 0 0 15px rgba(255, 77, 77, 0.4) !important;
+}
+
+.vet-status-link {
+  font-weight: 600;
+}
+
 .nav-right .emergency {
   color: #3b3a3a;
   background-color: #fc9e9791;
@@ -440,9 +451,10 @@ html {
 .footer {
   background: #d9dcd4;
   color: rgb(0, 0, 0);
-  padding: 20px;
-  margin-top: 50px;
+  padding: 40px 20px;
+  margin-top: 0;
   text-align: center;
+  border-top: 1px solid #f0f0f0;
 }
 
 .footer-bottom {
