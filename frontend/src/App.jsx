@@ -23,6 +23,8 @@ import { RescueProvider } from "./context/RescueContext";
 import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
 
+import { Analytics } from "@vercel/analytics/react"
+
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -49,6 +51,7 @@ function App() {
 
   return (
     <RescueProvider>
+      <Analytics />
       {appLoading && <Loader />}
       <BrowserRouter>
         <Navbar openAuthModal={openAuthModal} />
