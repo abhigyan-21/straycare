@@ -24,6 +24,7 @@ import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
 
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -52,6 +53,7 @@ function App() {
   return (
     <RescueProvider>
       <Analytics />
+      <SpeedInsights />
       {appLoading && <Loader />}
       <BrowserRouter>
         <Navbar openAuthModal={openAuthModal} />
