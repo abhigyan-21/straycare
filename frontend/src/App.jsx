@@ -21,16 +21,25 @@ import doctorClosed from "./assets/images/doctor-closed.png";
 import doctorOpen from "./assets/images/doctor-open.png";
 import { RescueProvider } from "./context/RescueContext";
 import FloatingRescueButton from "./components/FloatingRescueButton";
+import Loader from "./components/Loader";
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
+  const [appLoading, setAppLoading] = useState(true);
 
   useEffect(() => {
     const img1 = new Image();
     img1.src = doctorClosed;
     const img2 = new Image();
     img2.src = doctorOpen;
+
+    // Simulate site-wide loading
+    const timer = setTimeout(() => {
+      setAppLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const openAuthModal = (mode) => {
@@ -40,6 +49,7 @@ function App() {
 
   return (
     <RescueProvider>
+      {appLoading && <Loader />}
       <BrowserRouter>
         <Navbar openAuthModal={openAuthModal} />
         <Routes>
