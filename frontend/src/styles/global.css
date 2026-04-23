@@ -221,9 +221,9 @@ html {
 .hero-message {
   flex: 1;
   margin-left: 80px;
-  background: #eee;
+  background: #fafdf6;
   border-radius: 40px;
-  padding: 50px;
+  padding: 35px;
   min-height: 400px;
   display: flex;
   align-items: center;
