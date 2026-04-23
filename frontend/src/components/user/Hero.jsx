@@ -34,9 +34,11 @@ function Hero() {
 
       <div className="hero-message">
         <div style={{ textAlign: 'center', maxWidth: '80%' }}>
-          <h2>Give a Stray a Second Chance</h2>
+          <h2>Join the StrayCare community today!</h2>
           <p style={{ marginTop: '15px', fontSize: '1.2rem', lineHeight: '1.5', color: '#555' }}>
-            Join the StrayCare community today! Whether you're looking to adopt a furry friend, report an animal in need, or track rescues in your neighborhood, your compassion makes a world of difference.
+             Your compassion makes a world of difference.
+              Whether you choose to adopt a loving companion, report an animal in need, support rescue efforts, or simply stay informed about what's happening in your neighborhood, every small step contributes to a larger impact.
+              Together, we can provide timely care, safe homes, and a better future for those who cannot speak for themselves. Your kindness has the power to save lives—start making a difference today.``
           </p>
         </div>
       </div>
