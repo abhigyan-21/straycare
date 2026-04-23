@@ -6,6 +6,7 @@ import VetStatus from "./pages/vet/VetStatus";
 import VetCampaign from "./pages/vet/VetCampaign";
 import VetProfile from "./pages/vet/VetProfile";
 import VetTracking from "./pages/vet/VetTracking";
+import VetRescuers from "./pages/vet/VetRescuers";
 import VetNavbar from "./components/vet/VetNavbar";
 import Guide from "./pages/user/Guide"
 import ProtectedRoute from './components/ProtectedRoute';
@@ -37,6 +38,7 @@ function VetApp() {
           <Route path="/status" element={<VetStatus />} />
           <Route path="/campaign" element={<VetCampaign />} />
           <Route path="/profile" element={<VetProfile />} />
+          <Route path="/rescuers" element={<VetRescuers />} />
           <Route path="/tracking/:id" element={<VetTracking />} />
           <Route path="/guide" element={<Guide />} />
           {/* Add more protected routes here */}

@@ -75,16 +75,18 @@ function ProfileDropdown({ closeMenu }) {
             >
               User
             </button>
-            {/* Demo Bypass: Showing Rescuer option to all users for testing */}
-            <button 
-              className={`dropdown-item sub-item ${isRescuerMode ? 'active' : ''}`} 
-              onClick={() => {
-                setIsOpen(false);
-                navigate('/rescuer/dashboard');
-              }}
-            >
-              Rescuer
-            </button>
+            {/* Only show Rescuer option if user has the role */}
+            {(user?.role === 'RESCUER' || user?.role === 'ADMIN') && (
+              <button 
+                className={`dropdown-item sub-item ${isRescuerMode ? 'active' : ''}`} 
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate('/rescuer/dashboard');
+                }}
+              >
+                Rescuer
+              </button>
+            )}
             
 
           </div>

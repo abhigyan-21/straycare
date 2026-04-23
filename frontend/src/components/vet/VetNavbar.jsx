@@ -30,6 +30,7 @@ function VetNavbar() {
           <NavLink to="/status" onClick={closeMenu} >Status</NavLink>
           <NavLink to="/adopt" onClick={closeMenu}>Adopt</NavLink>
           <NavLink to="/campaign" onClick={closeMenu}>Campaign</NavLink>
+          <NavLink to="/rescuers" onClick={closeMenu}>Rescuers</NavLink>
           <NavLink to="/guide" onClick={closeMenu}>Guide</NavLink>
         </div>
       </div>

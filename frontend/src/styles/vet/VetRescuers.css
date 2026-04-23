@@ -1,0 +1,209 @@
+.vet-rescuers-page {
+    padding: 20px 80px 40px 80px;
+    background-color: #fff;
+}
+
+.rescuers-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.rescuers-header h1 {
+    font-size: 2.5rem;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+.rescuers-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Form Styles */
+.add-rescuer-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
+    border: 1px solid #f0f0f0;
+}
+
+.add-rescuer-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rescuer-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: end;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    background-color: #fff;
+    border-color: #5a5a5a9a !important;
+    box-shadow: 0 0 0 4px rgba(185, 185, 185, 0.1) !important;
+}
+
+.add-btn {
+    background: #b8f9b8;
+    border: 2px solid #97f3a1;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 1px 12px rgb(170, 255, 136);
+}
+
+.add-btn:disabled {
+    background: #eee;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* List Styles */
+.rescuers-list-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.rescuers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.rescuer-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.rescuer-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.rescuer-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.rescuer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rescuer-info {
+    flex: 1;
+}
+
+.rescuer-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.rescuer-info p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.remove-btn {
+    background: #fff;
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.remove-btn:hover {
+    background: #ff4444;
+    color: #fff;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    background: #fcfcfc;
+    border-radius: 24px;
+    border: 2px dashed #eee;
+    grid-column: 1 / -1;
+}
+
+.empty-state p {
+    color: #999;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .rescuer-form {
+        grid-template-columns: 1fr;
+    }
+
+    .add-btn {
+        width: 100%;
+    }
+}
