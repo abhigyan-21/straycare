@@ -64,6 +64,7 @@ model User {
   avatarUrl    String?
   isVerified   Boolean @default(false)
   refreshToken String?
+  contact      String?
 
   clinicId String?
   clinic   Clinic? @relation(fields: [clinicId], references: [id])
