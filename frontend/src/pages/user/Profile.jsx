@@ -4,6 +4,7 @@ import '../../styles/user/Profile.css';
 import '../../styles/user/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuth } from '../../context/AuthContext';
+import MiniLoader from '../../components/user/MiniLoader';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -14,6 +15,8 @@ const Profile = () => {
     const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const [user, setUser] = useState({
         name: authUser?.name || 'John Doe',
@@ -46,7 +49,25 @@ const Profile = () => {
     };
 
     const handleCreatePostSubmit = (newPost) => {
-        setMockPosts([{ id: newPost.id, image: newPost.postImage }, ...mockPosts]);
+        handleCloseCreateModal();
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        // Simulate upload progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10 + 2; // Slower increment (2% to 12%)
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                setTimeout(() => {
+                    setMockPosts([{ id: newPost.id, image: newPost.postImage }, ...mockPosts]);
+                    setIsUploading(false);
+                    setUploadProgress(0);
+                }, 800); // Slightly longer "finishing" pause
+            }
+            setUploadProgress(progress);
+        }, 400); // Slower interval (every 400ms)
     };
 
     const [mockDonations, setMockDonations] = useState([
@@ -232,8 +253,27 @@ const Profile = () => {
                     <div className="profile-section fade-in">
                         <div className="section-header">
                             <h2>Manage Posts</h2>
-                            <button className="create-post-btn inline-btn" onClick={handleOpenCreateModal}>
-                                <span className="plus-icon">+</span> Create a Post
+                            <button 
+                                className={`create-post-btn inline-btn ${isUploading ? 'uploading' : ''}`} 
+                                onClick={handleOpenCreateModal}
+                                disabled={isUploading}
+                            >
+                                {isUploading ? (
+                                    <div className="button-progress-wrapper">
+                                        <div 
+                                            className="button-progress-fill" 
+                                            style={{ width: `${uploadProgress}%` }}
+                                        ></div>
+                                        <div className="button-progress-content">
+                                            <MiniLoader />
+                                            <span>Posting... {Math.round(uploadProgress)}%</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span className="plus-icon">+</span> Create a Post
+                                    </>
+                                )}
                             </button>
                         </div>
                         <div className="post-grid">

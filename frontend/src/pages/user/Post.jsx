@@ -3,6 +3,7 @@ import '../../styles/user/Post.css';
 import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuth } from '../../context/AuthContext';
 import PostCard from '../../components/user/PostCard';
+import MiniLoader from '../../components/user/MiniLoader';
 
 const initialPosts = [
     {
@@ -41,6 +42,8 @@ function Post({ openAuthModal }) {
     const [posts, setPosts] = useState(initialPosts);
     const [newComment, setNewComment] = useState({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         if (isCreateModalOpen) {
@@ -66,13 +69,30 @@ function Post({ openAuthModal }) {
     };
 
     const handleCreatePostSubmit = (newPost) => {
-        setPosts([{
-            ...newPost,
-            username: authUser?.name || 'current_user',
-            userImage: authUser?.avatar || 'https://i.pravatar.cc/150?img=11',
-            timestamp: 'Just now',
-            location: newPost.location || null
-        }, ...posts]);
+        handleCloseCreateModal();
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10 + 2; // Slower increment (2% to 12%)
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                setTimeout(() => {
+                    setPosts([{
+                        ...newPost,
+                        username: authUser?.name || 'current_user',
+                        userImage: authUser?.avatar || 'https://i.pravatar.cc/150?img=11',
+                        timestamp: 'Just now',
+                        location: newPost.location || null
+                    }, ...posts]);
+                    setIsUploading(false);
+                    setUploadProgress(0);
+                }, 800); // Slightly longer "finishing" pause
+            }
+            setUploadProgress(progress);
+        }, 400); // Slower interval (every 400ms)
     };
 
     const handleShare = async (post) => {
@@ -146,8 +166,27 @@ function Post({ openAuthModal }) {
     return (
         <div className="posts-container">
             <div className="create-post-header">
-                <button className="create-post-btn" onClick={handleOpenCreateModal}>
-                    <span className="plus-icon">+</span> Create a Post
+                <button 
+                    className={`create-post-btn ${isUploading ? 'uploading' : ''}`} 
+                    onClick={handleOpenCreateModal}
+                    disabled={isUploading}
+                >
+                    {isUploading ? (
+                        <div className="button-progress-wrapper">
+                            <div 
+                                className="button-progress-fill" 
+                                style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                            <div className="button-progress-content">
+                                <MiniLoader />
+                                <span>Posting... {Math.round(uploadProgress)}%</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="plus-icon">+</span> Create a Post
+                        </>
+                    )}
                 </button>
             </div>
 
