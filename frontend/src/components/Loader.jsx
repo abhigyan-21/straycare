@@ -8,12 +8,12 @@ import catRun1 from '../assets/loader/cat_run1.png';
 import catRun2 from '../assets/loader/cat_run2.png';
 
 const tips = [
-        "Tip: Let them come to you first!",
-        "Tip: Start with gentle head pats.",
-        "Tip: Watch their tail—it tells a lot!",
-        "Tip: Slow hands, happy pets.",
-        "Tip: If they pull away, give them space.",
-    ];
+    "Tip: Let them come to you first!",
+    "Tip: Start with gentle head pats.",
+    "Tip: Watch their tail—it tells a lot!",
+    "Tip: Slow hands, happy pets.",
+    "Tip: If they pull away, give them space.",
+];
 
 const Loader = () => {
     const images = [dogRun1, dogRun2, catRun1, catRun2];
@@ -45,7 +45,6 @@ const Loader = () => {
                 <div className="loader-image-container">
                     <img
                         src={images[currentIndex]}
-                        alt="Loading..."
                         className="loader-image"
                     />
                 </div>
