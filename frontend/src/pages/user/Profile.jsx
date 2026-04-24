@@ -21,7 +21,7 @@ const Profile = () => {
     const [user, setUser] = useState({
         name: authUser?.name || 'John Doe',
         email: authUser?.email || 'john.doe@example.com',
-        phone: '+91 77887 87665',
+        phone: authUser?.contact || '+91 77887 87665',
         joined: 'January 2026',
         avatar: 'https://i.pravatar.cc/150?img=11',
     });

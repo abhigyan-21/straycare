@@ -19,9 +19,12 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
-        const email = mode === 'signup' ? e.target[1].value : e.target[0].value;
-        const password = mode === 'signup' ? e.target[2].value : e.target[1].value;
+        const formData = new FormData(e.currentTarget);
+
+        const email = formData.get('email');
+        const password = formData.get('password');
+        const name = formData.get('name');
+        const contact = formData.get('contact');
 
         // Special mock credentials for testing
         let role = 'USER';
@@ -30,8 +33,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         }
 
         const userData = {
-            name: mode === 'signup' ? e.target[0].value : (email === '12@g.com' ? 'Test Rescuer' : 'StrayCare User'),
+            name: mode === 'signup' ? name : (email === '12@g.com' ? 'Test Rescuer' : 'StrayCare User'),
             email: email,
+            contact: contact,
             role: role
         };
 
@@ -64,18 +68,25 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     {mode === 'signup' && (
                         <div className="auth-form-group">
                             <label>Full Name</label>
-                            <input type="text" placeholder="John Doe" required />
+                            <input name="name" type="text" placeholder="John Doe" required />
+                        </div>
+                    )}
+
+                    {mode === 'signup' && (
+                        <div className="auth-form-group">
+                            <label>Contact Number</label>
+                            <input name="contact" type="tel" placeholder="1234567890" minLength={10} maxLength={10} required />
                         </div>
                     )}
 
                     <div className="auth-form-group">
                         <label>Email</label>
-                        <input type="email" placeholder="john@example.com" defaultValue="12@g.com" required />
+                        <input name="email" type="email" placeholder="john@example.com" defaultValue="12@g.com" required />
                     </div>
 
                     <div className="auth-form-group">
                         <label>Password</label>
-                        <input type="password" placeholder="••••••••" defaultValue="1234" required />
+                        <input name="password" type="password" placeholder="••••••••" defaultValue="1234" required />
                     </div>
 
                     <button type="submit" className="auth-submit-btn">
