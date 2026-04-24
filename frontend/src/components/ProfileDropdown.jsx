@@ -76,7 +76,7 @@ function ProfileDropdown({ closeMenu }) {
               User
             </button>
             {/* Only show Rescuer option if user has the role */}
-            {(user?.role === 'RESCUER' || user?.role === 'ADMIN') && (
+            {(user?.role === 'RESCUER' || user?.role === 'ADMIN' || user?.role === 'USER') && (
               <button 
                 className={`dropdown-item sub-item ${isRescuerMode ? 'active' : ''}`} 
                 onClick={() => {

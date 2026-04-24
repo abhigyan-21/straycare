@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
             setIsLoggedIn(true);
             const userData = JSON.parse(savedUser);
             // Ensure role exists for ProtectedRoute logic
-            if (!userData.role) userData.role = 'user';
+            if (!userData.role) userData.role = 'USER';
             setUser(userData);
         }
         setIsLoading(false);
@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = (userData) => {
         setIsLoggedIn(true);
+        if (!userData.role) userData.role = 'USER';
         setUser(userData);
         localStorage.setItem('straycare_user', JSON.stringify(userData));
     };

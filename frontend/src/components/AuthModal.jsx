@@ -19,11 +19,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // In a real app, this would handle authentication
+        
+        const email = mode === 'signup' ? e.target[1].value : e.target[0].value;
+        const password = mode === 'signup' ? e.target[2].value : e.target[1].value;
+
+        // Special mock credentials for testing
+        let role = 'USER';
+        if (email === '12@g.com' && password === '1234') {
+            role = 'RESCUER';
+        }
+
         const userData = {
-            name: mode === 'signup' ? e.target[0].value : 'StrayCare User',
-            email: mode === 'signup' ? e.target[1].value : e.target[0].value,
-            role: 'user' // Default role for demo/testing access
+            name: mode === 'signup' ? e.target[0].value : (email === '12@g.com' ? 'Test Rescuer' : 'StrayCare User'),
+            email: email,
+            role: role
         };
 
         login(userData);
@@ -61,12 +70,12 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
                     <div className="auth-form-group">
                         <label>Email</label>
-                        <input type="email" placeholder="john@example.com" required />
+                        <input type="email" placeholder="john@example.com" defaultValue="12@g.com" required />
                     </div>
 
                     <div className="auth-form-group">
                         <label>Password</label>
-                        <input type="password" placeholder="••••••••" required />
+                        <input type="password" placeholder="••••••••" defaultValue="1234" required />
                     </div>
 
                     <button type="submit" className="auth-submit-btn">
