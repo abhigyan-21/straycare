@@ -71,7 +71,7 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           {/* Rescuer Section Paths (Temporarily allowing 'user' for demo/testing) */}
-          <Route path="/rescuer" element={<ProtectedRoute allowedRoles={['RESCUER', 'ADMIN', 'USER']} />}>
+          <Route path="/rescuer" element={<ProtectedRoute allowedRoles={['RESCUER', 'ADMIN',]} />}>
             <Route path="dashboard" element={<RescuerDashboard />} />
             <Route path="nav/:reportId" element={<RescuerNavigation />} />
           </Route>

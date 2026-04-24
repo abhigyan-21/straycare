@@ -61,13 +61,13 @@ function ProfileDropdown({ closeMenu }) {
               <span>Profile</span>
             </NavLink>
           </div>
-          
+
           <div className="dropdown-divider"></div>
-          
+
           <div className="dropdown-group">
             <div className="dropdown-label">Switch Profile</div>
-            <button 
-              className={`dropdown-item sub-item ${!isRescuerMode ? 'active' : ''}`} 
+            <button
+              className={`dropdown-item sub-item ${!isRescuerMode ? 'active' : ''}`}
               onClick={() => {
                 setIsOpen(false);
                 navigate('/');
@@ -76,9 +76,9 @@ function ProfileDropdown({ closeMenu }) {
               User
             </button>
             {/* Only show Rescuer option if user has the role */}
-            {(user?.role === 'RESCUER' || user?.role === 'ADMIN' || user?.role === 'USER') && (
-              <button 
-                className={`dropdown-item sub-item ${isRescuerMode ? 'active' : ''}`} 
+            {(user?.role === 'RESCUER' || user?.role === 'ADMIN') && (
+              <button
+                className={`dropdown-item sub-item ${isRescuerMode ? 'active' : ''}`}
                 onClick={() => {
                   setIsOpen(false);
                   navigate('/rescuer/dashboard');
@@ -87,7 +87,7 @@ function ProfileDropdown({ closeMenu }) {
                 Rescuer
               </button>
             )}
-            
+
 
           </div>
           <div className="logout-wrapper">
