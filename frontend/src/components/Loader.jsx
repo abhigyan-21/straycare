@@ -46,6 +46,8 @@ const Loader = () => {
                     <img
                         src={images[currentIndex]}
                         className="loader-image"
+                        loading='eager'
+                        
                     />
                 </div>
 
