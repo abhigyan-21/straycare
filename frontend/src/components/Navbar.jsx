@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import logo from "../assets/straycare_logo.png";
+import logo from "../assets/straycare_logo.jpg";
 import { useAuth } from "../context/AuthContext";
 import ProfileDropdown from "./ProfileDropdown";
 

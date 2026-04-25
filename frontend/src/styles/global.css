@@ -23,7 +23,7 @@ html {
   justify-content: space-between;
   padding-left: 10px;
   padding-right: 40px;
-  height: 75px;
+  height: 55px;
   border-bottom: 5px solid #e6ffd9;
   border-top: 5px solid #e6ffd9;
   background: #ffffff;
@@ -42,8 +42,9 @@ html {
 }
 
 .nav-left .logo {
-  width: 70px;
-  height: 70px;
+  margin-top: 6px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
 }
