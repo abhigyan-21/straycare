@@ -21,11 +21,9 @@ html {
   font-weight: 400;
   display: flex;
   justify-content: space-between;
-  padding-left: 10px;
-  padding-right: 40px;
+  padding: 5px 40px 5px 8px;
   height: 55px;
   border-bottom: 5px solid #e6ffd9;
-  border-top: 5px solid #e6ffd9;
   background: #ffffff;
   align-items: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -179,7 +177,7 @@ html {
 .hero {
   display: flex;
   justify-content: space-between;
-  padding: 45px;
+  padding: 40px;
   min-height: calc(100vh - 120px);
   align-items: center;
   box-sizing: border-box;
