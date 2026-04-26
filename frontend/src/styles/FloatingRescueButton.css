@@ -19,13 +19,14 @@
 }
 
 .rescue-pill {
-    background: #f1bf42;
+    background-color: #60db42;
     border-radius: 100px;
     display: flex;
     align-items: center;
-    padding: 10px 14px 10px 40px;
-    gap: 35px;
+    padding: 5px 10px 5px 35px;
+    gap: 20px;
     min-width: 150px;
+    width:240px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
     position: relative;
@@ -60,7 +61,7 @@
 }
 
 .rescue-eta {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.01em;

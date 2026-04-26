@@ -39,7 +39,7 @@ const Loader = () => {
 
     return (
         <div className="loader-overlay">
-            <div className="loader-title"> StrayCare</div>
+            <div className="loader-title"> Pawly</div>
             <div className="loader-content">
 
                 <div className="loader-image-container">
@@ -47,7 +47,6 @@ const Loader = () => {
                         src={images[currentIndex]}
                         className="loader-image"
                         loading='eager'
-                        
                     />
                 </div>
 
