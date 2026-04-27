@@ -39,7 +39,7 @@ const Loader = () => {
 
     return (
         <div className="loader-overlay">
-            <div className="loader-title"> Pawly</div>
+            <div className="loader-title">Furzo</div>
             <div className="loader-content">
 
                 <div className="loader-image-container">
