@@ -35,10 +35,10 @@ function Hero() {
 
       <div className="hero-message">
         <div style={{ textAlign: 'center', maxWidth: '80%' }}>
-          <h2>Join the Pawly community today!</h2>
+          <h2>Join the Furzo community today!</h2>
           <p style={{ marginTop: '15px', fontSize: '1.2rem', lineHeight: '1.5', color: '#555' }}>
-             Your compassion makes a world of difference. Whether you choose to adopt a loving companion, report an stray in need, support rescue efforts, or simply stay informed about what's happening in your neighborhood, every small step contributes to a larger impact.
-              Together, we can provide timely care, safe homes, and a better future for those who cannot speak for themselves. Your kindness has the power to save lives—start making a difference today.
+            Your compassion makes a world of difference. Whether you choose to adopt a loving companion, report an stray in need, support rescue efforts, or simply stay informed about what's happening in your neighborhood, every small step contributes to a larger impact.
+            Together, we can provide timely care, safe homes, and a better future for those who cannot speak for themselves. Your kindness has the power to save lives—start making a difference today.
           </p>
         </div>
       </div>
