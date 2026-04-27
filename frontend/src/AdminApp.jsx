@@ -15,7 +15,7 @@ function AdminApp() {
   const { isLoggedIn, user, isLoading } = useAuth();
   
   // Authorized roles for the admin portal
-  const isAuthorized = isLoggedIn && user && ['admin'].includes(user.role);
+  const isAuthorized = isLoggedIn && user && ['ADMIN'].includes(user.role);
 
   if (isLoading) return <div>Loading Admin Portal...</div>;
 
@@ -27,7 +27,7 @@ function AdminApp() {
       />
       
       {/* Protection wrapper for all admin routes */}
-      <Route element={<ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/login" unauthorizedRedirect="/admin/login" />}>
+      <Route element={<ProtectedRoute allowedRoles={['ADMIN']} redirectTo="/admin/login" unauthorizedRedirect="/admin/login" />}>
         <Route element={<AdminLayout />}>
           <Route path="/" element={<AdminDashboard />} />
           <Route path="/documents" element={<AdminDocuments />}/>

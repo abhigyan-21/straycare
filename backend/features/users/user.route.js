@@ -5,7 +5,7 @@ const { verifyToken, allowRoles } = require('../auth/auth.middleware');
 
 // All routes here are protected and restricted to Vet/Clinic/NGO staff or Admins
 router.use(verifyToken);
-router.use(allowRoles('VET', 'ADMIN', 'CLINIC', 'NGO'));
+router.use(allowRoles('VET', 'ADMIN', 'NGO'));
 
 router.get('/rescuers', userController.getClinicRescuers);
 router.post('/rescuers/add', userController.addRescuer);

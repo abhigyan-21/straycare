@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import '../../styles/user/Adopt.css';
-import { mockPets } from '../../data/mockPets';
+import { getPets } from '../../services/api';
 import PetCarousel from '../../components/user/PetCarousel';
 import FilterModal from '../../components/user/FilterModal';
 
 function Adopt() {
+    const [pets, setPets] = useState([]);
     const [currentPetIndex, setCurrentPetIndex] = useState(0);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [interestedPets, setInterestedPets] = useState(new Set());
@@ -15,8 +16,16 @@ function Adopt() {
         ageGroup: ''
     });
 
+    useEffect(() => {
+        const fetchPets = async () => {
+            const data = await getPets();
+            setPets(data);
+        };
+        fetchPets();
+    }, []);
+
     const filteredPets = useMemo(() => {
-        return mockPets.filter(pet => {
+        return pets.filter(pet => {
             let match = true;
             if (filters.type && pet.type !== filters.type) match = false;
             if (filters.breed && !pet.breed.toLowerCase().includes(filters.breed.toLowerCase())) match = false;
@@ -24,7 +33,7 @@ function Adopt() {
             if (filters.ageGroup && pet.ageGroup !== filters.ageGroup) match = false;
             return match;
         });
-    }, [filters]);
+    }, [filters, pets]);
 
     // Adjust index if filtering makes it out of bounds
     React.useEffect(() => {

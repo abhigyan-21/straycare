@@ -17,8 +17,8 @@ import Footer from "./components/Footer";
 function VetApp() {
   const { isLoggedIn, user, isLoading } = useAuth();
 
-  // Authorized roles: vet, clinic, or ngo
-  const isAuthorized = isLoggedIn && user && ['vet', 'clinic', 'ngo'].includes(user.role);
+  // Authorized roles: VET, NGO
+  const isAuthorized = isLoggedIn && user && ['VET', 'NGO'].includes(user.role);
 
   if (isLoading) return <div>Loading Portal...</div>;
 
@@ -31,8 +31,8 @@ function VetApp() {
           element={isAuthorized ? <Navigate to="/vet/dashboard" replace /> : <VetLogin />}
         />
 
-        {/* Centralized protection for all professional vet, clinic, and NGO routes */}
-        <Route element={<ProtectedRoute allowedRoles={['vet', 'clinic', 'ngo']} redirectTo="/vet/login" unauthorizedRedirect="/vet/login" />}>
+        {/* Centralized protection for all professional vet and NGO routes */}
+        <Route element={<ProtectedRoute allowedRoles={['VET', 'NGO']} redirectTo="/vet/login" unauthorizedRedirect="/vet/login" />}>
           <Route path="/" element={<Navigate to="/vet/dashboard" replace />} />
           <Route path="/dashboard" element={<VetDashboard />} />
           <Route path="/adopt" element={<VetAdopt />} />

@@ -14,6 +14,9 @@ router.post('/register', authLimiter, authController.register);
 router.post('/login', authLimiter, authController.login);
 router.post('/refresh', authController.refresh);
 
+// Health check for frontend detection
+router.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 // Example protected route for verification
 router.get('/me', verifyToken, (req, res) => {
   res.json({ user: req.user });

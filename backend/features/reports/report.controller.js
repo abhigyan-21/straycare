@@ -167,10 +167,74 @@ const updateReportStatus = async (req, res) => {
   }
 };
 
+/**
+ * @desc Assign a report to a rescuer or clinic
+ * @route PATCH /api/reports/:id/assign
+ * @access Private (Vet/Admin)
+ */
+const assignReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rescuerId, clinicId } = req.body;
+
+    const data = {};
+    if (rescuerId) data.assignedRescuerId = rescuerId;
+    if (clinicId) data.assignedClinicId = clinicId;
+    
+    // Auto-update status to ASSIGNED if not already rescued
+    const currentReport = await prisma.animalReport.findUnique({ where: { id } });
+    if (currentReport && currentReport.status === 'REPORTED') {
+      data.status = 'ASSIGNED';
+    }
+
+    const report = await prisma.animalReport.update({
+      where: { id },
+      data,
+    });
+
+    res.json(report);
+  } catch (error) {
+    console.error('Error assigning report:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Update the live location of a rescuer for a specific report
+ * @route PATCH /api/reports/:id/location
+ * @access Private (Rescuer)
+ */
+const updateRescuerLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lat, lng } = req.body;
+
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ error: 'Latitude and longitude are required' });
+    }
+
+    const report = await prisma.animalReport.update({
+      where: { id },
+      data: {
+        rescuerLat: parseFloat(lat),
+        rescuerLng: parseFloat(lng),
+        lastTracked: new Date(),
+      },
+    });
+
+    res.json(report);
+  } catch (error) {
+    console.error('Error updating rescuer location:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createReport,
   getMyReports,
   getReports,
   getReportById,
   updateReportStatus,
+  assignReport,
+  updateRescuerLocation,
 };

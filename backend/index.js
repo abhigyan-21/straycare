@@ -10,6 +10,7 @@ const adoptionRoutes = require('./features/adoptions/adoption.route');
 const feedRoutes = require('./features/feed/feed.route');
 const fundingRoutes = require('./features/funding/funding.route');
 const userRoutes = require('./features/users/user.route');
+const medicalRoutes = require('./features/medical/medical.route');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -58,6 +59,7 @@ app.use('/api/adoptions', adoptionRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/funding', fundingRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/medical', medicalRoutes);
 
 // Generic Error Handler Middleware
 app.use((err, req, res, next) => {
