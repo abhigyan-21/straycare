@@ -2,6 +2,7 @@ import axios from 'axios';
 import { storiesData } from '../data/storiesData';
 import { highlightsData } from '../data/highlightsData';
 import { mockPets } from '../data/mockPets';
+import { adminStats, mockUsers, mockTracking, mockDocuments } from '../data/adminMockData';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -57,6 +58,47 @@ export const getHighlights = async () => {
     return response.data;
   } catch (error) {
     return highlightsData;
+  }
+};
+
+// Admin Endpoints
+export const getAdminStats = async () => {
+  if (!isBackendAvailable) return adminStats;
+  try {
+    const response = await apiClient.get('/admin/stats');
+    return response.data;
+  } catch (error) {
+    return adminStats;
+  }
+};
+
+export const getAdminUsers = async () => {
+  if (!isBackendAvailable) return mockUsers;
+  try {
+    const response = await apiClient.get('/admin/users');
+    return response.data;
+  } catch (error) {
+    return mockUsers;
+  }
+};
+
+export const getAdminTracking = async () => {
+  if (!isBackendAvailable) return mockTracking;
+  try {
+    const response = await apiClient.get('/admin/tracking');
+    return response.data;
+  } catch (error) {
+    return mockTracking;
+  }
+};
+
+export const getAdminDocs = async () => {
+  if (!isBackendAvailable) return mockDocuments;
+  try {
+    const response = await apiClient.get('/admin/documents');
+    return response.data;
+  } catch (error) {
+    return mockDocuments;
   }
 };
 

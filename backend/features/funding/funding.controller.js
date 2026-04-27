@@ -155,7 +155,111 @@ const handleRazorpayWebhook = async (req, res) => {
   res.status(200).json({ received: true });
 };
 
+/**
+ * @desc Create a new campaign
+ * @route POST /api/funding/campaigns
+ * @access Private (Vet/Admin)
+ */
+const createCampaign = async (req, res) => {
+  try {
+    const { title, description, purpose, goalAmount, startDate, endDate, startTime, location, theme, image, banner } = req.body;
+    const userId = req.user.id;
+    const clinicId = req.user.clinicId;
+
+    if (!clinicId) {
+      return res.status(403).json({ error: 'You must be associated with a clinic to create a campaign' });
+    }
+
+    const campaign = await prisma.campaign.create({
+      data: {
+        title,
+        description,
+        purpose,
+        goalAmount: parseFloat(goalAmount),
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        startTime,
+        location,
+        theme,
+        image,
+        banner,
+        clinicId,
+        createdBy: userId,
+        status: 'APPROVED', // Default to approved for now as requested by vet flow
+      },
+    });
+
+    res.status(201).json({ status: 'success', data: campaign });
+  } catch (error) {
+    console.error('Error creating campaign:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Get campaigns for the current clinic
+ * @route GET /api/funding/campaigns
+ * @access Private (Vet/Admin)
+ */
+const getCampaigns = async (req, res) => {
+  try {
+    const clinicId = req.user.clinicId;
+
+    if (!clinicId) {
+      // If no clinicId, maybe return all approved campaigns (public view)
+      const campaigns = await prisma.campaign.findMany({
+        where: { status: 'APPROVED' },
+        include: { clinic: true },
+      });
+      return res.json({ status: 'success', data: campaigns });
+    }
+
+    const campaigns = await prisma.campaign.findMany({
+      where: { clinicId },
+      include: {
+        volunteers: {
+          include: {
+            user: {
+              select: { name: true }
+            }
+          }
+        }
+      }
+    });
+
+    res.json({ status: 'success', data: campaigns });
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Update campaign status
+ * @route PATCH /api/funding/campaigns/:id
+ * @access Private (Vet/Admin)
+ */
+const updateCampaignStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    const updatedCampaign = await prisma.campaign.update({
+      where: { id },
+      data: { status },
+    });
+
+    res.json({ status: 'success', data: updatedCampaign });
+  } catch (error) {
+    console.error('Error updating campaign status:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createDonationOrder,
   handleRazorpayWebhook,
+  createCampaign,
+  getCampaigns,
+  updateCampaignStatus,
 };

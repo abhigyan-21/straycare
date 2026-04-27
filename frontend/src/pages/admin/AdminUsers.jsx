@@ -1,21 +1,26 @@
 import { Shield, UserX, CheckCircle, Clock, Search, Filter } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
 import AdminBadge from '../../components/admin/AdminBadge';
-
-const mockUsers = [
-    { id: 1, name: 'Helping Paws NGO', email: 'contact@helpingpaws.org', role: 'ngo', status: 'Active', joined: '2025-10-12' },
-    { id: 2, name: 'City Vet Clinic', email: 'dr.smith@cityvet.com', role: 'partner', status: 'Active', joined: '2025-12-05' },
-    { id: 3, name: 'Rescue Rangers', email: 'info@rrangers.org', role: 'ngo', status: 'Pending', joined: '2026-03-08' },
-    { id: 4, name: 'Abhigyan Kumar', email: 'abhigyan@example.com', role: 'user', status: 'Active', joined: '2026-04-01' },
-    { id: 5, name: 'Dr. Rahul Sharma', email: 'rahul@vetclinic.com', role: 'partner', status: 'Active', joined: '2026-04-10' },
-];
+import { getAdminUsers } from '../../services/api';
 
 const AdminUsers = () => {
-    const [users, setUsers] = useState(mockUsers);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const data = await getAdminUsers();
+            setUsers(data);
+            setLoading(false);
+        };
+        fetchUsers();
+    }, []);
     const [activeTab, setActiveTab] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+
+    if (loading) return <div className="admin-loading">Loading Users...</div>;
 
     const toggleStatus = (id, currentStatus) => {
         setUsers(users.map(u =>

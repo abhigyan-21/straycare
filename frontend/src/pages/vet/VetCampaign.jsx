@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/vet/VetDashboard.css';
 import '../../styles/vet/VetCampaign.css';
 import '../../styles/vet/VetAdopt.css';
@@ -8,66 +8,12 @@ import CampaignListItem from '../../components/vet/CampaignListItem';
 import VetTabs from '../../components/vet/VetTabs';
 import CampaignDetailModal from '../../components/vet/CampaignDetailModal';
 
-const MOCK_CAMPAIGNS = [
-    {
-        id: 'CAMP-001',
-        title: 'Support feeding our pets',
-        description: 'Providing warm blankets and insulated shelters for 50+ stray dogs in the northern suburbs.',
-        purpose: 'To ensure every stray animal in the northern suburbs has access to nutritional food and warm shelter during the winter months.',
-        goalAmount: 5000,
-        raisedAmount: 3250,
-        volunteers: 24,
-        volunteersList: ['Sarah Connor', 'James Smith', 'Emily Blunt', 'Mark Ruffalo', 'Scarlett J.'],
-        startDate: '2026-11-01',
-        endDate: '2026-12-25',
-        startTime: '09:00 AM',
-        location: 'Northern Suburbs Community Center',
-        status: 'active',
-        theme: 'blue',
-        image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1200&auto=format&fit=crop',
-        banner: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1600&auto=format&fit=crop'
-    },
-    {
-        id: 'CAMP-002',
-        title: 'Support treatment of our pets',
-        description: 'Raising funds for critical surgeries and medical supplies for accident-prone areas.',
-        purpose: 'Providing emergency medical care and long-term rehabilitation for animals injured in road accidents.',
-        goalAmount: 8000,
-        raisedAmount: 1200,
-        volunteers: 8,
-        volunteersList: ['Dr. Aris', 'Nurse Joy', 'Peter Parker'],
-        startDate: '2026-04-15',
-        endDate: '2026-05-15',
-        startTime: '10:00 AM',
-        location: 'Central Veterinary Hospital',
-        status: 'active',
-        theme: 'green',
-        image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1200&auto=format&fit=crop',
-        banner: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1600&auto=format&fit=crop'
-    },
-    {
-        id: 'CAMP-003',
-        title: 'Support providing shelter for our pets',
-        description: 'Anti-rabies and DHPP vaccination drive for street animals in Sector 4 and 5.',
-        purpose: 'Eradicating rabies and ensuring the health of the stray population through massive vaccination drives.',
-        goalAmount: 3000,
-        raisedAmount: 3000,
-        volunteers: 45,
-        volunteersList: ['Tony Stark', 'Steve Rogers', 'Natasha R.'],
-        startDate: '2026-03-01',
-        endDate: '2026-03-31',
-        startTime: '08:00 AM',
-        location: 'Sector 4 Public Park',
-        status: 'active',
-        theme: 'yellow',
-        image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop',
-        banner: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1600&auto=format&fit=crop'
-    }
-];
+import { MOCK_CAMPAIGNS } from '../../data/mock_vet_data';
 
 function VetCampaign() {
     const [activeTab, setActiveTab] = useState('manage');
-    const [campaigns, setCampaigns] = useState(MOCK_CAMPAIGNS);
+    const [campaigns, setCampaigns] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedCampaign, setSelectedCampaign] = useState(null);
     const [filter, setFilter] = useState('all');
@@ -81,7 +27,30 @@ function VetCampaign() {
         purpose: ''
     });
 
-    const activeCampaigns = campaigns.filter(c => c.status === 'active');
+    const fetchCampaigns = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/funding/campaigns', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (!response.ok) throw new Error('Backend offline');
+            const result = await response.json();
+            setCampaigns(result.data || []);
+        } catch (error) {
+            console.warn("Using mock campaigns fallback:", error);
+            setCampaigns(MOCK_CAMPAIGNS);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCampaigns();
+    }, []);
+
+    const activeCampaigns = campaigns.filter(c => c.status === 'active' || c.status === 'APPROVED');
 
     const filteredCampaigns = campaigns.filter(c => {
         if (filter === 'all') return true;
@@ -106,24 +75,47 @@ function VetCampaign() {
         return () => clearInterval(timer);
     }, [activeCampaigns.length]);
 
-    const handleCreateCampaign = (e) => {
+    const handleCreateCampaign = async (e) => {
         e.preventDefault();
-        const themes = ['blue', 'green', 'yellow'];
-        const campaign = {
-            ...newCampaign,
-            id: `CAMP-00${campaigns.length + 1}`,
-            raisedAmount: 0,
-            volunteers: 0,
-            volunteersList: [],
-            status: 'active',
-            theme: themes[campaigns.length % 3],
-            image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1200&auto=format&fit=crop',
-            banner: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1600&auto=format&fit=crop',
-            startTime: '09:00 AM'
-        };
-        setCampaigns([campaign, ...campaigns]);
-        setActiveTab('manage');
-        setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
+        try {
+            const response = await fetch('/api/funding/campaigns', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(newCampaign)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setCampaigns([result.data, ...campaigns]);
+                setActiveTab('manage');
+                setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
+                alert('Campaign launched successfully!');
+            } else {
+                throw new Error('Failed to launch');
+            }
+        } catch (error) {
+            console.error('API failed, mock creation:', error);
+            const themes = ['blue', 'green', 'yellow'];
+            const campaign = {
+                ...newCampaign,
+                id: `CAMP-00${campaigns.length + 1}`,
+                raisedAmount: 0,
+                volunteers: 0,
+                volunteersList: [],
+                status: 'active',
+                theme: themes[campaigns.length % 3],
+                image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1200&auto=format&fit=crop',
+                banner: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1600&auto=format&fit=crop',
+                startTime: '09:00 AM'
+            };
+            setCampaigns([campaign, ...campaigns]);
+            setActiveTab('manage');
+            setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
+            alert('Launched (Mock Mode)');
+        }
     };
 
     const calculateDaysLeft = (endDate) => {

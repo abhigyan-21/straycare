@@ -10,7 +10,7 @@ const VetLogin = () => {
     const { login, user, logout } = useAuth();
     const navigate = useNavigate();
 
-    const isUnauthorized = user && !['vet', 'clinic', 'ngo'].includes(user.role);
+    const isUnauthorized = user && !['VET', 'CLINIC', 'NGO', 'vet', 'clinic', 'ngo'].includes(user.role);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -19,12 +19,12 @@ const VetLogin = () => {
         const userData = {
             name: 'Dr. John Doe',
             email: email,
-            role: 'vet' // Explicitly setting role to vet for this portal
+            role: 'VET' // Explicitly setting role to VET for this portal
         };
 
         login(userData);
         alert('Vet Login successful!');
-        navigate('/dashboard');
+        navigate('/vet/dashboard');
     };
 
     return (

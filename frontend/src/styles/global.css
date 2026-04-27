@@ -194,8 +194,10 @@ html {
   height: 440px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center;
   display: block;
   border: 10px solid #e6ffd9;
+  margin-left: 20px;
 }
 
 .small-circle {
@@ -203,18 +205,19 @@ html {
   height: 280px;
   border-radius: 50%;
   background-size: cover;
+  background-position: center;
   position: absolute;
   border: 10px solid #e6ffd9;
 }
 
 .small-circle.top {
   top: -50px;
-  left: 320px;
+  left: 340px;
 }
 
 .small-circle.bottom {
   bottom: -50px;
-  left: 320px;
+  left: 340px;
 }
 
 .hero-message {
@@ -625,6 +628,7 @@ html {
     width: 250px;
     height: 250px;
     border-width: 5px;
+    object-position: center;
   }
 
   .small-circle {

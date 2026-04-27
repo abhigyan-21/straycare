@@ -45,7 +45,7 @@ function LiveStatusView({ rescues, title = "current pet being rescued" }) {
                                     <div className="status-label">status</div>
                                     <div 
                                         className={`status-badge ${getStatusClass(rescue.status)}`}
-                                        onClick={() => navigate(`/tracking/${rescue.id}`)}
+                                        onClick={() => navigate(`/vet/tracking/${rescue.id}`)}
                                         style={{ cursor: 'pointer' }}
                                         title="Click to track live"
                                     >

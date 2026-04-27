@@ -1,44 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/vet/VetDashboard.css';
 import LiveStatusView from '../../components/vet/LiveStatusView';
 import VetStatCard from '../../components/vet/VetStatCard';
 
-const MOCK_DATA = {
-    rescues: [
-        { id: 'REP-7729', description: 'Golden Retriever found near Central Park with a leg injury.', status: 'in transit', image: null },
-        { id: 'REP-8102', description: 'Stray cat trapped in a drain near sector 5.', status: 'reached clinic', image: null },
-        { id: 'REP-9003', description: 'Wounded beagle reported near the bypass.', status: 'pickup', image: null },
-        { id: 'REP-1104', description: 'Sick puppy found in a box near the market.', status: 'in transit', image: null },
-        { id: 'REP-2205', description: 'Injured bird rescued from a rooftop.', status: 'pickup', image: null }
-    ],
-    stats: {
-        liveAdoptions: 5,
-        newRequests: 3,
-        liveRequests: 3,
-        latestCampaign: {
-            title: 'Winter Shelter Drive',
-            date: '25th Dec'
-        }
-    }
-};
+import { MOCK_DASHBOARD_DATA } from '../../data/mock_vet_data';
 
 function VetDashboard() {
-    const { rescues, stats } = MOCK_DATA;
+    const [rescues, setRescues] = useState([]);
+    const [stats, setStats] = useState({
+        liveAdoptions: 0,
+        newRequests: 0,
+        liveRequests: 0,
+        latestCampaign: { title: 'No active campaign', date: '--' }
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [reportsRes, petsRes, reqsRes, campsRes] = await Promise.all([
+                fetch('/api/reports/clinic', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                fetch('/api/adoptions/pets', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                fetch('/api/adoptions/requests', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                fetch('/api/funding/campaigns', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+            ]);
+
+            if (!reportsRes.ok || !petsRes.ok || !reqsRes.ok || !campsRes.ok) throw new Error('Backend offline');
+
+            const reports = await reportsRes.json();
+            const pets = await petsRes.json();
+            const reqs = await reqsRes.json();
+            const camps = await campsRes.json();
+
+            const latestCamp = camps.data?.[0];
+
+            setRescues(reports.map(r => ({
+                id: r.id.substring(0, 8).toUpperCase(),
+                description: r.description,
+                status: r.status.toLowerCase().replace('_', ' '),
+                image: r.mediaUrls?.[0] || null
+            })));
+
+            setStats({
+                liveAdoptions: pets.data?.filter(p => p.status === 'AVAILABLE').length || 0,
+                newRequests: reqs.data?.filter(r => r.status === 'PENDING').length || 0,
+                liveRequests: reqs.data?.filter(r => r.status === 'INTERVIEW_SCHEDULED').length || 0,
+                latestCampaign: latestCamp ? {
+                    title: latestCamp.title,
+                    date: new Date(latestCamp.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                } : { title: 'No active campaign', date: '--' }
+            });
+        } catch (error) {
+            console.warn("Using mock data fallback for VetDashboard:", error);
+            setRescues(MOCK_DASHBOARD_DATA.rescues);
+            setStats(MOCK_DASHBOARD_DATA.stats);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     return (
         <div className="vet-dashboard">
-            <LiveStatusView rescues={rescues} />
+            {isLoading ? <p>Loading Dashboard...</p> : (
+                <>
+                    <LiveStatusView rescues={rescues} />
 
-            <div className="stats-grid">
-                <VetStatCard label="Live adoptions" value={stats.liveAdoptions} />
-                <VetStatCard label="New Requests" value={stats.newRequests} />
-                <VetStatCard label="Live Requests" value={stats.liveRequests} />
-                <VetStatCard 
-                    label="Campaign" 
-                    date={stats.latestCampaign.date} 
-                    campaignTitle={stats.latestCampaign.title} 
-                />
-            </div>
+                    <div className="stats-grid">
+                        <VetStatCard label="Live adoptions" value={stats.liveAdoptions} />
+                        <VetStatCard label="New Requests" value={stats.newRequests} />
+                        <VetStatCard label="Live Requests" value={stats.liveRequests} />
+                        <VetStatCard 
+                            label="Campaign" 
+                            date={stats.latestCampaign.date} 
+                            campaignTitle={stats.latestCampaign.title} 
+                        />
+                    </div>
+                </>
+            )}
         </div>
     );
 }

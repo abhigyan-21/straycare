@@ -8,7 +8,7 @@ const AdminReports = () => {
 
     return (
         <div>
-            <div className="admin-flex-between admin-mb-24">
+            <div className="admin-page-header">
                 <div>
                     <h2 className="admin-page-title">Reports & Analytics</h2>
                     <p className="admin-page-subtitle">Analyze platform growth and performance over time.</p>
@@ -105,14 +105,14 @@ const AdminReports = () => {
                                 <td>Summer Water Bowl Drive</td>
                                 <td>₹50,000</td>
                                 <td>₹42,000</td>
-                                <td><span className="admin-badge rounded green">Active</span></td>
+                                <td><span className="admin-badge green">Active</span></td>
                                 <td>84%</td>
                             </tr>
                             <tr>
                                 <td>Central Park Rescue Center</td>
                                 <td>₹5,00,000</td>
                                 <td>₹2,10,000</td>
-                                <td><span className="admin-badge rounded light">Ongoing</span></td>
+                                <td><span className="admin-badge light">Ongoing</span></td>
                                 <td>42%</td>
                             </tr>
                         </tbody>

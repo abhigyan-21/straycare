@@ -27,21 +27,21 @@ function VetApp() {
       {isAuthorized && <VetNavbar />}
       <Routes>
         <Route
-          path="/login"
+          path="login"
           element={isAuthorized ? <Navigate to="/vet/dashboard" replace /> : <VetLogin />}
         />
 
         {/* Centralized protection for all professional vet and NGO routes */}
         <Route element={<ProtectedRoute allowedRoles={['VET', 'NGO']} redirectTo="/vet/login" unauthorizedRedirect="/vet/login" />}>
           <Route path="/" element={<Navigate to="/vet/dashboard" replace />} />
-          <Route path="/dashboard" element={<VetDashboard />} />
-          <Route path="/adopt" element={<VetAdopt />} />
-          <Route path="/status" element={<VetStatus />} />
-          <Route path="/campaign" element={<VetCampaign />} />
-          <Route path="/profile" element={<VetProfile />} />
-          <Route path="/rescuers" element={<VetRescuers />} />
-          <Route path="/tracking/:id" element={<VetTracking />} />
-          <Route path="/guide" element={<Guide />} />
+          <Route path="dashboard" element={<VetDashboard />} />
+          <Route path="adopt" element={<VetAdopt />} />
+          <Route path="status" element={<VetStatus />} />
+          <Route path="campaign" element={<VetCampaign />} />
+          <Route path="profile" element={<VetProfile />} />
+          <Route path="rescuers" element={<VetRescuers />} />
+          <Route path="tracking/:id" element={<VetTracking />} />
+          <Route path="guide" element={<Guide />} />
           {/* Add more protected routes here */}
         </Route>
 

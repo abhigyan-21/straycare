@@ -246,6 +246,15 @@ model Campaign {
   createdBy String
   creator   User   @relation(fields: [createdBy], references: [id])
 
+  purpose      String?
+  startDate    DateTime?
+  endDate      DateTime?
+  startTime    String?
+  location     String?
+  theme        String?
+  image        String?
+  banner       String?
+
   status CampaignStatus @default(PENDING)
 
   donations  Donation[]

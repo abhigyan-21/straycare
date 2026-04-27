@@ -28,6 +28,11 @@ import VetApp from "./VetApp";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
+import dogRun1 from "./assets/loader/dog_run1.png";
+import dogRun2 from "./assets/loader/dog_run2.png";
+import catRun1 from "./assets/loader/cat_run1.png";
+import catRun2 from "./assets/loader/cat_run2.png";
+
 // Layout for the main user-facing application
 const UserLayout = ({ openAuthModal }) => (
   <>
@@ -46,17 +51,35 @@ function App() {
   const [appLoading, setAppLoading] = useState(true);
 
   useEffect(() => {
-    const img1 = new Image();
-    img1.src = doctorClosed;
-    const img2 = new Image();
-    img2.src = doctorOpen;
+    const criticalImages = [
+      doctorClosed,
+      doctorOpen,
+      dogRun1,
+      dogRun2,
+      catRun1,
+      catRun2
+    ];
 
-    // Simulate site-wide loading
-    const timer = setTimeout(() => {
-      setAppLoading(false);
-    }, 1500);
+    const preloadImage = (src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = resolve;
+        img.onerror = resolve; // Continue even if one fails
+      });
+    };
 
-    return () => clearTimeout(timer);
+    const startTime = Date.now();
+    const minimumLoadingTime = 2000; // 2 seconds
+
+    Promise.all(criticalImages.map(preloadImage)).then(() => {
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
+      
+      setTimeout(() => {
+        setAppLoading(false);
+      }, remainingTime);
+    });
   }, []);
 
   const openAuthModal = (mode) => {

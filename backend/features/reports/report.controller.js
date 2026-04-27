@@ -229,6 +229,35 @@ const updateRescuerLocation = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get all reports assigned to the current user's clinic
+ * @route GET /api/reports/clinic
+ * @access Private (Vet/Admin)
+ */
+const getClinicReports = async (req, res) => {
+  try {
+    const clinicId = req.user.clinicId;
+    if (!clinicId) {
+      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    }
+
+    const reports = await prisma.animalReport.findMany({
+      where: { assignedClinicId: clinicId },
+      include: {
+        reporter: {
+          select: { name: true, avatarUrl: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(reports);
+  } catch (error) {
+    console.error('Error fetching clinic reports:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createReport,
   getMyReports,
@@ -237,4 +266,5 @@ module.exports = {
   updateReportStatus,
   assignReport,
   updateRescuerLocation,
+  getClinicReports,
 };

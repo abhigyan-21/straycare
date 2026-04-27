@@ -7,7 +7,6 @@ import "../../styles/vet/VetDashboard.css";
 
 function VetNavbar() {
   const { logout } = useAuth();
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);

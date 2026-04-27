@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import sparrowImg from "../../assets/sparrow.png";
 
 const animals = [
   "https://images.unsplash.com/photo-1558788353-f76d92427f16?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1444464666168-49d633b86797?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  sparrowImg,
 ];
 
 function Hero() {
@@ -23,12 +24,12 @@ function Hero() {
 
         <div
           className="small-circle top"
-          style={{ backgroundImage: `url(${animals[(index + 1) % animals.length]})` }}
+          style={{ backgroundImage: `url("${animals[(index + 1) % animals.length]}")` }}
         />
 
         <div
           className="small-circle bottom"
-          style={{ backgroundImage: `url(${animals[(index + 2) % animals.length]})` }}
+          style={{ backgroundImage: `url("${animals[(index + 2) % animals.length]}")` }}
         />
       </div>
 

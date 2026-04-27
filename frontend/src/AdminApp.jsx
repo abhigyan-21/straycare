@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminTracking from "./pages/admin/AdminTracking";
 import AdminDocuments from "./pages/admin/AdminDocuments";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -22,7 +21,7 @@ function AdminApp() {
   return (
     <Routes>
       <Route 
-        path="/login" 
+        path="login" 
         element={isAuthorized ? <Navigate to="/admin" replace /> : <AdminLogin />} 
       />
       
@@ -30,10 +29,10 @@ function AdminApp() {
       <Route element={<ProtectedRoute allowedRoles={['ADMIN']} redirectTo="/admin/login" unauthorizedRedirect="/admin/login" />}>
         <Route element={<AdminLayout />}>
           <Route path="/" element={<AdminDashboard />} />
-          <Route path="/documents" element={<AdminDocuments />}/>
-          <Route path="/content" element={<AdminContent />} />
-          <Route path="/users" element={<AdminUsers />} />
-          <Route path="/reports" element={<AdminReports />} />
+          <Route path="documents" element={<AdminDocuments />}/>
+          <Route path="content" element={<AdminContent />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="reports" element={<AdminReports />} />
         </Route>
       </Route>
 

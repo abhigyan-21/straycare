@@ -1,12 +1,22 @@
 import { FileText, Download, Upload } from 'lucide-react';
-
-const mockDocs = [
-    { id: 'DOC-101', title: 'Medical History - Bella', type: 'PDF', size: '2.4 MB', date: '2026-03-08' },
-    { id: 'DOC-102', title: 'Adoption Agreement Form', type: 'DOCX', size: '1.1 MB', date: '2026-03-01' },
-    { id: 'DOC-103', title: 'NGO Verification - Helping Paws', type: 'PDF', size: '3.5 MB', date: '2026-02-15' }
-];
+import { useState, useEffect } from 'react';
+import { getAdminDocs } from '../../services/api';
 
 const AdminDocuments = () => {
+    const [docs, setDocs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDocs = async () => {
+            const data = await getAdminDocs();
+            setDocs(data);
+            setLoading(false);
+        };
+        fetchDocs();
+    }, []);
+
+    if (loading) return <div className="admin-loading">Loading Documents...</div>;
+
     return (
         <div>
             <div className="admin-page-header">
@@ -27,16 +37,16 @@ const AdminDocuments = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {mockDocs.map(doc => (
+                        {docs.map(doc => (
                             <tr key={doc.id}>
                                 <td>
                                     <div className="admin-flex-row">
-                                        <div className="admin-stat-icon green" style={{ padding: '10px' }}>
-                                            <FileText size={20} />
+                                        <div className="admin-badge green" style={{ padding: '8px' }}>
+                                            <FileText size={18} />
                                         </div>
                                         <div>
                                             <span className="admin-text-primary">{doc.title}</span>
-                                            <span className="admin-badge rounded admin-btn-action secondary">{doc.type}</span>
+                                            <span className="admin-badge light" style={{ fontSize: '0.7rem', padding: '2px 8px' }}>{doc.type}</span>
                                         </div>
                                     </div>
                                 </td>

@@ -10,7 +10,7 @@ const AdminLogin = () => {
     const { login, user, logout } = useAuth();
     const navigate = useNavigate();
 
-    const isUnauthorized = user && !['admin'].includes(user.role);
+    const isUnauthorized = user && !['ADMIN', 'admin'].includes(user.role);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -19,7 +19,7 @@ const AdminLogin = () => {
         const userData = {
             name: 'System Administrator',
             email: email,
-            role: 'admin'
+            role: 'ADMIN'
         };
 
         login(userData);

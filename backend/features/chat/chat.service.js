@@ -4,7 +4,7 @@ class ChatService {
   async getChatbotResponse(messages) {
     const systemPrompt = {
       role: 'system',
-      content: 'You are StrayCare AI. Help users with stray animal care, rescue steps, adoption, and emergencies. Give short, practical answers.'
+      content: 'You are Pawly AI. Help users with stray animal care, rescue steps, adoption, and emergencies. Give short, practical answers.'
     };
 
     const response = await axios.post(

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/vet/VetRescuers.css';
+import { MOCK_RESCUERS } from '../../data/mock_vet_data';
 
 const VetRescuers = () => {
     const { user: authUser } = useAuth();
@@ -14,22 +15,21 @@ const VetRescuers = () => {
         contact: ''
     });
 
-    // Mock data for initial state
-    const MOCK_RESCUERS = [
-        { id: '1', name: 'Rahul Sharma', email: 'rahul@example.com', contact: '+91 98765 43210', avatarUrl: null },
-        { id: '2', name: 'Sneha Patel', email: 'sneha@example.com', contact: '+91 99887 76655', avatarUrl: null },
-    ];
-
     useEffect(() => {
-        // In a real app, fetch from API: GET /api/users/rescuers
         const fetchRescuers = async () => {
             setIsLoading(true);
             try {
-                // Simulating API call delay
-                await new Promise(resolve => setTimeout(resolve, 800));
-                setRescuers(MOCK_RESCUERS);
+                const response = await fetch('/api/users/rescuers', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (!response.ok) throw new Error('Backend offline or error');
+                const data = await response.json();
+                setRescuers(data);
             } catch (error) {
-                console.error("Failed to fetch rescuers", error);
+                console.warn("Using mock rescuers as fallback:", error.message);
+                setRescuers(MOCK_RESCUERS);
             } finally {
                 setIsLoading(false);
             }
@@ -48,25 +48,37 @@ const VetRescuers = () => {
         setIsSubmitting(true);
 
         try {
-            // In a real app, call API: POST /api/users/rescuers/add
-            // { email: formData.email, contact: formData.contact }
+            const response = await fetch('/api/users/rescuers/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData)
+            });
             
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Simulating a successful promotion
+            if (response.ok) {
+                const data = await response.json();
+                setRescuers(prev => [data.rescuer, ...prev]);
+                setFormData({ email: '', contact: '' });
+                alert('Rescuer added successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to add');
+            }
+        } catch (error) {
+            console.error('API failed, falling back to mock:', error);
+            // Mock fallback
             const newRescuer = {
                 id: Math.random().toString(36).substr(2, 9),
-                name: formData.email.split('@')[0], // Mock name from email
+                name: formData.email.split('@')[0],
                 email: formData.email,
                 contact: formData.contact,
                 avatarUrl: null
             };
-
             setRescuers(prev => [newRescuer, ...prev]);
             setFormData({ email: '', contact: '' });
-            alert('Rescuer added successfully!');
-        } catch (error) {
-            alert('Failed to add rescuer. Make sure the user exists.');
+            alert('Added (Mock Mode)');
         } finally {
             setIsSubmitting(false);
         }
@@ -78,11 +90,21 @@ const VetRescuers = () => {
         }
 
         try {
-            // In a real app, call API: POST /api/users/rescuers/remove/:id
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setRescuers(prev => prev.filter(r => r.id !== id));
+            const response = await fetch(`/api/users/rescuers/remove/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            
+            if (response.ok) {
+                setRescuers(prev => prev.filter(r => r.id !== id));
+            } else {
+                throw new Error('Failed to remove');
+            }
         } catch (error) {
-            alert('Failed to remove rescuer.');
+            console.error('API failed, falling back to mock:', error);
+            setRescuers(prev => prev.filter(r => r.id !== id));
         }
     };
 

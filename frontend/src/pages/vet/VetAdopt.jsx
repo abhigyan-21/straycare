@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/vet/VetDashboard.css';
 import '../../styles/vet/VetAdopt.css';
 import '../../styles/vet/VetStatus.css';
@@ -9,31 +9,7 @@ import InterviewCard from '../../components/vet/InterviewCard';
 import VetTabs from '../../components/vet/VetTabs';
 import CreateAdoptionModal from '../../components/vet/CreateAdoptionModal';
 
-const ADOPT_STATUS_OPTIONS = [
-    { label: 'up for adoption', value: 'up for adoption', class: 'up-for-adoption' },
-    { label: 'Adopted', value: 'Adopted', class: 'adopted' },
-    { label: 'Remove', value: 'Remove', class: 'remove' }
-];
-
-const MOCK_DATA = {
-    todaysInterviews: [
-        { id: 'PET-203', petId: 'P001', adopteeName: 'John Doe', contact: '+1 234 567 890', time: '10:30 AM' },
-        { id: 'PET-204', petId: 'P005', adopteeName: 'Jane Smith', contact: '+1 987 654 321', time: '02:15 PM' },
-    ],
-    liveAdoptions: [
-        { id: 'PET-101', petName: 'Buddy', status: 'up for adoption', image: null },
-        { id: 'PET-102', petName: 'Luna', status: 'Adopted', image: null },
-        { id: 'PET-103', petName: 'Max', status: 'Remove', image: null },
-    ],
-    currentRequests: [
-        { id: 'REQ-501', name: 'Alice Wilson', contact: 'alice@example.com', status: 'interview' },
-        { id: 'REQ-502', name: 'Bob Brown', contact: 'bob.b@example.com', status: 'cancelled' },
-    ],
-    newRequests: [
-        { id: 'REQ-601', name: 'Charlie Davis', contact: 'charlie.d@gmail.com' },
-        { id: 'REQ-602', name: 'Diana Prince', contact: 'diana.p@outlook.com' },
-    ]
-};
+import { ADOPT_STATUS_OPTIONS, MOCK_ADOPT_DATA } from '../../data/mock_vet_data';
 
 function VetAdopt() {
     const [activeTab, setActiveTab] = useState('live');
@@ -42,6 +18,78 @@ function VetAdopt() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
+    const [data, setData] = useState({
+        todaysInterviews: [],
+        liveAdoptions: [],
+        currentRequests: [],
+        newRequests: []
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [petsRes, reqsRes] = await Promise.all([
+                fetch('/api/adoptions/pets', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                }),
+                fetch('/api/adoptions/requests', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                })
+            ]);
+
+            if (!petsRes.ok || !reqsRes.ok) throw new Error('Backend offline');
+
+            const petsData = await petsRes.json();
+            const reqsData = await reqsRes.json();
+
+            const pets = petsData.data || [];
+            const reqs = reqsData.data || [];
+
+            const today = new Date().toISOString().split('T')[0];
+
+            setData({
+                liveAdoptions: pets.map(p => ({
+                    id: p.id,
+                    petName: p.name,
+                    status: p.status === 'AVAILABLE' ? 'up for adoption' : p.status,
+                    image: p.mediaUrls?.[0] || null
+                })),
+                todaysInterviews: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED' && r.interviewDate?.startsWith(today)).map(r => ({
+                    id: r.id,
+                    petId: r.petId,
+                    adopteeName: r.user.name,
+                    contact: r.user.contact || r.user.email,
+                    time: r.interviewTime
+                })),
+                currentRequests: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED' || r.status === 'APPROVED').map(r => ({
+                    id: r.id,
+                    name: r.user.name,
+                    contact: r.user.email,
+                    status: r.status.toLowerCase()
+                })),
+                newRequests: reqs.filter(r => r.status === 'PENDING').map(r => ({
+                    id: r.id,
+                    name: r.user.name,
+                    contact: r.user.email
+                }))
+            });
+        } catch (error) {
+            console.warn("Using mock data fallback for VetAdopt:", error);
+            setData({
+                todaysInterviews: MOCK_ADOPT_DATA.todaysInterviews,
+                liveAdoptions: MOCK_ADOPT_DATA.liveAdoptions,
+                currentRequests: MOCK_ADOPT_DATA.currentRequests,
+                newRequests: MOCK_ADOPT_DATA.newRequests
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleStatusChange = (id, newStatus) => {
         if (newStatus === 'Adopted' || newStatus === 'Remove') {
@@ -51,8 +99,33 @@ function VetAdopt() {
         }
     };
 
-    const confirmAction = () => {
-        console.log(`Confirmed ${showConfirm.type} change for ${showConfirm.id} to ${showConfirm.value}`);
+    const confirmAction = async () => {
+        const { id, value } = showConfirm;
+        try {
+            const statusMap = { 'Adopted': 'ADOPTED', 'Remove': 'REMOVED', 'up for adoption': 'AVAILABLE' };
+            const apiStatus = statusMap[value] || value;
+
+            const response = await fetch(`/api/adoptions/pets/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ status: apiStatus })
+            });
+
+            if (response.ok) {
+                fetchData();
+            } else {
+                throw new Error('Update failed');
+            }
+        } catch (error) {
+            console.error('API failed, mock confirm:', error);
+            setData(prev => ({
+                ...prev,
+                liveAdoptions: prev.liveAdoptions.map(p => p.id === id ? { ...p, status: value } : p)
+            }));
+        }
         setShowConfirm(null);
     };
 
@@ -60,16 +133,63 @@ function VetAdopt() {
         setShowTimePicker(req);
     };
 
-    const saveTime = () => {
-        console.log(`Setting time for ${showTimePicker.id}: ${selectedDate} at ${selectedTime}`);
+    const saveTime = async () => {
+        try {
+            const response = await fetch(`/api/adoptions/requests/${showTimePicker.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    status: 'INTERVIEW_SCHEDULED',
+                    interviewDate: selectedDate,
+                    interviewTime: selectedTime
+                })
+            });
+
+            if (response.ok) {
+                fetchData();
+            } else {
+                throw new Error('Failed to save time');
+            }
+        } catch (error) {
+            console.error('API failed, mock save time:', error);
+            setData(prev => ({
+                ...prev,
+                newRequests: prev.newRequests.filter(r => r.id !== showTimePicker.id),
+                currentRequests: [...prev.currentRequests, { ...showTimePicker, status: 'interview' }]
+            }));
+        }
         setShowTimePicker(null);
         setSelectedDate('');
         setSelectedTime('');
     };
 
-    const handlePublishAdoption = (data) => {
-        console.log('Publishing new adoption:', data);
-        // Here you would typically call an API
+    const handlePublishAdoption = async (formData) => {
+        try {
+            const response = await fetch('/api/adoptions/pets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                fetchData();
+            } else {
+                throw new Error('Failed to publish');
+            }
+        } catch (error) {
+            console.error('API failed, mock publish:', error);
+            const newPet = { id: `PET-${Date.now()}`, petName: formData.name, status: 'up for adoption', image: null };
+            setData(prev => ({
+                ...prev,
+                liveAdoptions: [newPet, ...prev.liveAdoptions]
+            }));
+        }
     };
 
     const tabs = [
@@ -86,9 +206,10 @@ function VetAdopt() {
                 </div>
                 <div className="rescues-scroll-wrapper">
                     <div className="rescues-container">
-                        {MOCK_DATA.todaysInterviews.map((interview) => (
+                        {data.todaysInterviews.map((interview) => (
                             <InterviewCard key={interview.id} interview={interview} />
                         ))}
+                        {data.todaysInterviews.length === 0 && <p className="no-data">No interviews for today</p>}
                     </div>
                 </div>
             </div>
@@ -96,31 +217,38 @@ function VetAdopt() {
             <VetTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
             <div className="adopt-list-container">
-                {activeTab === 'live' && MOCK_DATA.liveAdoptions.map(pet => (
-                    <VetStatusCard 
-                        key={pet.id}
-                        id={pet.id}
-                        status={pet.status}
-                        onChange={(val) => handleStatusChange(pet.id, val)}
-                        options={ADOPT_STATUS_OPTIONS}
-                        image={pet.image}
-                    />
-                ))}
+                {isLoading ? <p>Loading...</p> : (
+                    <>
+                        {activeTab === 'live' && data.liveAdoptions.map(pet => (
+                            <VetStatusCard 
+                                key={pet.id}
+                                id={pet.id}
+                                status={pet.status}
+                                onChange={(val) => handleStatusChange(pet.id, val)}
+                                options={ADOPT_STATUS_OPTIONS}
+                                image={pet.image}
+                            />
+                        ))}
 
-                {activeTab === 'current' && MOCK_DATA.currentRequests.map(req => (
-                    <VetRequestCard key={req.id} req={req} />
-                ))}
+                        {activeTab === 'current' && data.currentRequests.map(req => (
+                            <VetRequestCard key={req.id} req={req} />
+                        ))}
 
-                {activeTab === 'new' && MOCK_DATA.newRequests.map(req => (
-                    <VetRequestCard 
-                        key={req.id} 
-                        req={req} 
-                        isNew={true}
-                        onSetTime={handleSetTime}
-                        onAccept={() => console.log('Accepted', req.id)}
-                        onReject={() => console.log('Rejected', req.id)}
-                    />
-                ))}
+                        {activeTab === 'new' && data.newRequests.map(req => (
+                            <VetRequestCard 
+                                key={req.id} 
+                                req={req} 
+                                isNew={true}
+                                onSetTime={handleSetTime}
+                                onAccept={() => console.log('Accepted', req.id)}
+                                onReject={() => console.log('Rejected', req.id)}
+                            />
+                        ))}
+                        {activeTab === 'live' && data.liveAdoptions.length === 0 && <p className="no-data">No live adoptions</p>}
+                        {activeTab === 'current' && data.currentRequests.length === 0 && <p className="no-data">No current requests</p>}
+                        {activeTab === 'new' && data.newRequests.length === 0 && <p className="no-data">No new requests</p>}
+                    </>
+                )}
             </div>
 
             {showConfirm && (

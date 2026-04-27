@@ -1,18 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit2, Search } from 'lucide-react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
 import AdminBadge from '../../components/admin/AdminBadge';
-
-const mockTracking = [
-    { id: 'TRK-001', name: "Bella (Stray)", type: "Dog", reporter: "John Doe", status: "Reported", date: "2026-03-08", location: "Downtown Park" },
-    { id: 'TRK-002', name: "Luna", type: "Cat", reporter: "Jane Smith", status: "Rescue in Progress", date: "2026-03-07", location: "Northside Alley" },
-    { id: 'TRK-003', name: "Max", type: "Dog", reporter: "Mike Ross", status: "At Clinic", date: "2026-03-05", location: "East Ave" },
-];
+import { getAdminTracking } from '../../services/api';
 
 const AdminTracking = () => {
-    const [trackingList, setTrackingList] = useState(mockTracking);
+    const [trackingList, setTrackingList] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const data = await getAdminTracking();
+            setTrackingList(data);
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
     const [searchTerm, setSearchTerm] = useState('');
+
+    if (loading) return <div className="admin-loading">Loading Tracking Data...</div>;
 
     const getStatusColor = (status) => {
         switch (status) {

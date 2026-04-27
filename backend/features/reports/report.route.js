@@ -9,6 +9,9 @@ router.post('/', verifyToken, reportController.createReport);
 // Get my reports
 router.get('/my-reports', verifyToken, reportController.getMyReports);
 
+// Get clinic reports
+router.get('/clinic', verifyToken, allowRoles('VET', 'ADMIN', 'NGO'), reportController.getClinicReports);
+
 // Get all reports (restricted to staff for map view)
 router.get('/', verifyToken, allowRoles('ADMIN', 'VET', 'RESCUER', 'NGO'), reportController.getReports);
 

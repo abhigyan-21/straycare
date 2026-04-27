@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2 } from "lucide-react";
+import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2, Search, ShieldAlert } from "lucide-react";
 import "../../styles/admin/admin.css";
 
 const AdminLayout = () => {
@@ -21,21 +21,21 @@ const AdminLayout = () => {
                     </NavLink>
                     <NavLink to="/admin/documents" className={({ isActive }) => (isActive ? "active" : "")}>
                         <FileText size={20} />
-                        Documents
+                        Verification
                     </NavLink>
 
                     {/* Admin Exclusive Links */}
-                    {user?.role === "admin" && (
+                    {user?.role?.toLowerCase() === "admin" && (
                         <>
                             <div className="nav-divider"></div>
-                            <p className="nav-section-title">Admin Controls</p>
+                            <p className="nav-section-title">Moderation</p>
                             <NavLink to="/admin/content" className={({ isActive }) => (isActive ? "active" : "")}>
-                                <Edit3 size={20} />
-                                Content & Posts
+                                <ShieldAlert size={20} />
+                                Content Moderation
                             </NavLink>
                             <NavLink to="/admin/users" className={({ isActive }) => (isActive ? "active" : "")}>
                                 <Users size={20} />
-                                Manage Users
+                                User Management
                             </NavLink>
                             <NavLink to="/admin/reports" className={({ isActive }) => (isActive ? "active" : "")}>
                                 <BarChart2 size={20} />
@@ -55,9 +55,18 @@ const AdminLayout = () => {
 
             <main className="admin-main">
                 <header className="admin-header">
-                    <h3>Welcome back, {user?.name}!</h3>
-                    <div className="admin-header-profile">
-                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff" alt="Profile" />
+                    <div className="admin-header-left">
+                        <h3>{user?.name ? `Hello, ${user.name.split(' ')[0]}!` : 'Welcome back!'}</h3>
+                    </div>
+                    
+                    <div className="admin-header-right" style={{ gap: '24px' }}>
+                        <div className="admin-search-wrapper">
+                            <Search size={18} className="admin-search-icon" />
+                            <input type="text" placeholder="Quick search..." className="admin-search-input" />
+                        </div>
+                        <div className="admin-header-profile">
+                            <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Admin'}&background=5ebd3e&color=fff&bold=true`} alt="Profile" />
+                        </div>
                     </div>
                 </header>
 
