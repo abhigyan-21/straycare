@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminTracking from "./pages/admin/AdminTracking";
@@ -20,27 +20,25 @@ function AdminApp() {
   if (isLoading) return <div>Loading Admin Portal...</div>;
 
   return (
-    <Router>
-      <Routes>
-        <Route 
-          path="/login" 
-          element={isAuthorized ? <Navigate to="/admin" replace /> : <AdminLogin />} 
-        />
-        
-        {/* Protection wrapper for all admin routes */}
-        <Route element={<ProtectedRoute allowedRoles={['admin']} redirectTo="/login" unauthorizedRedirect="/login" />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/documents" element={<AdminDocuments />}/>
-            <Route path="/admin/content" element={<AdminContent />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/reports" element={<AdminReports />} />
-          </Route>
+    <Routes>
+      <Route 
+        path="/login" 
+        element={isAuthorized ? <Navigate to="/admin" replace /> : <AdminLogin />} 
+      />
+      
+      {/* Protection wrapper for all admin routes */}
+      <Route element={<ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/login" unauthorizedRedirect="/admin/login" />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/" element={<AdminDashboard />} />
+          <Route path="/documents" element={<AdminDocuments />}/>
+          <Route path="/content" element={<AdminContent />} />
+          <Route path="/users" element={<AdminUsers />} />
+          <Route path="/reports" element={<AdminReports />} />
         </Route>
+      </Route>
 
-        <Route path="*" element={<Navigate to={isAuthorized ? "/admin" : "/login"} replace />} />
-      </Routes>
-    </Router>
+      <Route path="*" element={<Navigate to={isAuthorized ? "/admin" : "/admin/login"} replace />} />
+    </Routes>
   );
 }
 

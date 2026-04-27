@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/user/Home";
@@ -22,9 +22,23 @@ import doctorOpen from "./assets/images/doctor-open.png";
 import { RescueProvider } from "./context/RescueContext";
 import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
+import AdminApp from "./AdminApp";
+import VetApp from "./VetApp";
 
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
+
+// Layout for the main user-facing application
+const UserLayout = ({ openAuthModal }) => (
+  <>
+    <Navbar openAuthModal={openAuthModal} />
+    <main>
+      <Outlet />
+    </main>
+    <Footer />
+    <FloatingRescueButton />
+  </>
+);
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -56,35 +70,38 @@ function App() {
       <SpeedInsights />
       {appLoading && <Loader />}
       <BrowserRouter>
-        <Navbar openAuthModal={openAuthModal} />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/adopt" element={<Adopt />} />
-          <Route path="/emergency" element={<Emergency />} />
-          <Route path="/track" element={<Track />} />
-          <Route path="/live-track/:reportId" element={<LiveTracking />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/guide" element={<Guide />} />
-          <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/register" element={<Register />} />
+          {/* Portals - These have their own internal Layouts and Navbars */}
+          <Route path="/admin/*" element={<AdminApp />} />
+          <Route path="/vet/*" element={<VetApp />} />
 
-          {/* Rescuer Section Paths (Temporarily allowing 'user' for demo/testing) */}
-          <Route path="/rescuer" element={<ProtectedRoute allowedRoles={['RESCUER', 'ADMIN',]} />}>
-            <Route path="dashboard" element={<RescuerDashboard />} />
-            <Route path="nav/:reportId" element={<RescuerNavigation />} />
+          {/* Main User App Routes */}
+          <Route element={<UserLayout openAuthModal={openAuthModal} />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/adopt" element={<Adopt />} />
+            <Route path="/emergency" element={<Emergency />} />
+            <Route path="/track" element={<Track />} />
+            <Route path="/live-track/:reportId" element={<LiveTracking />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/guide" element={<Guide />} />
+            <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* Rescuer Section Paths */}
+            <Route path="/rescuer" element={<ProtectedRoute allowedRoles={['RESCUER', 'ADMIN']} />}>
+              <Route path="dashboard" element={<RescuerDashboard />} />
+              <Route path="nav/:reportId" element={<RescuerNavigation />} />
+            </Route>
           </Route>
-
-
         </Routes>
-        <Footer />
+
         <AuthModal
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           initialMode={authMode}
         />
-        <FloatingRescueButton />
       </BrowserRouter>
     </RescueProvider>
   );

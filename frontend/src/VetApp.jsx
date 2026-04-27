@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import VetDashboard from "./pages/vet/VetDashboard";
 import VetAdopt from "./pages/vet/VetAdopt";
 import VetLogin from "./pages/vet/VetLogin";
@@ -23,16 +23,17 @@ function VetApp() {
   if (isLoading) return <div>Loading Portal...</div>;
 
   return (
-    <Router>
+    <>
       {isAuthorized && <VetNavbar />}
       <Routes>
         <Route
           path="/login"
-          element={isAuthorized ? <Navigate to="/dashboard" replace /> : <VetLogin />}
+          element={isAuthorized ? <Navigate to="/vet/dashboard" replace /> : <VetLogin />}
         />
 
         {/* Centralized protection for all professional vet, clinic, and NGO routes */}
-        <Route element={<ProtectedRoute allowedRoles={['vet', 'clinic', 'ngo']} redirectTo="/login" unauthorizedRedirect="/login" />}>
+        <Route element={<ProtectedRoute allowedRoles={['vet', 'clinic', 'ngo']} redirectTo="/vet/login" unauthorizedRedirect="/vet/login" />}>
+          <Route path="/" element={<Navigate to="/vet/dashboard" replace />} />
           <Route path="/dashboard" element={<VetDashboard />} />
           <Route path="/adopt" element={<VetAdopt />} />
           <Route path="/status" element={<VetStatus />} />
@@ -44,10 +45,10 @@ function VetApp() {
           {/* Add more protected routes here */}
         </Route>
 
-        <Route path="*" element={<Navigate to={isAuthorized ? "/dashboard" : "/login"} replace />} />
+        <Route path="*" element={<Navigate to={isAuthorized ? "/vet/dashboard" : "/vet/login"} replace />} />
       </Routes>
       <Footer />
-    </Router>
+    </>
   );
 }
 

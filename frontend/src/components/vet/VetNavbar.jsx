@@ -21,23 +21,23 @@ function VetNavbar() {
   return (
     <div className="navbar vet-navbar">
       <div className="nav-left">
-        <Link to="/dashboard" onClick={closeMenu}>
+        <Link to="/vet/dashboard" onClick={closeMenu}>
           <img src={logo} alt="StrayCare Logo" className="logo" />
         </Link>
 
         <div className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
-          <NavLink to="/dashboard" end onClick={closeMenu}>Home</NavLink>
-          <NavLink to="/status" onClick={closeMenu} >Status</NavLink>
-          <NavLink to="/adopt" onClick={closeMenu}>Adopt</NavLink>
-          <NavLink to="/campaign" onClick={closeMenu}>Campaign</NavLink>
-          <NavLink to="/rescuers" onClick={closeMenu}>Rescuers</NavLink>
-          <NavLink to="/guide" onClick={closeMenu}>Guide</NavLink>
+          <NavLink to="/vet/dashboard" end onClick={closeMenu}>Home</NavLink>
+          <NavLink to="/vet/status" onClick={closeMenu} >Status</NavLink>
+          <NavLink to="/vet/adopt" onClick={closeMenu}>Adopt</NavLink>
+          <NavLink to="/vet/campaign" onClick={closeMenu}>Campaign</NavLink>
+          <NavLink to="/vet/rescuers" onClick={closeMenu}>Rescuers</NavLink>
+          <NavLink to="/vet/guide" onClick={closeMenu}>Guide</NavLink>
         </div>
       </div>
 
       <div className="nav-right">
         <div className="desktop-only-auth" style={{ gap: '15px' }}>
-          <NavLink to="/profile" className="nav-link-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <NavLink to="/vet/profile" className="nav-link-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <User size={18} />
             <span>Profile</span>
           </NavLink>
