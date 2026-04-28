@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, LogOut, User } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 import '../styles/ProfileDropdown.css';
 
 function ProfileDropdown({ closeMenu }) {
-  const { logout, user } = useAuth();
+  const { logout, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);

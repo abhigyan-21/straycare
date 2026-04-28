@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/user/Profile.css';
 import '../../styles/user/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../../components/user/CreatePostModal';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../store/authStore';
 import MiniLoader from '../../components/user/MiniLoader';
 
 const Profile = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
-    const { user: authUser, logout } = useAuth();
+    const { user: authUser, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState('personal');
     const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

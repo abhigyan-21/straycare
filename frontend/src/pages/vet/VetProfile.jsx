@@ -16,11 +16,11 @@ import {
     FileText,
     Activity
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetProfile.css';
 
 const VetProfile = () => {
-    const { user: authUser, logout } = useAuth();
+    const { user: authUser, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState('clinic');
 
     // Mock data for vet profile

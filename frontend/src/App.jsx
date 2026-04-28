@@ -19,7 +19,6 @@ import RescuerNavigation from "./pages/user/RescuerNavigation";
 import { useState, useEffect } from "react";
 import doctorClosed from "./assets/images/doctor-closed.png";
 import doctorOpen from "./assets/images/doctor-open.png";
-import { RescueProvider } from "./context/RescueContext";
 import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
 import AdminApp from "./AdminApp";
@@ -48,9 +47,15 @@ const UserLayout = ({ openAuthModal }) => (
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
-  const [appLoading, setAppLoading] = useState(true);
+  const [appLoading, setAppLoading] = useState(() => {
+    return !window.location.pathname.startsWith('/vet');
+  });
 
   useEffect(() => {
+    if (window.location.pathname.startsWith('/vet')) {
+      return;
+    }
+
     const criticalImages = [
       doctorClosed,
       doctorOpen,
@@ -88,8 +93,7 @@ function App() {
   };
 
   return (
-    <RescueProvider>
-      <Analytics />
+    <>      <Analytics />
       <SpeedInsights />
       {appLoading && <Loader />}
       <BrowserRouter>
@@ -126,7 +130,7 @@ function App() {
           initialMode={authMode}
         />
       </BrowserRouter>
-    </RescueProvider>
+    </>
   );
 }
 

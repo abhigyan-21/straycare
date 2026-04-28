@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Loader from '../../components/Loader';
 import '../../styles/vet/VetDashboard.css';
 import LiveStatusView from '../../components/vet/LiveStatusView';
 import VetStatCard from '../../components/vet/VetStatCard';
@@ -63,24 +64,22 @@ function VetDashboard() {
         fetchData();
     }, []);
 
+    if (isLoading) return <Loader />;
+
     return (
         <div className="vet-dashboard">
-            {isLoading ? <p>Loading Dashboard...</p> : (
-                <>
-                    <LiveStatusView rescues={rescues} />
+            <LiveStatusView rescues={rescues} />
 
-                    <div className="stats-grid">
-                        <VetStatCard label="Live adoptions" value={stats.liveAdoptions} />
-                        <VetStatCard label="New Requests" value={stats.newRequests} />
-                        <VetStatCard label="Live Requests" value={stats.liveRequests} />
-                        <VetStatCard 
-                            label="Campaign" 
-                            date={stats.latestCampaign.date} 
-                            campaignTitle={stats.latestCampaign.title} 
-                        />
-                    </div>
-                </>
-            )}
+            <div className="stats-grid">
+                <VetStatCard label="Live adoptions" value={stats.liveAdoptions} />
+                <VetStatCard label="New Requests" value={stats.newRequests} />
+                <VetStatCard label="Live Requests" value={stats.liveRequests} />
+                <VetStatCard 
+                    label="Campaign" 
+                    date={stats.latestCampaign.date} 
+                    campaignTitle={stats.latestCampaign.title} 
+                />
+            </div>
         </div>
     );
 }

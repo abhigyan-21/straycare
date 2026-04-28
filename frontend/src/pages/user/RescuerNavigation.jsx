@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRescue } from '../../context/RescueContext';
+import { useRescueStore } from '../../store/rescueStore';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import '../../styles/user/RescuerPages.css';
@@ -24,7 +24,7 @@ const HOSPITAL_POS = [30.7500, 76.8000];
 
 function RescuerNavigation() {
   const { reportId } = useParams();
-  const { startRescue, updateRescueEta, endRescue } = useRescue();
+  const { startRescue, updateRescueEta, endRescue } = useRescueStore();
   const navigate = useNavigate();
   const report = MOCK_REPORTS[reportId] || MOCK_REPORTS['rescue-101'];
 

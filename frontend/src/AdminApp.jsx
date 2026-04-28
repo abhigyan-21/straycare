@@ -7,11 +7,11 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminLogin from "./pages/admin/AdminLogin";
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAuth } from './context/AuthContext';
+import { useAuthStore } from './store/authStore';
 import './styles/global.css';
 
 function AdminApp() {
-  const { isLoggedIn, user, isLoading } = useAuth();
+  const { isLoggedIn, user, isLoading } = useAuthStore();
   
   // Authorized roles for the admin portal
   const isAuthorized = isLoggedIn && user && ['ADMIN'].includes(user.role);

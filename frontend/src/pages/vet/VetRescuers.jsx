@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetRescuers.css';
 import { MOCK_RESCUERS } from '../../data/mock_vet_data';
 
 const VetRescuers = () => {
-    const { user: authUser } = useAuth();
+    const { user: authUser } = useAuthStore();
     const [rescuers, setRescuers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);

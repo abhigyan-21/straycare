@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import '../../styles/AuthModal.css';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import bgImage from '../../assets/images/happy_animals_bg.png';
 
 const AdminLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, user, logout } = useAuth();
+    const { login, user, logout } = useAuthStore();
     const navigate = useNavigate();
 
     const isUnauthorized = user && !['ADMIN', 'admin'].includes(user.role);

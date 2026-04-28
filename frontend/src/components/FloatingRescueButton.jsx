@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useRescue } from '../context/RescueContext';
+import { useRescueStore } from '../store/rescueStore';
 import '../styles/FloatingRescueButton.css';
 import ambulanceImg from '../assets/images/ambulance.png';
 
 const FloatingRescueButton = () => {
-    const { activeRescue } = useRescue();
+    const { activeRescue } = useRescueStore();
     const navigate = useNavigate();
     const location = useLocation();
 

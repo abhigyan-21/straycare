@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/user/Post.css';
 import CreatePostModal from '../../components/user/CreatePostModal';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../store/authStore';
 import PostCard from '../../components/user/PostCard';
 import MiniLoader from '../../components/user/MiniLoader';
 
@@ -38,7 +38,7 @@ const initialPosts = [
 ];
 
 function Post({ openAuthModal }) {
-    const { isLoggedIn, user: authUser } = useAuth();
+    const { isLoggedIn, user: authUser } = useAuthStore();
     const [posts, setPosts] = useState(initialPosts);
     const [newComment, setNewComment] = useState({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

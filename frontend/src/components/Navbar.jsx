@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/straycare_logo.png";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from '../store/authStore';
 import ProfileDropdown from "./ProfileDropdown";
 
 function Navbar({ openAuthModal }) {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {

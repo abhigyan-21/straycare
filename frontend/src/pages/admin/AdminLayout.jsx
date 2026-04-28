@@ -1,10 +1,10 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from '../../store/authStore';
 import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2, Search, ShieldAlert } from "lucide-react";
 import "../../styles/admin/admin.css";
 
 const AdminLayout = () => {
-    const { user } = useAuth();
+    const { user } = useAuthStore();
 
     return (
         <div className="admin-container">

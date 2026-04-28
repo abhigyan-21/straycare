@@ -10,12 +10,12 @@ import VetRescuers from "./pages/vet/VetRescuers";
 import VetNavbar from "./components/vet/VetNavbar";
 import Guide from "./pages/user/Guide"
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAuth } from './context/AuthContext';
+import { useAuthStore } from './store/authStore';
 import './styles/global.css'
 import Footer from "./components/Footer";
 
 function VetApp() {
-  const { isLoggedIn, user, isLoading } = useAuth();
+  const { isLoggedIn, user, isLoading } = useAuthStore();
 
   // Authorized roles: VET, NGO
   const isAuthorized = isLoggedIn && user && ['VET', 'NGO'].includes(user.role);

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/AuthModal.css';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     const [mode, setMode] = useState(initialMode);
-    const { login } = useAuth();
+    const { login } = useAuthStore();
     const navigate = useNavigate();
 
     // Reset mode when opened with a new initialMode

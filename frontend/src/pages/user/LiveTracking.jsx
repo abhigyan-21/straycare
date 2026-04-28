@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useRescue } from '../../context/RescueContext';
+import { useRescueStore } from '../../store/rescueStore';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import io from 'socket.io-client';
@@ -35,7 +35,7 @@ const SOCKET_URL = 'http://localhost:5000';
 
 function LiveTracking() {
   const { reportId } = useParams();
-  const { startRescue, updateRescueEta, endRescue } = useRescue();
+  const { startRescue, updateRescueEta, endRescue } = useRescueStore();
 
   const hospitalPos = [30.7500, 76.8000];
   const userPos = [30.7200, 76.7600];

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/straycare_logo.png";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from '../../store/authStore';
 import { User, LogOut } from "lucide-react";
 import "../../styles/vet/VetDashboard.css";
 
 function VetNavbar() {
-  const { logout } = useAuth();
+  const { logout } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);

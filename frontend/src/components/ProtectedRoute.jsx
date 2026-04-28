@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 const ProtectedRoute = ({ allowedRoles, redirectTo = "/", unauthorizedRedirect, children }) => {
-    const { user, isLoggedIn, isLoading } = useAuth();
+    const { user, isLoggedIn, isLoading } = useAuthStore();
 
     if (isLoading) {
         return null; // Or a loading spinner
