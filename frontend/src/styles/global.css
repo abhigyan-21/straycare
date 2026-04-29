@@ -223,7 +223,7 @@ html {
 .hero-message {
   flex: 1;
   margin-left: 80px;
-  background: #fafdf6;
+  background: rgba(250, 253, 246, 0.9);
   border-radius: 40px;
   padding: 35px;
   min-height: 400px;
