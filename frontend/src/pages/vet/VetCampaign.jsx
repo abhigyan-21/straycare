@@ -7,6 +7,7 @@ import CampaignHeroCard from '../../components/vet/CampaignHeroCard';
 import CampaignListItem from '../../components/vet/CampaignListItem';
 import VetTabs from '../../components/vet/VetTabs';
 import CampaignDetailModal from '../../components/vet/CampaignDetailModal';
+import ActionLoader from '../../components/ActionLoader';
 
 import { MOCK_CAMPAIGNS } from '../../data/mock_vet_data';
 
@@ -29,6 +30,7 @@ function VetCampaign() {
 
     const fetchCampaigns = async () => {
         setIsLoading(true);
+        const startTime = Date.now();
         try {
             const response = await fetch('/api/funding/campaigns', {
                 headers: {
@@ -42,7 +44,11 @@ function VetCampaign() {
             console.warn("Using mock campaigns fallback:", error);
             setCampaigns(MOCK_CAMPAIGNS);
         } finally {
-            setIsLoading(false);
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, 800 - elapsedTime);
+            setTimeout(() => {
+                setIsLoading(false);
+            }, remainingTime);
         }
     };
 
@@ -128,6 +134,8 @@ function VetCampaign() {
         { id: 'manage', label: 'Manage Campaigns' },
         { id: 'create', label: 'Launch New' }
     ];
+
+    if (isLoading) return <ActionLoader message="Loading campaigns..." />;
 
     return (
         <div className="vet-dashboard vet-campaign-page">

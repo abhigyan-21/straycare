@@ -16,13 +16,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/user/Register";
 import RescuerDashboard from "./pages/user/RescuerDashboard";
 import RescuerNavigation from "./pages/user/RescuerNavigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import doctorClosed from "./assets/images/doctor-closed.png";
 import doctorOpen from "./assets/images/doctor-open.png";
 import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
 import AdminApp from "./AdminApp";
 import VetApp from "./VetApp";
+import { useAuthStore } from "./store/authStore";
 
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -47,14 +48,26 @@ const UserLayout = ({ openAuthModal }) => (
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
+  
   const [appLoading, setAppLoading] = useState(() => {
-    return !window.location.pathname.startsWith('/vet');
+    const isPortalRoute = window.location.pathname.startsWith('/vet') || window.location.pathname.startsWith('/admin');
+    return !isPortalRoute;
   });
+  
+  const { isFirstLogin, clearFirstLogin } = useAuthStore();
+  const hasLoadedInitial = useRef(false);
 
   useEffect(() => {
-    if (window.location.pathname.startsWith('/vet')) {
+    const isPortalRoute = window.location.pathname.startsWith('/vet') || window.location.pathname.startsWith('/admin');
+    if (isPortalRoute) {
       return;
     }
+
+    if (hasLoadedInitial.current && !isFirstLogin) {
+      return;
+    }
+
+    setAppLoading(true);
 
     const criticalImages = [
       doctorClosed,
@@ -66,7 +79,7 @@ function App() {
     ];
 
     const preloadImage = (src) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const img = new Image();
         img.src = src;
         img.onload = resolve;
@@ -83,9 +96,13 @@ function App() {
       
       setTimeout(() => {
         setAppLoading(false);
+        hasLoadedInitial.current = true;
+        if (isFirstLogin) {
+          clearFirstLogin();
+        }
       }, remainingTime);
     });
-  }, []);
+  }, [isFirstLogin, clearFirstLogin]);
 
   const openAuthModal = (mode) => {
     setAuthMode(mode);

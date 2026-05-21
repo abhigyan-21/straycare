@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/RescuerPages.css';
+import ActionLoader from '../../components/ActionLoader';
 
 const MOCK_REPORTS = [
   {
@@ -52,6 +53,8 @@ function RescuerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
+    const startTime = Date.now();
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -72,11 +75,20 @@ function RescuerDashboard() {
           }));
           
           setSortedReports(withDist);
-          setIsLoading(false);
+          
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, 1000 - elapsedTime);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, remainingTime);
         },
         (error) => {
           console.error("Error getting location", error);
-          setIsLoading(false);
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, 1000 - elapsedTime);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, remainingTime);
         }
       );
     } else {
@@ -99,43 +111,45 @@ function RescuerDashboard() {
       </div>
 
       <div className="rescue-feed">
-        {sortedReports.map(report => (
-          <div key={report.id} className="rescue-card">
-            <div className="pet-pic-placeholder">
-              pet pic
-            </div>
-            
-            <div className="rescue-details">
-              <div className="detail-block">
-                <strong>Report:</strong>
-                <p>{report.type}: {report.description}</p>
+        {isLoading ? (
+          <ActionLoader message="Locating nearby rescues..." />
+        ) : (
+          sortedReports.map(report => (
+            <div key={report.id} className="rescue-card">
+              <div className="pet-pic-placeholder">
+                pet pic
               </div>
-              <div className="detail-block">
-                <strong>Location:</strong>
-                <p>{report.address} ({report.distance || '?'} km away)</p>
+              
+              <div className="rescue-details">
+                <div className="detail-block">
+                  <strong>Report:</strong>
+                  <p>{report.type}: {report.description}</p>
+                </div>
+                <div className="detail-block">
+                  <strong>Location:</strong>
+                  <p>{report.address} ({report.distance || '?'} km away)</p>
+                </div>
+                <div className="detail-block">
+                  <strong>Reported By:</strong>
+                  <p>{report.reportedBy}</p>
+                </div>
+                <div className="detail-block">
+                  <strong>Contact:</strong>
+                  <p>{report.contact}</p>
+                </div>
               </div>
-              <div className="detail-block">
-                <strong>Reported By:</strong>
-                <p>{report.reportedBy}</p>
-              </div>
-              <div className="detail-block">
-                <strong>Contact:</strong>
-                <p>{report.contact}</p>
-              </div>
-            </div>
 
-            <div className="rescue-actions">
-              <button 
-                className="rescue-btn"
-                onClick={() => handleAcceptRescue(report.id)}
-              >
-                I'll Rescue
-              </button>
+              <div className="rescue-actions">
+                <button 
+                  className="rescue-btn"
+                  onClick={() => handleAcceptRescue(report.id)}
+                >
+                  I'll Rescue
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-
-        {isLoading && <div className="loader">Updating nearby rescues...</div>}
+          ))
+        )}
       </div>
     </div>
   );

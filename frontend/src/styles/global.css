@@ -1,9 +1,18 @@
-html,
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   font-family: "Quicksand", sans-serif;
   background: #fcfdf9;
+  height: 100%;
+  overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .no-scroll {
@@ -11,8 +20,25 @@ body {
   height: 100% !important;
 }
 
-html {
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
+/* Prevent scroll chaining and bouncing on nested scrollable elements */
+.rescues-container,
+.chat-history,
+.create-adoption-modal,
+.modal-content,
+.adopt-list-container {
+  overscroll-behavior: contain;
+}
+
+main, .main-content {
+  flex: 1;
 }
 
 /* NAVBAR */
@@ -469,7 +495,6 @@ html {
   background: #d9dcd4;
   color: rgb(0, 0, 0);
   padding: 20px 20px;
-  margin-top: 20px;
   text-align: center;
   border-top: 2px solid #41573d4e;
 }

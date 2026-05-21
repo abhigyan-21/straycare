@@ -8,6 +8,7 @@ import VetRequestCard from '../../components/vet/VetRequestCard';
 import InterviewCard from '../../components/vet/InterviewCard';
 import VetTabs from '../../components/vet/VetTabs';
 import CreateAdoptionModal from '../../components/vet/CreateAdoptionModal';
+import ActionLoader from '../../components/ActionLoader';
 
 import { ADOPT_STATUS_OPTIONS, MOCK_ADOPT_DATA } from '../../data/mock_vet_data';
 
@@ -28,6 +29,7 @@ function VetAdopt() {
 
     const fetchData = async () => {
         setIsLoading(true);
+        const startTime = Date.now();
         try {
             const [petsRes, reqsRes] = await Promise.all([
                 fetch('/api/adoptions/pets', {
@@ -83,7 +85,11 @@ function VetAdopt() {
                 newRequests: MOCK_ADOPT_DATA.newRequests
             });
         } finally {
-            setIsLoading(false);
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, 800 - elapsedTime);
+            setTimeout(() => {
+                setIsLoading(false);
+            }, remainingTime);
         }
     };
 
@@ -217,7 +223,7 @@ function VetAdopt() {
             <VetTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
             <div className="adopt-list-container">
-                {isLoading ? <p>Loading...</p> : (
+                {isLoading ? <ActionLoader message="Fetching adoption data..." /> : (
                     <>
                         {activeTab === 'live' && data.liveAdoptions.map(pet => (
                             <VetStatusCard 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetRescuers.css';
+import ActionLoader from '../../components/ActionLoader';
 import { MOCK_RESCUERS } from '../../data/mock_vet_data';
 
 const VetRescuers = () => {
@@ -18,6 +19,7 @@ const VetRescuers = () => {
     useEffect(() => {
         const fetchRescuers = async () => {
             setIsLoading(true);
+            const startTime = Date.now();
             try {
                 const response = await fetch('/api/users/rescuers', {
                     headers: {
@@ -31,7 +33,11 @@ const VetRescuers = () => {
                 console.warn("Using mock rescuers as fallback:", error.message);
                 setRescuers(MOCK_RESCUERS);
             } finally {
-                setIsLoading(false);
+                const elapsedTime = Date.now() - startTime;
+                const remainingTime = Math.max(0, 800 - elapsedTime);
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, remainingTime);
             }
         };
 
@@ -152,9 +158,7 @@ const VetRescuers = () => {
                 <h2><Users size={24} style={{ verticalAlign: 'middle', marginRight: '10px' }} /> Your Rescuer Team </h2>
                 
                 {isLoading ? (
-                    <div className="empty-state">
-                        <p>Loading rescuers...</p>
-                    </div>
+                    <ActionLoader message="Syncing rescuer data..." />
                 ) : (
                     <div className="rescuers-grid">
                         {rescuers.length > 0 ? (

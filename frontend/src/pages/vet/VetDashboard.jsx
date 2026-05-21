@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Loader from '../../components/Loader';
 import '../../styles/vet/VetDashboard.css';
 import LiveStatusView from '../../components/vet/LiveStatusView';
+import ActionLoader from '../../components/ActionLoader';
 import VetStatCard from '../../components/vet/VetStatCard';
+import { useAuthStore } from '../../store/authStore';
 
 import { MOCK_DASHBOARD_DATA } from '../../data/mock_vet_data';
 
@@ -14,10 +16,12 @@ function VetDashboard() {
         liveRequests: 0,
         latestCampaign: { title: 'No active campaign', date: '--' }
     });
+    const { isFirstLogin, clearFirstLogin } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = async () => {
         setIsLoading(true);
+        const startTime = Date.now();
         try {
             const [reportsRes, petsRes, reqsRes, campsRes] = await Promise.all([
                 fetch('/api/reports/clinic', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
@@ -56,7 +60,16 @@ function VetDashboard() {
             setRescues(MOCK_DASHBOARD_DATA.rescues);
             setStats(MOCK_DASHBOARD_DATA.stats);
         } finally {
-            setIsLoading(false);
+            const elapsedTime = Date.now() - startTime;
+            const minimumLoadingTime = isFirstLogin ? 2000 : 800; // 2 seconds for splash, 800ms for regular loader
+            const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
+
+            setTimeout(() => {
+                setIsLoading(false);
+                if (isFirstLogin) {
+                    clearFirstLogin();
+                }
+            }, remainingTime);
         }
     };
 
@@ -64,7 +77,8 @@ function VetDashboard() {
         fetchData();
     }, []);
 
-    if (isLoading) return <Loader />;
+    if (isLoading && isFirstLogin) return <Loader />;
+    if (isLoading) return <ActionLoader message="Updating Dashboard..." />;
 
     return (
         <div className="vet-dashboard">

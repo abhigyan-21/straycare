@@ -25,28 +25,30 @@ function VetApp() {
   return (
     <>
       {isAuthorized && <VetNavbar />}
-      <Routes>
-        <Route
-          path="login"
-          element={isAuthorized ? <Navigate to="/vet/dashboard" replace /> : <VetLogin />}
-        />
+      <main>
+        <Routes>
+          <Route
+            path="login"
+            element={isAuthorized ? <Navigate to="/vet/dashboard" replace /> : <VetLogin />}
+          />
 
-        {/* Centralized protection for all professional vet and NGO routes */}
-        <Route element={<ProtectedRoute allowedRoles={['VET', 'NGO']} redirectTo="/vet/login" unauthorizedRedirect="/vet/login" />}>
-          <Route path="/" element={<Navigate to="/vet/dashboard" replace />} />
-          <Route path="dashboard" element={<VetDashboard />} />
-          <Route path="adopt" element={<VetAdopt />} />
-          <Route path="status" element={<VetStatus />} />
-          <Route path="campaign" element={<VetCampaign />} />
-          <Route path="profile" element={<VetProfile />} />
-          <Route path="rescuers" element={<VetRescuers />} />
-          <Route path="tracking/:id" element={<VetTracking />} />
-          <Route path="guide" element={<Guide />} />
-          {/* Add more protected routes here */}
-        </Route>
+          {/* Centralized protection for all professional vet and NGO routes */}
+          <Route element={<ProtectedRoute allowedRoles={['VET', 'NGO']} redirectTo="/vet/login" unauthorizedRedirect="/vet/login" />}>
+            <Route path="/" element={<Navigate to="/vet/dashboard" replace />} />
+            <Route path="dashboard" element={<VetDashboard />} />
+            <Route path="adopt" element={<VetAdopt />} />
+            <Route path="status" element={<VetStatus />} />
+            <Route path="campaign" element={<VetCampaign />} />
+            <Route path="profile" element={<VetProfile />} />
+            <Route path="rescuers" element={<VetRescuers />} />
+            <Route path="tracking/:id" element={<VetTracking />} />
+            <Route path="guide" element={<Guide />} />
+            {/* Add more protected routes here */}
+          </Route>
 
-        <Route path="*" element={<Navigate to={isAuthorized ? "/vet/dashboard" : "/vet/login"} replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to={isAuthorized ? "/vet/dashboard" : "/vet/login"} replace />} />
+        </Routes>
+      </main>
       <Footer />
     </>
   );

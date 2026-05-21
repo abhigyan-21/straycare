@@ -11,7 +11,7 @@ function About() {
                     <div className="about-section">
                         <h2>How We Started</h2>
                         <p>
-                            StrayCare began with a simple observation: countless stray animals on our streets needing food, shelter, and medical attention. A small group of passionate volunteers decided to take action, starting by feeding a few local dogs and cats. As our community grew, so did our mission. Today, we are a dedicated organization working tirelessly to improve the lives of stray animals through rescue, rehabilitation, and finding them loving forever homes.
+                            We began with a simple observation: countless stray animals on our streets needing food, shelter, and medical attention. A small group of passionate volunteers decided to take action, starting by feeding a few local dogs and cats. As our community grew, so did our mission. Today, we are a dedicated organization working tirelessly to improve the lives of stray animals through rescue, rehabilitation, and finding them loving forever homes.
                         </p>
                     </div>
 

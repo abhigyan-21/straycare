@@ -6,21 +6,24 @@ export const useAuthStore = create(
     (set) => ({
       isLoggedIn: false,
       user: null,
-      isLoading: false, // Sync hydration, so no loading state needed
+      isLoading: false,
+      isFirstLogin: false, // New flag for splash loader
       
       login: (userData) => {
         // Ensure role exists for ProtectedRoute logic
         if (!userData.role) userData.role = 'USER';
-        set({ isLoggedIn: true, user: userData });
+        set({ isLoggedIn: true, user: userData, isFirstLogin: true });
       },
       
+      clearFirstLogin: () => set({ isFirstLogin: false }),
+
       logout: () => {
-        set({ isLoggedIn: false, user: null });
+        set({ isLoggedIn: false, user: null, isFirstLogin: false });
       },
     }),
     {
       name: 'straycare_user', // unique name for localStorage key
-      // We only want to persist isLoggedIn and user, not isLoading if it were dynamically changing
+      // We only want to persist isLoggedIn and user
       partialize: (state) => ({ isLoggedIn: state.isLoggedIn, user: state.user }),
     }
   )

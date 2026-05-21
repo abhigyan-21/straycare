@@ -40,7 +40,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         };
 
         login(userData);
-        alert(`${mode === 'signin' ? 'Sign In' : 'Sign Up'} successful!`);
         onClose();
     };
 
