@@ -129,7 +129,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/guide" element={<Guide />} />
             <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
-            <Route path="/help" element={<Help />} />
+            <Route path="/help" element={<Help openAuthModal={openAuthModal} />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/register" element={<Register />} />
 

@@ -37,7 +37,8 @@ body {
   overscroll-behavior: contain;
 }
 
-main, .main-content {
+main,
+.main-content {
   flex: 1;
 }
 
@@ -494,9 +495,10 @@ main, .main-content {
 .footer {
   background: #d9dcd4;
   color: rgb(0, 0, 0);
-  padding: 20px 20px;
+  padding: 0px 20px 20px 20px;
   text-align: center;
   border-top: 2px solid #41573d4e;
+  margin-top: 20px;
 }
 
 .footer-bottom {

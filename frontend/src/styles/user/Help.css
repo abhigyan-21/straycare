@@ -569,3 +569,464 @@
         font-size: 2rem;
     }
 }
+
+/* ==========================================
+   Volunteer & Donation Modal New Styles
+   ========================================== */
+
+/* Volunteer Inline Reconfirm Styles */
+.volunteer-reconfirm {
+    background-color: #fdfdfa;
+    border: 2px dashed #346c02;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(52, 108, 2, 0.05);
+}
+
+.reconfirm-title {
+    font-size: 1.25rem;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.reconfirm-subtitle {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.volunteer-reconfirm .reconfirm-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.confirm-btn {
+    background-color: #346c02;
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1.8rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirm-btn:hover {
+    background-color: #254e01;
+    transform: scale(1.02);
+}
+
+.cancel-btn.outline {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #555;
+    padding: 0.7rem 1.8rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-btn.outline:hover {
+    background-color: #f5f5f5;
+}
+
+/* Volunteer Pending & Applied States */
+.volunteer-pending-card,
+.volunteer-applied-card {
+    background-color: #fff;
+    border: 1px solid #e8f5e9;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    max-width: 550px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.pending-badge {
+    background-color: #ffb300;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+    letter-spacing: 0.05em;
+}
+
+.success-badge {
+    background-color: #346c02;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+    letter-spacing: 0.05em;
+}
+
+.thank-you-msg {
+    font-size: 1.15rem;
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.cancel-volunteer-btn {
+    background-color: #e0e0e0 !important;
+    color: #555 !important;
+    font-weight: 500;
+    border: none;
+    border-radius: 25px;
+    padding: 0.7rem 2.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancel-volunteer-btn:hover {
+    background-color: #d2d2d2 !important;
+    color: #333 !important;
+    transform: translateY(-1px);
+}
+
+/* Back Arrow Button styling */
+.back-arrow-btn {
+    position: absolute;
+    top: 1.5rem;
+    left: 2rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.back-arrow-btn:hover {
+    color: #333;
+}
+
+/* Scroll View inside modal */
+.modal-scroll-view {
+    width: 100%;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    margin-top: 1rem;
+}
+
+.modal-scroll-view h2 {
+    margin-bottom: 1.5rem;
+}
+
+/* Scroll View Custom Scrollbar */
+.modal-scroll-view::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-scroll-view::-webkit-scrollbar-thumb {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+}
+
+.modal-scroll-view::-webkit-scrollbar-thumb:hover {
+    background-color: #cccccc;
+}
+
+/* Campaigns list inside modal */
+.modal-campaigns-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.modal-campaign-card {
+    display: flex;
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.modal-campaign-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    border-color: #e6f2da;
+}
+
+.modal-camp-img {
+    width: 180px;
+    min-height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.modal-camp-info {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.modal-camp-info h3 {
+    font-size: 1.2rem;
+    color: #222;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.modal-camp-info p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.modal-camp-progress-container {
+    margin-bottom: 1.2rem;
+}
+
+.modal-camp-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+}
+
+.modal-camp-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fce883, #f5df6d);
+    border-radius: 3px;
+}
+
+.modal-camp-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.donate-camp-btn {
+    align-self: flex-start;
+    padding: 0.5rem 1.5rem !important;
+    font-size: 0.85rem !important;
+    background-color: #fce883 !important;
+    border-radius: 20px !important;
+}
+
+.donate-camp-btn:hover {
+    background-color: #f5df6d !important;
+}
+
+/* Payment View Styles */
+.payment-processing-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 0;
+    gap: 1.5rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #346c02;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+    margin: 1.5rem auto 0;
+    gap: 1.5rem;
+}
+
+.payment-helper {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.preset-amounts {
+    display: flex;
+    gap: 0.8rem;
+    width: 100%;
+}
+
+.preset-btn {
+    flex: 1;
+    padding: 0.8rem 0;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    border-color: #346c02;
+    background-color: #f9fbf7;
+}
+
+.preset-btn.active {
+    border-color: #346c02;
+    color: #346c02;
+    background-color: #f0f7e6;
+    box-shadow: 0 4px 10px rgba(52, 108, 2, 0.08);
+}
+
+.custom-amount-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 0.6rem 1.2rem;
+    transition: border-color 0.2s;
+}
+
+.custom-amount-input:focus-within {
+    border-color: #346c02;
+}
+
+.custom-amount-input span {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #555;
+    margin-right: 0.5rem;
+}
+
+.custom-amount-input input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.proceed-pay-btn {
+    width: 100%;
+    padding: 0.9rem 0 !important;
+    font-size: 1.05rem !important;
+    background-color: #346c02 !important;
+    color: #fff !important;
+    border-radius: 25px !important;
+    box-shadow: 0 4px 15px rgba(52, 108, 2, 0.2);
+}
+
+.proceed-pay-btn:hover {
+    background-color: #254e01 !important;
+    transform: translateY(-1px);
+}
+
+/* Payment Success View */
+.payment-success-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 0;
+}
+
+.success-checkmark-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 4px solid #346c02;
+    position: relative;
+    margin-bottom: 1.5rem;
+    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-checkmark-stem {
+    width: 4px;
+    height: 22px;
+    background-color: #346c02;
+    position: absolute;
+    top: 20px;
+    left: 36px;
+    transform: rotate(45deg);
+}
+
+.success-checkmark-kick {
+    width: 12px;
+    height: 4px;
+    background-color: #346c02;
+    position: absolute;
+    top: 34px;
+    left: 21px;
+    transform: rotate(45deg);
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-thanks-text {
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.6;
+    max-width: 520px;
+    margin-bottom: 1.2rem;
+}
+
+.close-success-btn {
+    margin-top: 1rem;
+    padding: 0.7rem 2.5rem !important;
+    font-size: 0.95rem !important;
+    border-radius: 20px !important;
+}
+
+@media (max-width: 768px) {
+    .modal-campaign-card {
+        flex-direction: column;
+    }
+    .modal-camp-img {
+        width: 100%;
+        height: 150px;
+    }
+    .back-arrow-btn {
+        top: 0.8rem;
+        left: 1rem;
+    }
+}
