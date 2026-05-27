@@ -478,19 +478,26 @@
 
 .close-btn {
     position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    font-size: 2.5rem;
-    color: #aaa;
-    background: none;
-    border: none;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #444;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    line-height: 1;
-    transition: color 0.2s;
+    transition: all 0.3s;
 }
 
 .close-btn:hover {
-    color: #555;
+    background: rgba(0, 0, 0, 0.12);
+    color: #111;
 }
 
 .expanded-content h2 {
@@ -564,9 +571,8 @@
     }
 
     .close-btn {
-        top: 0.5rem;
-        right: 1rem;
-        font-size: 2rem;
+        top: 15px;
+        right: 15px;
     }
 }
 

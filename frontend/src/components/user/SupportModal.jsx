@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../../styles/vet/VetCampaign.css';
 
 const SupportModal = ({
     card,
@@ -56,7 +57,7 @@ const SupportModal = ({
         }
 
         setIsPaymentProcessing(true);
-        
+
         // Simulate a 2-second premium payment gateway processing loader
         setTimeout(async () => {
             const success = await onDonate(selectedCampaign.id, amount);
@@ -99,7 +100,7 @@ const SupportModal = ({
                             <div className="volunteer-pending-card">
                                 <div className="pending-badge">PENDING COOLDOWN</div>
                                 <p className="thank-you-msg">Thank you for volunteering! Your registration will commit in {cooldownRemaining}s.</p>
-                                <button 
+                                <button
                                     className="action-btn cancel-volunteer-btn"
                                     onClick={onVolunteerCancel}
                                 >
@@ -110,7 +111,7 @@ const SupportModal = ({
                             <div className="volunteer-applied-card">
                                 <div className="success-badge">✓ ENROLLED</div>
                                 <p className="thank-you-msg">Thank you for volunteering! You are now part of our volunteer pool.</p>
-                                <button 
+                                <button
                                     className="action-btn cancel-volunteer-btn"
                                     onClick={onVolunteerCancel}
                                 >
@@ -140,7 +141,7 @@ const SupportModal = ({
                 <div className="expanded-content modal-scroll-view">
                     <button className="back-arrow-btn" onClick={() => setViewMode('main')}>← Back</button>
                     <h2>Select a Campaign to Support</h2>
-                    
+
                     {isLoadingCampaigns ? (
                         <div className="modal-loader">Loading campaigns...</div>
                     ) : campaigns.length === 0 ? (
@@ -148,22 +149,22 @@ const SupportModal = ({
                     ) : (
                         <div className="modal-campaigns-list">
                             {campaigns.map((camp) => {
-                                const progress = camp.goalAmount > 0 
+                                const progress = camp.goalAmount > 0
                                     ? Math.min(100, Math.round(((camp.raisedAmount || 0) / camp.goalAmount) * 100))
                                     : 0;
 
                                 return (
                                     <div key={camp.id} className="modal-campaign-card">
                                         {camp.image && (
-                                            <div 
-                                                className="modal-camp-img" 
-                                                style={{ backgroundImage: `url(${camp.image})` }} 
+                                            <div
+                                                className="modal-camp-img"
+                                                style={{ backgroundImage: `url(${camp.image})` }}
                                             />
                                         )}
                                         <div className="modal-camp-info">
                                             <h3>{camp.title}</h3>
                                             <p>{camp.description}</p>
-                                            
+
                                             <div className="modal-camp-progress-container">
                                                 <div className="modal-camp-progress-bar">
                                                     <div className="modal-camp-progress-fill" style={{ width: `${progress}%` }}></div>
@@ -173,8 +174,8 @@ const SupportModal = ({
                                                     <span>Goal: ₹{camp.goalAmount?.toLocaleString() || '0'}</span>
                                                 </div>
                                             </div>
-                                            
-                                            <button 
+
+                                            <button
                                                 className="action-btn donate-camp-btn"
                                                 onClick={() => handleSelectCampaign(camp)}
                                             >
@@ -196,7 +197,7 @@ const SupportModal = ({
                 <div className="expanded-content">
                     <button className="back-arrow-btn" onClick={() => setViewMode('donations')}>← Back</button>
                     <h2>Donate to {selectedCampaign?.title}</h2>
-                    
+
                     {isPaymentProcessing ? (
                         <div className="payment-processing-loader">
                             <div className="spinner"></div>
@@ -205,7 +206,7 @@ const SupportModal = ({
                     ) : (
                         <form onSubmit={handlePaySubmit} className="payment-form">
                             <p className="payment-helper">Select or enter your donation amount in INR (₹):</p>
-                            
+
                             <div className="preset-amounts">
                                 {['500', '1000', '2000', '5000'].map((amt) => (
                                     <button
@@ -221,7 +222,7 @@ const SupportModal = ({
                                     </button>
                                 ))}
                             </div>
-                            
+
                             <div className="custom-amount-input">
                                 <span>₹</span>
                                 <input
@@ -238,7 +239,7 @@ const SupportModal = ({
 
                             <button type="submit" className="action-btn proceed-pay-btn">
                                 Proceed to Pay ₹{isNaN(amount) ? '0' : amount.toLocaleString()}
-                              </button>
+                            </button>
                         </form>
                     )}
                 </div>
@@ -276,7 +277,9 @@ const SupportModal = ({
                     className="expanded-card-bg"
                     style={{ backgroundImage: getBackgroundImage() }}
                 />
-                <button className="close-btn" onClick={handleClose}>&times;</button>
+                <button className="close-btn" onClick={handleClose}>
+                    <span style={{ fontSize: '1.2rem' }}>X</span>
+                </button>
                 {renderContent()}
             </div>
         </div>

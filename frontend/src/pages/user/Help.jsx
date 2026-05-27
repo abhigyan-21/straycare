@@ -198,32 +198,57 @@ function Help({ openAuthModal }) {
             return;
         }
 
-        try {
-            const res = await fetch('http://localhost:5000/api/funding/campaigns/volunteer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+        // Helper to register volunteering with coordinates
+        const registerWithLocation = async (latitude = null, longitude = null) => {
+            try {
+                const res = await fetch('http://localhost:5000/api/funding/campaigns/volunteer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ lat: latitude, lng: longitude })
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    setHasVolunteered(true);
+                    setVolunteerPending(true);
+                    const secs = json.remainingSeconds || 120;
+                    setCooldownRemaining(secs);
+                    startCountdown(secs);
+                } else {
+                    throw new Error('Registration failed');
                 }
-            });
-            if (res.ok) {
-                const json = await res.json();
+            } catch (err) {
+                // Mock volunteer registration
+                localStorage.setItem('mock_volunteer_status', 'pending');
+                localStorage.setItem('mock_volunteer_timer_end', (Date.now() + 120 * 1000).toString());
+                if (latitude && longitude) {
+                    localStorage.setItem('mock_volunteer_lat', latitude.toString());
+                    localStorage.setItem('mock_volunteer_lng', longitude.toString());
+                }
                 setHasVolunteered(true);
                 setVolunteerPending(true);
-                const secs = json.remainingSeconds || 120;
-                setCooldownRemaining(secs);
-                startCountdown(secs);
-            } else {
-                throw new Error('Registration failed');
+                setCooldownRemaining(120);
+                startCountdown(120);
             }
-        } catch (err) {
-            // Mock volunteer registration
-            localStorage.setItem('mock_volunteer_status', 'pending');
-            localStorage.setItem('mock_volunteer_timer_end', (Date.now() + 120 * 1000).toString());
-            setHasVolunteered(true);
-            setVolunteerPending(true);
-            setCooldownRemaining(120);
-            startCountdown(120);
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    registerWithLocation(latitude, longitude);
+                },
+                (error) => {
+                    console.warn("Geolocation query failed/denied, registering without coordinates:", error.message);
+                    registerWithLocation(null, null);
+                },
+                { timeout: 5000 }
+            );
+        } else {
+            console.warn("Geolocation is not supported by this browser, registering without coordinates.");
+            registerWithLocation(null, null);
         }
     };
 

@@ -18,7 +18,7 @@ const CampaignListItem = ({ campaign, calculateDaysLeft, onDetails }) => {
             <div className="manage-stat">
                 <span className="manage-stat-value">
                     <Users size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                    {campaign.volunteers}
+                    {Array.isArray(campaign.volunteers) ? campaign.volunteers.length : (campaign.volunteers || 0)}
                 </span>
                 <span className="manage-stat-label">Volunteers</span>
             </div>

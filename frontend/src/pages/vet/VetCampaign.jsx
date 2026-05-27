@@ -295,8 +295,9 @@ function VetCampaign() {
 
             {selectedCampaign && (
                 <CampaignDetailModal 
-                    campaign={selectedCampaign} 
+                    campaign={campaigns.find(c => c.id === selectedCampaign.id) || selectedCampaign} 
                     onClose={() => setSelectedCampaign(null)} 
+                    onRefresh={fetchCampaigns}
                 />
             )}
         </div>

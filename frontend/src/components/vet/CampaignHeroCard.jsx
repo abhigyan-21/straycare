@@ -25,7 +25,7 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
                     <div className="card-stats-row">
                         <div className="card-mini-stat">
                             <label>Volunteers</label>
-                            <span>{campaign.volunteers}</span>
+                            <span>{Array.isArray(campaign.volunteers) ? campaign.volunteers.length : (campaign.volunteers || 0)}</span>
                         </div>
                         <div className="card-mini-stat">
                             <label>Raised</label>

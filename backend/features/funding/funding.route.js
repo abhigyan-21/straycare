@@ -11,6 +11,8 @@ const {
   cancelVolunteerCampaign,
   checkVolunteerStatus,
   mockDonateCampaign,
+  notifyNearbyVolunteers,
+  confirmVolunteerCampaign,
 } = require('./funding.controller');
 
 // ── Authenticated checkout routes ───────────────────────────────
@@ -26,8 +28,14 @@ router.post('/campaigns/volunteer', verifyToken, volunteerCampaign);
 router.post('/campaigns/volunteer/cancel', verifyToken, cancelVolunteerCampaign);
 router.get('/campaigns/volunteer/status', verifyToken, checkVolunteerStatus);
 
+// ── Confirm volunteer via email (Public link click) ────────────
+router.get('/campaigns/volunteer/confirm', confirmVolunteerCampaign);
+
 // ── Mock Donation Checkout ──────────────────────────────────────
 router.post('/campaigns/:id/donate-mock', verifyToken, mockDonateCampaign);
+
+// ── Notify nearby volunteers ────────────────────────────────────
+router.post('/campaigns/:id/notify', verifyToken, notifyNearbyVolunteers);
 
 // ── Razorpay webhook (public, standard JSON body) ───────────────
 router.post('/webhook', handleRazorpayWebhook);
