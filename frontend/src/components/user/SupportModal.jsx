@@ -40,7 +40,15 @@ const SupportModal = ({
     };
 
     const handleDonatingClick = () => {
-        setViewMode('donations');
+        if (card.id === 4) {
+            setViewMode('donations');
+        } else {
+            setSelectedCampaign({
+                id: `general-card-${card.id}`,
+                title: card.title
+            });
+            setViewMode('payment');
+        }
     };
 
     const handleSelectCampaign = (camp) => {
@@ -195,7 +203,13 @@ const SupportModal = ({
             const amount = customAmount ? parseFloat(customAmount) : parseFloat(donationAmount);
             return (
                 <div className="expanded-content">
-                    <button className="back-arrow-btn" onClick={() => setViewMode('donations')}>← Back</button>
+                    <button className="back-arrow-btn" onClick={() => {
+                        if (card.id === 4) {
+                            setViewMode('donations');
+                        } else {
+                            setViewMode('main');
+                        }
+                    }}>← Back</button>
                     <h2>Donate to {selectedCampaign?.title}</h2>
 
                     {isPaymentProcessing ? (
@@ -256,13 +270,19 @@ const SupportModal = ({
                     </div>
                     <h2>Donation Successful!</h2>
                     <p className="success-thanks-text">
-                        Thank you so much for your generous support of <strong>₹{amount.toLocaleString()}</strong> to the <strong>{selectedCampaign?.title}</strong> campaign.
+                        Thank you so much for your generous support of <strong>₹{amount.toLocaleString()}</strong> {card.id === 4 ? <>to the <strong>{selectedCampaign?.title}</strong> campaign.</> : <>for <strong>{selectedCampaign?.title}</strong>.</>}
                     </p>
                     <p className="success-thanks-text">
                         Your contribution makes a life-saving difference in local rescue and treatment operations!
                     </p>
-                    <button className="action-btn close-success-btn" onClick={() => setViewMode('donations')}>
-                        Back to Campaigns
+                    <button className="action-btn close-success-btn" onClick={() => {
+                        if (card.id === 4) {
+                            setViewMode('donations');
+                        } else {
+                            setViewMode('main');
+                        }
+                    }}>
+                        {card.id === 4 ? 'Back to Campaigns' : 'Back'}
                     </button>
                 </div>
             );

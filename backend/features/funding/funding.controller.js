@@ -446,30 +446,51 @@ const mockDonateCampaign = async (req, res) => {
     // Update campaign raisedAmount
     let campaign = null;
     try {
-      campaign = await prisma.campaign.update({
-        where: { id },
-        data: {
-          raisedAmount: {
-            increment: Number(amount)
-          }
-        }
-      });
+      if (id.startsWith('general-card-')) {
+        // Map card IDs to types:
+        // Card 1: Support feeding our pets -> FOOD
+        // Card 2: Support treatment of our pets -> TREATMENT
+        // Card 3: Support providing shelter for our pets -> SHELTER
+        let type = 'FOOD';
+        if (id === 'general-card-2') type = 'TREATMENT';
+        if (id === 'general-card-3') type = 'SHELTER';
 
-      // Record a SUCCESS donation in database
-      await prisma.donation.create({
-        data: {
-          userId,
-          amount: Number(amount),
-          type: 'CAMPAIGN',
-          campaignId: id,
-          paymentIntentId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          status: 'SUCCESS'
-        }
-      });
-      
-      console.log(`💵 Mock donation successful: user ${userId} donated ₹${amount} to campaign ${id}`);
+        await prisma.donation.create({
+          data: {
+            userId,
+            amount: Number(amount),
+            type: type,
+            paymentIntentId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            status: 'SUCCESS'
+          }
+        });
+        console.log(`💵 Mock donation successful: user ${userId} donated ₹${amount} to general fund type ${type}`);
+      } else {
+        campaign = await prisma.campaign.update({
+          where: { id },
+          data: {
+            raisedAmount: {
+              increment: Number(amount)
+            }
+          }
+        });
+
+        // Record a SUCCESS donation in database
+        await prisma.donation.create({
+          data: {
+            userId,
+            amount: Number(amount),
+            type: 'CAMPAIGN',
+            campaignId: id,
+            paymentIntentId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            status: 'SUCCESS'
+          }
+        });
+
+        console.log(`💵 Mock donation successful: user ${userId} donated ₹${amount} to campaign ${id}`);
+      }
     } catch (err) {
-      console.warn("DB offline, mock donation skipped writing to database.", err.message);
+      console.warn("DB update failed, mock donation skipped writing to database.", err.message);
     }
 
     res.status(200).json({
