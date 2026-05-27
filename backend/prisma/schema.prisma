@@ -324,8 +324,8 @@ model Volunteer {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  campaignId String
-  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
 
   status String @default("APPLIED")
 
