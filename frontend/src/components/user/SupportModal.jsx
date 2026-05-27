@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../styles/vet/VetCampaign.css';
+
 
 const SupportModal = ({
     card,
@@ -278,7 +278,7 @@ const SupportModal = ({
                     style={{ backgroundImage: getBackgroundImage() }}
                 />
                 <button className="close-btn" onClick={handleClose}>
-                    <span style={{ fontSize: '1.2rem' }}>X</span>
+                    <span style={{ color: 'white', fontSize: '1.2rem' }}>X</span>
                 </button>
                 {renderContent()}
             </div>
