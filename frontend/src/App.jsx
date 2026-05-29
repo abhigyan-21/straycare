@@ -54,8 +54,21 @@ function App() {
     return !isPortalRoute;
   });
   
-  const { isFirstLogin, clearFirstLogin } = useAuthStore();
+  const { isFirstLogin, clearFirstLogin, isLoggedIn, user } = useAuthStore();
   const hasLoadedInitial = useRef(false);
+
+  useEffect(() => {
+    const isPortalRoute = window.location.pathname.startsWith('/vet') || window.location.pathname.startsWith('/admin');
+    if (isPortalRoute) return;
+
+    if (isLoggedIn && user && (!user.isEmailVerified || !user.isPhoneVerified)) {
+      const mode = !user.isEmailVerified ? 'verify-email' : 'verify-phone';
+      if (!isAuthModalOpen || authMode !== mode) {
+        setAuthMode(mode);
+        setIsAuthModalOpen(true);
+      }
+    }
+  }, [isLoggedIn, user, isAuthModalOpen, authMode]);
 
   useEffect(() => {
     const isPortalRoute = window.location.pathname.startsWith('/vet') || window.location.pathname.startsWith('/admin');

@@ -60,10 +60,21 @@ model User {
   id           String  @id @default(uuid())
   name         String
   email        String  @unique
+  phone        String  @unique
   password     String
+
   role         Role    @default(USER)
   avatarUrl    String?
-  isVerified   Boolean @default(false)
+
+  isEmailVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
+
+  emailOtp        String?
+  emailOtpExpiry  DateTime?
+
+  phoneOtp        String?
+  phoneOtpExpiry  DateTime?
+
   refreshToken String?
   contact      String?
 
@@ -74,9 +85,10 @@ model User {
   posts    FeedPost[]
   comments Comment[]
 
-  donations     Donation[]
-  subscriptions Subscription[]
-  volunteers    Volunteer[]
+  donations          Donation[]
+  subscriptions      Subscription[]
+  generalVolunteer   GeneralVolunteer?
+  campaignVolunteers CampaignVolunteer[]
 
   adoptionRequests AdoptionRequest[]
   ownedPets        Pet[]             @relation("PetOwner")
@@ -258,7 +270,7 @@ model Campaign {
   status CampaignStatus @default(PENDING)
 
   donations  Donation[]
-  volunteers Volunteer[]
+  volunteers CampaignVolunteer[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -315,21 +327,29 @@ model Subscription {
 }
 
 //////////////////////
-// VOLUNTEERS (NEW)
+// VOLUNTEERS
 //////////////////////
 
-model Volunteer {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  campaignId String?
-  campaign   Campaign? @relation(fields: [campaignId], references: [id])
-
-  status String @default("APPLIED")
-
+model GeneralVolunteer {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  lat       Float?
+  lng       Float?
+  status    String   @default("APPLIED")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CampaignVolunteer {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  status     String   @default("CONFIRMED")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([userId, campaignId])
 }

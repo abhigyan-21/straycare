@@ -264,21 +264,17 @@ const updateCampaignStatus = async (req, res) => {
  * @desc Register/schedule user as a general volunteer with a 2-minute cooldown
  * @route POST /api/funding/campaigns/volunteer
  * @access Private (requires verifyToken)
- */
-const volunteerCampaign = async (req, res) => {
+ */const volunteerCampaign = async (req, res) => {
   try {
     const userId = req.user.id;
     const { lat, lng } = req.body;
     const key = `${userId}-general`;
 
-    // 1. Check if already in DB (general volunteering has campaignId = null)
+    // 1. Check if already in DB (general volunteering)
     let existingVolunteer = null;
     try {
-      existingVolunteer = await prisma.volunteer.findFirst({
-        where: {
-          userId,
-          campaignId: null
-        }
+      existingVolunteer = await prisma.generalVolunteer.findUnique({
+        where: { userId }
       });
     } catch (err) {
       console.warn("DB offline, checking in-memory state only.");
@@ -301,10 +297,9 @@ const volunteerCampaign = async (req, res) => {
     // 3. Schedule the DB insert in 2 minutes (120,000 ms)
     const timeoutId = setTimeout(async () => {
       try {
-        await prisma.volunteer.create({
+        await prisma.generalVolunteer.create({
           data: {
             userId,
-            campaignId: null,
             status: 'APPLIED',
             lat: latNum,
             lng: lngNum,
@@ -357,18 +352,13 @@ const cancelVolunteerCampaign = async (req, res) => {
 
     // 2. If already in database, delete it
     try {
-      const existingVolunteer = await prisma.volunteer.findFirst({
-        where: {
-          userId,
-          campaignId: null
-        }
+      const existingVolunteer = await prisma.generalVolunteer.findUnique({
+        where: { userId }
       });
 
       if (existingVolunteer) {
-        await prisma.volunteer.delete({
-          where: {
-            id: existingVolunteer.id
-          }
+        await prisma.generalVolunteer.delete({
+          where: { userId }
         });
         console.log(`🗑️ General volunteer record deleted from DB for user ${userId}`);
         return res.status(200).json({ status: 'none', message: 'Volunteer registration removed.' });
@@ -408,17 +398,14 @@ const checkVolunteerStatus = async (req, res) => {
 
     // 2. Check if committed to DB
     try {
-      const existing = await prisma.volunteer.findFirst({
-        where: {
-          userId,
-          campaignId: null
-        }
+      const existing = await prisma.generalVolunteer.findUnique({
+        where: { userId }
       });
       if (existing) {
         return res.status(200).json({ status: 'applied' });
       }
     } catch (err) {
-      console.warn("DB offline, status checks fall back to none.");
+      console.warn("DB offline, status checks fall back to none.", err.message);
     }
 
     res.status(200).json({ status: 'none' });
@@ -543,11 +530,8 @@ const notifyNearbyVolunteers = async (req, res) => {
     const clinicLat = campaign.clinic?.lat;
     const clinicLng = campaign.clinic?.lng;
 
-    // 2. Fetch all general volunteers (campaignId is null)
-    const generalVolunteers = await prisma.volunteer.findMany({
-      where: {
-        campaignId: null
-      },
+    // 2. Fetch all general volunteers
+    const generalVolunteers = await prisma.generalVolunteer.findMany({
       include: {
         user: true
       }
@@ -573,7 +557,7 @@ const notifyNearbyVolunteers = async (req, res) => {
 
       if (isWithinRadius && volunteer.user?.email) {
         const confirmUrl = `http://localhost:5000/api/funding/campaigns/volunteer/confirm?campaignId=${campaign.id}&userId=${volunteer.userId}`;
-        
+
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
             <h2 style="color: #346c02; text-align: center;">Help Needed Near You!</h2>
@@ -589,9 +573,9 @@ const notifyNearbyVolunteers = async (req, res) => {
                 Yes, I want to Volunteer
               </a>
             </div>
-            <p>Thank you for supporting StrayCare rescue efforts!</p>
+            <p>Thank you for supporting Furzo rescue efforts!</p>
             <hr style="border: 0; border-top: 1px solid #eeeeee; margin-top: 30px;" />
-            <p style="font-size: 0.8rem; color: #999; text-align: center;">You received this email because you enrolled in StrayCare's general volunteer list.</p>
+            <p style="font-size: 0.8rem; color: #999; text-align: center;">You received this email because you enrolled in Furzo's general volunteer list.</p>
           </div>
         `;
 
@@ -646,7 +630,7 @@ const confirmVolunteerCampaign = async (req, res) => {
 
     // 2. Create or update the specific volunteer registration with status 'CONFIRMED'
     try {
-      await prisma.volunteer.upsert({
+      await prisma.campaignVolunteer.upsert({
         where: {
           userId_campaignId: {
             userId,

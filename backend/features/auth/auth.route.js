@@ -17,6 +17,12 @@ router.post('/refresh', authController.refresh);
 // Health check for frontend detection
 router.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// OTP Verification & Resend Routes
+router.post('/verify-email', verifyToken, authController.verifyEmail);
+router.post('/verify-phone', verifyToken, authController.verifyPhone);
+router.post('/request-email-otp', verifyToken, authLimiter, authController.requestEmailOtp);
+router.post('/request-phone-otp', verifyToken, authLimiter, authController.requestPhoneOtp);
+
 // Example protected route for verification
 router.get('/me', verifyToken, (req, res) => {
   res.json({ user: req.user });

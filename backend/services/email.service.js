@@ -1,24 +1,23 @@
 const nodemailer = require('nodemailer');
 
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = process.env.SMTP_PORT || 587;
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
-const FROM_EMAIL = process.env.FROM_EMAIL || 'no-reply@straycare.org';
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || SMTP_USER;
 
 let transporter = null;
 
-if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
+if (SMTP_USER && SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: SMTP_HOST,
-    port: parseInt(SMTP_PORT, 10),
-    secure: parseInt(SMTP_PORT, 10) === 465, // true for 465, false for other ports
+    port: 587,
+    secure: false,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
   });
-  console.log('✅ SMTP Email Transporter initialized successfully.');
+  console.log(`✅ SMTP Email Transporter initialized successfully (${SMTP_HOST}).`);
 } else {
   console.warn('⚠️ SMTP credentials missing in .env. Emails will be logged to the console instead.');
 }
