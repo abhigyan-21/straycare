@@ -33,7 +33,7 @@ const sendEmail = async ({ to, subject, html }) => {
   if (transporter) {
     try {
       const info = await transporter.sendMail({
-        from: `"StrayCare" <${FROM_EMAIL}>`,
+        from: `"Furzo" <${FROM_EMAIL}>`,
         to,
         subject,
         html,
@@ -47,7 +47,7 @@ const sendEmail = async ({ to, subject, html }) => {
   } else {
     // Fallback simulation logger
     console.log('\n=================== SIMULATED OUTBOUND EMAIL ===================');
-    console.log(`FROM: "StrayCare" <${FROM_EMAIL}>`);
+    console.log(`FROM: "Furzo" <${FROM_EMAIL}>`);
     console.log(`TO: ${to}`);
     console.log(`SUBJECT: ${subject}`);
     console.log('BODY:');

@@ -59,7 +59,7 @@ const register = async (req, res) => {
     // Send verification emails and SMS notifications
     await sendEmail({
       to: user.email,
-      subject: 'Verify your StrayCare Account',
+      subject: 'Verify your Furzo Account',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
           <h2 style="color: #346c02; text-align: center;">Welcome to StrayCare!</h2>
@@ -74,7 +74,7 @@ const register = async (req, res) => {
 
     await sendSMS(
       user.phone,
-      `Welcome to StrayCare! Your verification OTP code is ${phoneOtpData.otp}. It is valid for 5 minutes.`
+      `Welcome to Furzo!! Your verification OTP code is ${phoneOtpData.otp}. It is valid for 5 minutes.`
     );
 
     // Exclude password and OTP details from response
@@ -95,7 +95,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
@@ -111,8 +111,8 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email }, 
-      process.env.JWT_SECRET, 
+      { id: user.id, role: user.role, email: user.email },
+      process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
 
@@ -148,15 +148,15 @@ const refresh = async (req, res) => {
     }
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    
+
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email }, 
-      process.env.JWT_SECRET, 
+      { id: user.id, role: user.role, email: user.email },
+      process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
 
