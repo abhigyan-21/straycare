@@ -39,19 +39,54 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.avatar {
+.profile-sidebar .avatar-container {
+    position: relative;
     width: 100px;
     height: 100px;
+    margin-bottom: 16px;
+    cursor: pointer;
     border-radius: 50%;
-    object-fit: cover;
+    transition: transform 0.3s ease;
     border: 4px solid #fff;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    margin-bottom: 16px;
-    transition: transform 0.3s ease;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.avatar:hover {
+.profile-sidebar .avatar-container:hover {
     transform: scale(1.05);
+}
+
+.profile-sidebar .avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: none;
+    box-shadow: none;
+}
+
+.profile-sidebar .avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-sidebar .avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.profile-sidebar .camera-icon {
+    font-size: 1.5rem;
+    color: #fff;
 }
 
 .user-name {
@@ -164,14 +199,15 @@
     letter-spacing: -0.02em;
 }
 
-.section-header {
+.profile-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    width: 100%;
 }
 
-.section-header h2 {
+.profile-section-header h2 {
     margin-bottom: 0;
 }
 
@@ -709,7 +745,7 @@
         padding: 20px 15px;
     }
 
-    .avatar {
+    .profile-sidebar .avatar-container {
         width: 80px;
         height: 80px;
     }
@@ -872,7 +908,7 @@
         border-top: 1px solid #f3f4f6;
     }
 
-    .section-header {
+    .profile-section-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 20px;

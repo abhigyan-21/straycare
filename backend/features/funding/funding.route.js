@@ -13,10 +13,14 @@ const {
   mockDonateCampaign,
   notifyNearbyVolunteers,
   confirmVolunteerCampaign,
+  getMyDonations,
+  cancelSubscription,
 } = require('./funding.controller');
 
 // ── Authenticated checkout routes ───────────────────────────────
 router.post('/donate', verifyToken, createDonationOrder);
+router.get('/my-donations', verifyToken, getMyDonations);
+router.post('/subscriptions/:id/cancel', verifyToken, cancelSubscription);
 
 // ── Campaign routes ───────────────────────────────
 router.post('/campaigns', verifyToken, createCampaign);

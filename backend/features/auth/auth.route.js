@@ -41,4 +41,6 @@ router.get('/me', verifyToken, (req, res) => {
   res.json({ user: req.user });
 });
 
+router.patch('/profile', verifyToken, authController.updateProfile);
+
 module.exports = router;
