@@ -108,6 +108,25 @@ export const useAuthStore = create(
       
       clearFirstLogin: () => set({ isFirstLogin: false }),
 
+      updateProfileAction: async (name, email, phone, avatarUrl) => {
+        set({ isLoading: true });
+        try {
+          const response = await apiClient.patch('/auth/profile', { name, email, phone, avatarUrl });
+          const { user } = response.data;
+          set({ user, isLoading: false });
+          return { success: true, user };
+        } catch (error) {
+          set({ isLoading: false });
+          let errorMsg = 'Failed to update profile';
+          if (error.response && error.response.data) {
+             errorMsg = error.response.data.error || error.response.data.message || 'Failed to update profile';
+          } else if (error.message) {
+             errorMsg = error.message;
+          }
+          throw new Error(errorMsg);
+        }
+      },
+
       logout: () => {
         set({
           isLoggedIn: false,

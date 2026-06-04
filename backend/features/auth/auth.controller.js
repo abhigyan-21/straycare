@@ -243,13 +243,17 @@ const requestEmailOtp = async (req, res) => {
       to: user.email,
       subject: 'New Email Verification OTP',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 5px solid #bdf9aeff; border-radius: 8px;">
+          <h1 style="text-align: center;">Welcome to Furzo!</h1>
           <h2 style="color: #346c02; text-align: center;">Email Verification Code</h2>
           <p>Please use the following new OTP code to verify your email address:</p>
           <div style="text-align: center; margin: 20px 0;">
             <span style="font-size: 2rem; font-weight: bold; letter-spacing: 5px; color: #346c02;">${otp}</span>
           </div>
+          <p style="font-size: 0.9rem; color: #666;">Thank you for being a part of Furzo!</p>
           <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
+          <p style="font-size: 0.9rem; color: #666;">Disclaimer: This is an auto-generated email. Please do not reply to this email.</p>
+          <p style="font-size: 0.9rem; color: #666;">If you didn't request this code, please ignore this email.</p>
         </div>
       `
     })
@@ -270,10 +274,62 @@ const requestEmailOtp = async (req, res) => {
 };
 
 
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, email, phone, avatarUrl } = req.body;
+
+    if (!name && !email && !phone && avatarUrl === undefined) {
+      return res.status(400).json({ error: 'At least one field (name, email, phone, or avatarUrl) is required to update.' });
+    }
+
+    // Validate email if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+      }
+      const existingUserByEmail = await prisma.user.findUnique({ where: { email } });
+      if (existingUserByEmail && existingUserByEmail.id !== userId) {
+        return res.status(400).json({ error: 'Email is already in use' });
+      }
+    }
+
+    // Validate phone/contact if provided
+    if (phone) {
+      if (phone.length < 10) {
+        return res.status(400).json({ error: 'Phone number must be at least 10 digits' });
+      }
+      const existingUserByPhone = await prisma.user.findUnique({ where: { phone } });
+      if (existingUserByPhone && existingUserByPhone.id !== userId) {
+        return res.status(400).json({ error: 'Phone number is already in use' });
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(phone && { phone }),
+        ...(avatarUrl !== undefined && { avatarUrl }),
+      }
+    });
+
+    const { password: _, refreshToken: __, ...userWithoutPassword } = updatedUser;
+    res.json({ user: userWithoutPassword });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
 module.exports = {
   register,
   login,
   refresh,
   verifyEmail,
   requestEmailOtp,
+  updateProfile,
 };

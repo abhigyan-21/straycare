@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/Profile.css';
 import '../../styles/user/Post.css'; // For create-post-btn styles
@@ -6,11 +6,14 @@ import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuthStore } from '../../store/authStore';
 import MiniLoader from '../../components/user/MiniLoader';
 
+const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'><rect width='100%25' height='100%25' fill='%23f1f5f9'/><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
+
 const Profile = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
+    const avatarInputRef = useRef(null);
 
-    const { user: authUser, logout } = useAuthStore();
+    const { user: authUser, logout, updateProfileAction } = useAuthStore();
     const [activeTab, setActiveTab] = useState('personal');
     const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -19,12 +22,49 @@ const Profile = () => {
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [user, setUser] = useState({
-        name: authUser?.name || 'John Doe',
-        email: authUser?.email || 'john.doe@example.com',
-        phone: authUser?.contact || '+91 77887 87665',
-        joined: 'January 2026',
-        avatar: 'https://i.pravatar.cc/150?img=11',
+        name: '',
+        email: '',
+        phone: '',
+        joined: '',
+        avatar: '',
     });
+
+    useEffect(() => {
+        if (!authUser) {
+            navigate('/');
+            return;
+        }
+
+        setUser({
+            name: authUser.name || 'John Doe',
+            email: authUser.email || 'john.doe@example.com',
+            phone: authUser.phone || authUser.contact || '+91 77887 87665',
+            joined: authUser.createdAt 
+                ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
+                : 'January 2026',
+            avatar: authUser.avatarUrl || defaultAvatar,
+        });
+    }, [authUser, navigate]);
+
+    const handleAvatarClick = () => {
+        avatarInputRef.current.click();
+    };
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64Image = reader.result;
+                try {
+                    await updateProfileAction(undefined, undefined, undefined, base64Image);
+                } catch (err) {
+                    alert(err.message || 'Failed to update profile picture');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const [mockPosts, setMockPosts] = useState([
         { id: 1, image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600' },
@@ -113,16 +153,19 @@ const Profile = () => {
         }
     ]);
 
-    const handleSaveDetails = (e) => {
+    const handleSaveDetails = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
-        setUser({
-            ...user,
-            name: formData.get('name'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-        });
-        setIsEditingDetails(false);
+        const name = formData.get('name');
+        const email = formData.get('email');
+        const phone = formData.get('phone');
+
+        try {
+            await updateProfileAction(name, email, phone);
+            setIsEditingDetails(false);
+        } catch (err) {
+            alert(err.message || 'Failed to update details');
+        }
     };
 
     const handleDeletePost = (id) => {
@@ -422,7 +465,19 @@ const Profile = () => {
                 {/* Sidebar */}
                 <div className="profile-sidebar">
                     <div className="user-info-header">
-                        <img src={user.avatar} alt="User Avatar" className="avatar" />
+                        <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture">
+                            <img src={user.avatar} alt="User Avatar" className="avatar" />
+                            <div className="avatar-overlay">
+                                <span className="camera-icon">📷</span>
+                            </div>
+                            <input
+                                type="file"
+                                ref={avatarInputRef}
+                                onChange={handleAvatarChange}
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                            />
+                        </div>
                         <h2 className="user-name">{user.name}</h2>
                         <p className="user-email">{user.email}</p>
                     </div>
