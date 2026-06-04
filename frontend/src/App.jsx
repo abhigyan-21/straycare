@@ -80,7 +80,7 @@ function App() {
       return;
     }
 
-    if (isLoggedIn && user && !user.isEmailVerified) {
+    if (hasLoadedInitial.current && isLoggedIn && user && !user.isEmailVerified) {
       if (isFirstLogin) {
         clearFirstLogin();
       }
