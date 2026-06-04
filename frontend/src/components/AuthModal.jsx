@@ -334,6 +334,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     <div className="auth-form-group">
                         <label>Password</label>
                         <input name="password" type="password" placeholder="••••••••" disabled={isLoading} required />
+                        {mode === 'signup' && (
+                            <small className="auth-hint" style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px', display: 'block' }}>
+                                Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a digit, and a special character.
+                            </small>
+                        )}
                     </div>
 
                     <button type="submit" className="auth-submit-btn" disabled={isLoading}>

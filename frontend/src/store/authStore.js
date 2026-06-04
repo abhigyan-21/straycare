@@ -39,7 +39,12 @@ export const useAuthStore = create(
           return { success: true, user };
         } catch (error) {
           set({ isLoading: false });
-          const errorMsg = error.response?.data?.error || 'Authentication failed';
+          let errorMsg = 'Authentication failed';
+          if (error.response && error.response.data) {
+             errorMsg = error.response.data.error || error.response.data.message || 'Authentication failed';
+          } else if (error.message) {
+             errorMsg = error.message;
+          }
           throw new Error(errorMsg);
         }
       },
@@ -55,7 +60,12 @@ export const useAuthStore = create(
           });
         } catch (error) {
           set({ isLoading: false });
-          const errorMsg = error.response?.data?.error || 'Registration failed';
+          let errorMsg = 'Registration failed';
+          if (error.response && error.response.data) {
+             errorMsg = error.response.data.error || error.response.data.message || 'Registration failed';
+          } else if (error.message) {
+             errorMsg = error.message;
+          }
           throw new Error(errorMsg);
         }
 
