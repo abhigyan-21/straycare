@@ -328,12 +328,12 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
                     <div className="auth-form-group">
                         <label>Email</label>
-                        <input name="email" type="email" placeholder="john@example.com" defaultValue={mode === 'signin' ? "12@g.com" : ""} disabled={isLoading} required />
+                        <input name="email" type="email" placeholder="john@example.com" disabled={isLoading} required />
                     </div>
 
                     <div className="auth-form-group">
                         <label>Password</label>
-                        <input name="password" type="password" placeholder="••••••••" defaultValue={mode === 'signin' ? "1234" : ""} disabled={isLoading} required />
+                        <input name="password" type="password" placeholder="••••••••" disabled={isLoading} required />
                     </div>
 
                     <button type="submit" className="auth-submit-btn" disabled={isLoading}>

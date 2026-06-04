@@ -38,29 +38,6 @@ export const useAuthStore = create(
           });
           return { success: true, user };
         } catch (error) {
-          // Fallback logic for mock credentials when backend is offline
-          const isNetworkError = !error.response;
-          if (isNetworkError && email === '12@g.com' && password === '1234') {
-            const mockUser = {
-              id: 'mock-rescuer-id',
-              name: 'Test Rescuer',
-              email: '12@g.com',
-              phone: '1234567890',
-              role: 'RESCUER',
-              isEmailVerified: true,
-              isPhoneVerified: true
-            };
-            set({
-              isLoggedIn: true,
-              user: mockUser,
-              token: 'mock-access-token',
-              refreshToken: 'mock-refresh-token',
-              isFirstLogin: true,
-              isLoading: false
-            });
-            return { success: true, user: mockUser };
-          }
-          
           set({ isLoading: false });
           const errorMsg = error.response?.data?.error || 'Authentication failed';
           throw new Error(errorMsg);
