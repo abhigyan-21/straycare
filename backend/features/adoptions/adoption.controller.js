@@ -181,7 +181,16 @@ const getAdoptionRequests = async (req, res) => {
     const requests = await prisma.adoptionRequest.findMany({
       where: whereClause,
       include: {
-        pet: true,
+        pet: {
+          include: {
+            clinic: true,
+            report: {
+              select: {
+                mediaUrls: true,
+              },
+            },
+          },
+        },
         user: {
           select: {
             id: true,

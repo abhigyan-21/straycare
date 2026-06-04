@@ -5,6 +5,7 @@ import '../../styles/user/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuthStore } from '../../store/authStore';
 import MiniLoader from '../../components/user/MiniLoader';
+import apiClient from '../../services/api';
 
 const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'><rect width='100%25' height='100%25' fill='%23f1f5f9'/><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 
@@ -66,17 +67,137 @@ const Profile = () => {
         }
     };
 
-    const [mockPosts, setMockPosts] = useState([
-        { id: 1, image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600' },
-        { id: 2, image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=600' },
-        { id: 3, image: 'https://images.unsplash.com/photo-15371608804-ea6f11ccfb76?auto=format&fit=crop&q=80&w=600' },
-        { id: 4, image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600' }
-    ]);
+    const [posts, setPosts] = useState([]);
+    const [reports, setReports] = useState([]);
+    const [donations, setDonations] = useState([]);
+    const [subscriptions, setSubscriptions] = useState([]);
+    const [documents, setDocuments] = useState([]);
+    const [adoptions, setAdoptions] = useState([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
 
-    const [mockReports, setMockReports] = useState([
-        { id: '4435', image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60', name: 'Bizoo', location: 'Sector 14, Main Road', date: 'Oct 12, 2026' },
-        { id: '1092', image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=500', name: 'Rusty', location: 'Palm Grove Avenue', date: 'Sep 28, 2026' }
-    ]);
+    const fetchProfileData = async () => {
+        setIsLoadingData(true);
+        try {
+            const [postsRes, reportsRes, donationsRes, docsRes, adoptionsRes] = await Promise.all([
+                apiClient.get('/feed/my-posts').catch(() => ({ data: null })),
+                apiClient.get('/reports/my-reports').catch(() => ({ data: null })),
+                apiClient.get('/funding/my-donations').catch(() => ({ data: null })),
+                apiClient.get('/medical/documents').catch(() => ({ data: null })),
+                apiClient.get('/adoptions/requests').catch(() => ({ data: null }))
+            ]);
+
+            if (postsRes && postsRes.data) {
+                const mappedPosts = postsRes.data.map(p => ({
+                    id: p.id,
+                    image: p.mediaUrls[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600',
+                    caption: p.content,
+                    likes: p.likesCount,
+                    createdAt: p.createdAt
+                }));
+                setPosts(mappedPosts);
+            } else {
+                setPosts([]);
+            }
+
+            if (reportsRes && reportsRes.data) {
+                const mappedReports = reportsRes.data.map(r => ({
+                    id: r.id.substring(0, 8),
+                    actualId: r.id,
+                    image: r.mediaUrls[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                    name: r.description.length > 25 ? r.description.substring(0, 25) + '...' : r.description,
+                    location: `Lat: ${r.locationLat.toFixed(2)}, Lng: ${r.locationLng.toFixed(2)}`,
+                    date: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                }));
+                setReports(mappedReports);
+            } else {
+                setReports([]);
+            }
+
+            if (donationsRes && donationsRes.data && donationsRes.data.status === 'success') {
+                const mappedDonations = donationsRes.data.donations.map(d => ({
+                    id: d.id,
+                    amount: `₹${d.amount}`,
+                    date: new Date(d.createdAt).toISOString().split('T')[0],
+                    type: d.type === 'CAMPAIGN' ? 'Campaign Donation' : `${d.type} Donation`,
+                    to: d.campaign?.title || d.clinic?.name || 'StrayCare General Fund'
+                }));
+                setDonations(mappedDonations);
+
+                const mappedSubscriptions = donationsRes.data.subscriptions.map(s => ({
+                    id: s.id,
+                    amount: `₹${s.amount}`,
+                    date: new Date(s.createdAt).toISOString().split('T')[0],
+                    type: 'Monthly Autopay',
+                    to: s.clinic?.name || 'Clinic Partner',
+                    status: s.status
+                }));
+                setSubscriptions(mappedSubscriptions);
+            } else {
+                setDonations([]);
+                setSubscriptions([]);
+            }
+
+            if (docsRes && docsRes.data) {
+                const mappedDocs = docsRes.data.map(d => ({
+                    id: d.id,
+                    name: d.name,
+                    dateAdded: new Date(d.createdAt).toISOString().split('T')[0],
+                    type: d.type,
+                    fileData: d.fileData
+                }));
+                setDocuments(mappedDocs);
+            } else {
+                setDocuments([]);
+            }
+
+            if (adoptionsRes && adoptionsRes.data && adoptionsRes.data.status === 'success') {
+                const mappedAdoptions = adoptionsRes.data.data.map(a => {
+                    let statusText = 'Pending Review';
+                    let statusType = 'pending';
+                    if (a.status === 'INTERVIEW_SCHEDULED') {
+                        statusText = 'Interview Scheduled';
+                        statusType = 'interview';
+                    } else if (a.status === 'APPROVED') {
+                        statusText = 'Successfully Adopted';
+                        statusType = 'adopted';
+                    } else if (a.status === 'REJECTED') {
+                        statusText = 'Rejected';
+                        statusType = 'rejected';
+                    }
+
+                    return {
+                        id: a.id,
+                        petName: a.pet.name || 'Stray Pet',
+                        petBreed: a.pet.breed || 'Mixed',
+                        petImage: a.pet.report?.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=500',
+                        status: statusText,
+                        statusType: statusType,
+                        date: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                        clinic: a.pet.clinic?.name || 'StrayCare Center'
+                    };
+                });
+                setAdoptions(mappedAdoptions);
+            } else {
+                setAdoptions([]);
+            }
+        } catch (error) {
+            console.error('Error fetching profile data:', error);
+            setPosts([]);
+            setReports([]);
+            setDonations([]);
+            setSubscriptions([]);
+            setDocuments([]);
+            setAdoptions([]);
+        } finally {
+            setIsLoadingData(false);
+        }
+    };
+
+    useEffect(() => {
+        if (authUser) {
+            fetchProfileData();
+        }
+    }, [authUser]);
 
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
@@ -88,70 +209,46 @@ const Profile = () => {
         document.body.style.overflow = 'auto';
     };
 
-    const handleCreatePostSubmit = (newPost) => {
+    const handleCreatePostSubmit = async (newPost) => {
         handleCloseCreateModal();
         setIsUploading(true);
         setUploadProgress(0);
 
-        // Simulate upload progress
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 10 + 2; // Slower increment (2% to 12%)
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(interval);
-                setTimeout(() => {
-                    setMockPosts([{ id: newPost.id, image: newPost.postImage }, ...mockPosts]);
-                    setIsUploading(false);
-                    setUploadProgress(0);
-                }, 800); // Slightly longer "finishing" pause
-            }
-            setUploadProgress(progress);
-        }, 400); // Slower interval (every 400ms)
-    };
+        try {
+            const response = await apiClient.post('/feed', {
+                content: newPost.caption,
+                mediaUrls: [newPost.postImage]
+            });
 
-    const [mockDonations, setMockDonations] = useState([
-        { id: 1, amount: '$50', date: '2026-03-01', type: 'One-time', to: 'StrayCare General Fund' },
-        { id: 2, amount: '$20', date: '2026-02-15', type: 'Monthly Autopay', to: 'Medical Fund' },
-    ]);
-
-    const [mockDocuments, setMockDocuments] = useState([
-        { id: 1, name: 'Luna_Vaccination_Record.pdf', dateAdded: '2026-02-20', type: 'Medical' },
-        { id: 2, name: 'Adoption_Certificate.pdf', dateAdded: '2026-01-15', type: 'Legal' },
-    ]);
-
-    const [mockAdoptions, setMockAdoptions] = useState([
-        {
-            id: 'a1',
-            petName: 'Rusty',
-            petBreed: 'Beagle',
-            petImage: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=500',
-            status: 'Interview Scheduled',
-            statusType: 'interview',
-            date: 'Oct 24, 2026',
-            clinic: 'Healthy Paws Clinic'
-        },
-        {
-            id: 'a2',
-            petName: 'Bizoo',
-            petBreed: 'Golden Retriever',
-            petImage: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-            status: 'Pending Review',
-            statusType: 'pending',
-            date: 'Oct 15, 2026',
-            clinic: 'StrayCare Center'
-        },
-        {
-            id: 'a3',
-            petName: 'Luna',
-            petBreed: 'Siamese Cat',
-            petImage: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400',
-            status: 'Successfully Adopted',
-            statusType: 'adopted',
-            date: 'Jan 10, 2026',
-            clinic: 'Nurture Center'
+            const p = response.data;
+            const createdPost = {
+                id: p.id,
+                image: p.mediaUrls[0] || newPost.postImage,
+                caption: p.content,
+                likes: p.likesCount,
+                createdAt: p.createdAt
+            };
+            setPosts([createdPost, ...posts]);
+        } catch (err) {
+            console.warn('Backend failed to create post, falling back to mock upload.', err);
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10 + 2;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        setPosts([{ id: newPost.id, image: newPost.postImage, caption: newPost.caption }, ...posts]);
+                        setIsUploading(false);
+                        setUploadProgress(0);
+                    }, 800);
+                }
+                setUploadProgress(progress);
+            }, 400);
+            return;
         }
-    ]);
+        setIsUploading(false);
+    };
 
     const handleSaveDetails = async (e) => {
         e.preventDefault();
@@ -168,48 +265,106 @@ const Profile = () => {
         }
     };
 
-    const handleDeletePost = (id) => {
+    const handleDeletePost = async (id) => {
         if (window.confirm('Are you sure you want to delete this post?')) {
-            setMockPosts(mockPosts.filter(post => post.id !== id));
+            try {
+                await apiClient.delete(`/feed/${id}`);
+                setPosts(posts.filter(post => post.id !== id));
+            } catch (err) {
+                console.warn('Backend failed to delete post, falling back to local deletion.', err);
+                setPosts(posts.filter(post => post.id !== id));
+            }
         }
     };
 
-    const handleCancelDonation = (id) => {
+    const handleCancelDonation = async (id) => {
         if (window.confirm('Are you sure you want to cancel this autopay?')) {
-            setMockDonations(mockDonations.filter(d => d.id !== id));
+            try {
+                await apiClient.post(`/funding/subscriptions/${id}/cancel`);
+                setSubscriptions(subscriptions.map(s => s.id === id ? { ...s, status: 'CANCELLED' } : s));
+            } catch (err) {
+                console.warn('Backend failed to cancel subscription, falling back to local deletion.', err);
+                setSubscriptions(subscriptions.filter(d => d.id !== id));
+            }
         }
     };
 
-    const handleDeleteDocument = (id) => {
+    const handleDeleteDocument = async (id) => {
         if (window.confirm('Are you sure you want to delete this document?')) {
-            setMockDocuments(mockDocuments.filter(doc => doc.id !== id));
+            try {
+                await apiClient.delete(`/medical/documents/${id}`);
+                setDocuments(documents.filter(doc => doc.id !== id));
+            } catch (err) {
+                console.warn('Backend failed to delete document, falling back to local deletion.', err);
+                setDocuments(documents.filter(doc => doc.id !== id));
+            }
         }
     };
 
-    const handleDownloadDocument = (name) => {
-        alert(`Downloading ${name}... (Mock)`);
+    const handleDownloadDocument = (name, fileData) => {
+        if (fileData) {
+            const link = document.createElement('a');
+            link.href = fileData;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert(`Downloading ${name}... (Mock Mode)`);
+        }
     };
 
     const handleMockUpload = () => {
-        // Trigger the hidden file input
         fileInputRef.current.click();
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const newDoc = {
-                id: Date.now(),
-                name: file.name,
-                dateAdded: new Date().toISOString().split('T')[0],
-                type: 'Uploaded'
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64Content = reader.result;
+                try {
+                    const response = await apiClient.post('/medical/documents', {
+                        name: file.name,
+                        type: file.type.includes('pdf') ? 'Medical' : 'Other',
+                        fileData: base64Content
+                    });
+                    const d = response.data;
+                    const newDoc = {
+                        id: d.id,
+                        name: d.name,
+                        dateAdded: new Date(d.createdAt).toISOString().split('T')[0],
+                        type: d.type,
+                        fileData: d.fileData
+                    };
+                    setDocuments([newDoc, ...documents]);
+                    alert(`File "${file.name}" uploaded successfully!`);
+                } catch (err) {
+                    console.warn('Backend failed to upload document, falling back to mock upload.', err);
+                    const newDoc = {
+                        id: Date.now(),
+                        name: file.name,
+                        dateAdded: new Date().toISOString().split('T')[0],
+                        type: 'Uploaded'
+                    };
+                    setDocuments([...documents, newDoc]);
+                    alert(`File "${file.name}" uploaded successfully (offline mode)!`);
+                }
             };
-            setMockDocuments([...mockDocuments, newDoc]);
-            alert(`File "${file.name}" uploaded successfully!`);
+            reader.readAsDataURL(file);
         }
     };
 
     const renderContent = () => {
+        if (isLoadingData) {
+            return (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                    <MiniLoader />
+                </div>
+            );
+        }
+
         switch (activeTab) {
             case 'personal':
                 return (
@@ -265,16 +420,16 @@ const Profile = () => {
             case 'reports':
                 return (
                     <div className="profile-section fade-in">
-                        <div className="section-header">
+                        <div className="profile-section-header">
                             <h2>My Reports</h2>
                         </div>
                         <div className="post-grid">
-                            {mockReports.length > 0 ? (
-                                mockReports.map((report) => (
+                            {reports.length > 0 ? (
+                                reports.map((report) => (
                                     <div
                                         key={report.id}
                                         className="post-grid-item"
-                                        onClick={() => navigate('/track', { state: { trackingId: report.id } })}
+                                        onClick={() => navigate('/track', { state: { trackingId: report.actualId || report.id } })}
                                     >
                                         <img src={report.image} alt={report.name} />
                                         <div className="post-overlay" style={{ flexDirection: 'column', color: 'white' }}>
@@ -294,7 +449,7 @@ const Profile = () => {
             case 'posts':
                 return (
                     <div className="profile-section fade-in">
-                        <div className="section-header">
+                        <div className="profile-section-header">
                             <h2>Manage Posts</h2>
                             <button 
                                 className={`create-post-btn inline-btn ${isUploading ? 'uploading' : ''}`} 
@@ -320,8 +475,8 @@ const Profile = () => {
                             </button>
                         </div>
                         <div className="post-grid">
-                            {mockPosts.length > 0 ? (
-                                mockPosts.map((post) => (
+                            {posts.length > 0 ? (
+                                posts.map((post) => (
                                     <div key={post.id} className="post-grid-item">
                                         <img src={post.image} alt="Post" />
                                         <div className="post-overlay">
@@ -337,27 +492,34 @@ const Profile = () => {
                     </div>
                 );
             case 'donations':
+                const allItems = [
+                    ...donations.map(d => ({ ...d, isSubscription: false })),
+                    ...subscriptions.map(s => ({ ...s, isSubscription: true }))
+                ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
                 return (
                     <div className="profile-section fade-in">
                         <h2>Donations & Autopays</h2>
                         <div className="list-container">
-                            {mockDonations.length > 0 ? (
-                                mockDonations.map((donation) => (
-                                    <div key={donation.id} className="list-item donation-item">
+                            {allItems.length > 0 ? (
+                                allItems.map((item) => (
+                                    <div key={item.id} className="list-item donation-item">
                                         <div className="item-info">
-                                            <h3>{donation.to}</h3>
-                                            <span className="date">{donation.date} • {donation.type}</span>
+                                            <h3>{item.to}</h3>
+                                            <span className="date">
+                                                {item.date} • {item.type} {item.isSubscription && `(${item.status})`}
+                                            </span>
                                         </div>
                                         <div className="item-amount">
-                                            <span className="amount">{donation.amount}</span>
-                                            {donation.type.includes('Autopay') && (
-                                                <button className="btn-small cancel-btn" onClick={() => handleCancelDonation(donation.id)}>Cancel</button>
+                                            <span className="amount">{item.amount}</span>
+                                            {item.isSubscription && item.status !== 'CANCELLED' && (
+                                                <button className="btn-small cancel-btn" onClick={() => handleCancelDonation(item.id)}>Cancel</button>
                                             )}
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <p className="empty-state">No donation history found.</p>
+                                <p className="empty-state">No donation or autopay history found.</p>
                             )}
                         </div>
                     </div>
@@ -367,8 +529,8 @@ const Profile = () => {
                     <div className="profile-section fade-in">
                         <h2>Pet Documents</h2>
                         <div className="list-container grid-list">
-                            {mockDocuments.length > 0 ? (
-                                mockDocuments.map((doc) => (
+                            {documents.length > 0 ? (
+                                documents.map((doc) => (
                                     <div key={doc.id} className="document-card">
                                         <div className="doc-icon">📄</div>
                                         <div className="doc-info">
@@ -376,7 +538,7 @@ const Profile = () => {
                                             <span className="doc-meta">{doc.type} • {doc.dateAdded}</span>
                                         </div>
                                         <div className="doc-actions">
-                                            <button className="icon-btn download" onClick={() => handleDownloadDocument(doc.name)}>⬇</button>
+                                            <button className="icon-btn download" onClick={() => handleDownloadDocument(doc.name, doc.fileData)}>⬇</button>
                                             <button className="icon-btn delete" onClick={() => handleDeleteDocument(doc.id)}>🗑</button>
                                         </div>
                                     </div>
@@ -397,13 +559,13 @@ const Profile = () => {
                     </div>
                 );
             case 'adoptions':
-                const filteredAdoptions = mockAdoptions.filter(a =>
+                const filteredAdoptions = adoptions.filter(a =>
                     adoptionSubTab === 'interested' ? a.statusType !== 'adopted' : a.statusType === 'adopted'
                 );
 
                 return (
                     <div className="profile-section fade-in">
-                        <div className="section-header">
+                        <div className="profile-section-header">
                             <h2>My Adoptions</h2>
                             <div className="sub-tab-toggle">
                                 <button

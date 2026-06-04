@@ -199,7 +199,7 @@
     letter-spacing: -0.02em;
 }
 
-.profile-section .section-header {
+.profile-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -207,7 +207,7 @@
     width: 100%;
 }
 
-.profile-section .section-header h2 {
+.profile-section-header h2 {
     margin-bottom: 0;
 }
 
@@ -908,7 +908,7 @@
         border-top: 1px solid #f3f4f6;
     }
 
-    .profile-section .section-header {
+    .profile-section-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 20px;

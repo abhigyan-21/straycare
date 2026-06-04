@@ -224,7 +224,6 @@ main,
   object-position: center;
   display: block;
   border: 10px solid #e6ffd9;
-  margin-left: 20px;
 }
 
 .small-circle {
@@ -649,13 +648,6 @@ main,
     display: flex;
     justify-content: center;
     margin-bottom: 30px;
-  }
-
-  .main-circle {
-    width: 250px;
-    height: 250px;
-    border-width: 5px;
-    object-position: center;
   }
 
   .small-circle {

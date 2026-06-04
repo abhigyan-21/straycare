@@ -37,6 +37,7 @@ model User {
   ownedPets          Pet[]               @relation("PetOwner")
   subscriptions      Subscription[]
   clinic             Clinic?             @relation(fields: [clinicId], references: [id])
+  documents          PetDocument[]
 }
 
 model Clinic {
@@ -232,6 +233,16 @@ model Comment {
   post      FeedPost @relation(fields: [postId], references: [id])
 }
 
+model PetDocument {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  type      String
+  fileData  String   @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   USER
   RESCUER
@@ -273,3 +284,4 @@ enum SubscriptionType {
   TREATMENT
   SHELTER
 }
+

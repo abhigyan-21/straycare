@@ -681,6 +681,78 @@ const confirmVolunteerCampaign = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get logged-in user's donations and subscriptions
+ * @route GET /api/funding/my-donations
+ * @access Private
+ */
+const getMyDonations = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const donations = await prisma.donation.findMany({
+      where: { userId },
+      include: {
+        campaign: {
+          select: { title: true }
+        },
+        clinic: {
+          select: { name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const subscriptions = await prisma.subscription.findMany({
+      where: { userId },
+      include: {
+        clinic: {
+          select: { name: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json({ status: 'success', donations, subscriptions });
+  } catch (error) {
+    console.error('Error fetching user donations:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Cancel user subscription (sets status to CANCELLED)
+ * @route POST /api/funding/subscriptions/:id/cancel
+ * @access Private
+ */
+const cancelSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const sub = await prisma.subscription.findUnique({
+      where: { id }
+    });
+
+    if (!sub) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
+    if (sub.userId !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to cancel this subscription' });
+    }
+
+    const updatedSub = await prisma.subscription.update({
+      where: { id },
+      data: { status: 'CANCELLED' }
+    });
+
+    res.json({ status: 'success', data: updatedSub });
+  } catch (error) {
+    console.error('Error cancelling subscription:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createDonationOrder,
   handleRazorpayWebhook,
@@ -693,4 +765,6 @@ module.exports = {
   mockDonateCampaign,
   notifyNearbyVolunteers,
   confirmVolunteerCampaign,
+  getMyDonations,
+  cancelSubscription,
 };
