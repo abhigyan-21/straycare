@@ -4,19 +4,240 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-//////////////////////
-// ENUMS
-//////////////////////
+model User {
+  id                 String              @id @default(uuid())
+  name               String
+  email              String              @unique
+  password           String
+  role               Role                @default(USER)
+  avatarUrl          String?
+  refreshToken       String?
+  clinicId           String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  contact            String?
+  emailOtp           String?
+  emailOtpExpiry     DateTime?
+  isEmailVerified    Boolean             @default(false)
+  isPhoneVerified    Boolean             @default(false)
+  phone              String              @unique
+  phoneOtp           String?
+  phoneOtpExpiry     DateTime?
+  adoptionRequests   AdoptionRequest[]
+  reports            AnimalReport[]
+  campaigns          Campaign[]
+  campaignVolunteers CampaignVolunteer[]
+  comments           Comment[]
+  donations          Donation[]
+  posts              FeedPost[]
+  generalVolunteer   GeneralVolunteer?
+  medicalRecords     MedicalRecord[]
+  ownedPets          Pet[]               @relation("PetOwner")
+  subscriptions      Subscription[]
+  clinic             Clinic?             @relation(fields: [clinicId], references: [id])
+}
+
+model Clinic {
+  id             String          @id @default(uuid())
+  name           String
+  address        String?
+  city           String?
+  contact        String?
+  isVerified     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  lat            Float?
+  lng            Float?
+  reports        AnimalReport[]
+  campaigns      Campaign[]
+  donations      Donation[]
+  medicalRecords MedicalRecord[]
+  pets           Pet[]
+  subscriptions  Subscription[]
+  users          User[]
+}
+
+model AnimalReport {
+  id                String          @id @default(uuid())
+  reporterId        String
+  status            ReportStatus    @default(REPORTED)
+  locationLat       Float
+  locationLng       Float
+  description       String
+  mediaUrls         String[]
+  assignedRescuerId String?
+  assignedVetId     String?
+  assignedClinicId  String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  lastTracked       DateTime?
+  rescuerLat        Float?
+  rescuerLng        Float?
+  clinic            Clinic?         @relation(fields: [assignedClinicId], references: [id])
+  reporter          User            @relation(fields: [reporterId], references: [id])
+  campaigns         Campaign[]
+  medicalRecords    MedicalRecord[]
+  pet               Pet?
+}
+
+model MedicalRecord {
+  id        String       @id @default(uuid())
+  reportId  String
+  vetId     String
+  clinicId  String
+  diagnosis String?
+  treatment String?
+  createdAt DateTime     @default(now())
+  clinic    Clinic       @relation(fields: [clinicId], references: [id])
+  report    AnimalReport @relation(fields: [reportId], references: [id])
+  vet       User         @relation(fields: [vetId], references: [id])
+}
+
+model Pet {
+  id               String            @id @default(uuid())
+  reportId         String?           @unique
+  clinicId         String?
+  ownerId          String
+  name             String?
+  breed            String?
+  age              Int?
+  gender           String?
+  size             String?
+  description      String?
+  status           String            @default("AVAILABLE")
+  createdAt        DateTime          @default(now())
+  adoptionRequests AdoptionRequest[]
+  clinic           Clinic?           @relation(fields: [clinicId], references: [id])
+  owner            User              @relation("PetOwner", fields: [ownerId], references: [id])
+  report           AnimalReport?     @relation(fields: [reportId], references: [id])
+}
+
+model AdoptionRequest {
+  id                String         @id @default(uuid())
+  petId             String
+  userId            String
+  status            AdoptionStatus @default(PENDING)
+  formDetails       Json
+  interviewDate     DateTime?
+  interviewTime     String?
+  interviewLocation String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  pet               Pet            @relation(fields: [petId], references: [id])
+  user              User           @relation(fields: [userId], references: [id])
+}
+
+model Campaign {
+  id           String              @id @default(uuid())
+  title        String
+  description  String
+  goalAmount   Float
+  raisedAmount Float               @default(0)
+  clinicId     String
+  reportId     String?
+  createdBy    String
+  status       CampaignStatus      @default(PENDING)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  banner       String?
+  endDate      DateTime?
+  image        String?
+  location     String?
+  purpose      String?
+  startDate    DateTime?
+  startTime    String?
+  theme        String?
+  clinic       Clinic              @relation(fields: [clinicId], references: [id])
+  creator      User                @relation(fields: [createdBy], references: [id])
+  report       AnimalReport?       @relation(fields: [reportId], references: [id])
+  volunteers   CampaignVolunteer[]
+  donations    Donation[]
+}
+
+model Donation {
+  id              String       @id @default(uuid())
+  userId          String
+  amount          Float
+  type            DonationType
+  clinicId        String?
+  campaignId      String?
+  paymentIntentId String       @unique
+  status          String       @default("PENDING")
+  createdAt       DateTime     @default(now())
+  campaign        Campaign?    @relation(fields: [campaignId], references: [id])
+  clinic          Clinic?      @relation(fields: [clinicId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+}
+
+model Subscription {
+  id                   String           @id @default(uuid())
+  userId               String
+  clinicId             String
+  type                 SubscriptionType
+  stripeSubscriptionId String           @unique
+  amount               Float
+  status               String           @default("ACTIVE")
+  nextCheckout         DateTime
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  clinic               Clinic           @relation(fields: [clinicId], references: [id])
+  user                 User             @relation(fields: [userId], references: [id])
+}
+
+model GeneralVolunteer {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  lat       Float?
+  lng       Float?
+  status    String   @default("APPLIED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model CampaignVolunteer {
+  id         String   @id @default(uuid())
+  userId     String
+  campaignId String
+  status     String   @default("CONFIRMED")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, campaignId])
+}
+
+model FeedPost {
+  id         String    @id @default(uuid())
+  authorId   String
+  content    String
+  mediaUrls  String[]
+  likesCount Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  comments   Comment[]
+  author     User      @relation(fields: [authorId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+  post      FeedPost @relation(fields: [postId], references: [id])
+}
 
 enum Role {
   USER
   RESCUER
   VET
-  NGO
   ADMIN
+  NGO
 }
 
 enum ReportStatus {
@@ -51,342 +272,4 @@ enum SubscriptionType {
   FOOD
   TREATMENT
   SHELTER
-}
-
-//////////////////////
-// USER
-//////////////////////
-
-model User {
-  id           String  @id @default(uuid())
-  name         String
-  email        String  @unique
-  phone        String  @unique
-  password     String
-
-  role         Role    @default(USER)
-  avatarUrl    String?
-
-  isEmailVerified Boolean @default(false)
-  isPhoneVerified Boolean @default(false)
-
-  emailOtp        String?
-  emailOtpExpiry  DateTime?
-
-  phoneOtp        String?
-  phoneOtpExpiry  DateTime?
-
-  refreshToken String?
-  contact      String?
-
-  clinicId String?
-  clinic   Clinic? @relation(fields: [clinicId], references: [id])
-
-  reports  AnimalReport[]
-  posts    FeedPost[]
-  comments Comment[]
-
-  donations          Donation[]
-  subscriptions      Subscription[]
-  generalVolunteer   GeneralVolunteer?
-  campaignVolunteers CampaignVolunteer[]
-
-  adoptionRequests AdoptionRequest[]
-  ownedPets        Pet[]             @relation("PetOwner")
-
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  medicalRecords MedicalRecord[]
-  campaigns      Campaign[]
-}
-
-//////////////////////
-// CLINIC
-//////////////////////
-
-model Clinic {
-  id         String  @id @default(uuid())
-  name       String
-  address    String?
-  city       String?
-  contact    String?
-  isVerified Boolean @default(false)
-
-  users          User[]
-  reports        AnimalReport[]
-  pets           Pet[]
-  campaigns      Campaign[]
-  medicalRecords MedicalRecord[]
-  subscriptions  Subscription[]
-
-  lat            Float?
-  lng            Float?
-
-  createdAt DateTime   @default(now())
-  donations Donation[]
-}
-
-//////////////////////
-// STRAY REPORT
-//////////////////////
-
-model AnimalReport {
-  id String @id @default(uuid())
-
-  reporterId String
-  reporter   User   @relation(fields: [reporterId], references: [id])
-
-  status ReportStatus @default(REPORTED)
-
-  locationLat Float
-  locationLng Float
-  description String
-  mediaUrls   String[]
-
-  assignedRescuerId String?
-  assignedVetId     String?
-  assignedClinicId  String?
-
-  clinic Clinic? @relation(fields: [assignedClinicId], references: [id])
-
-  medicalRecords MedicalRecord[]
-  pet            Pet?
-
-  campaigns Campaign[]
-
-  rescuerLat  Float?
-  rescuerLng  Float?
-  lastTracked DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-//////////////////////
-// MEDICAL RECORD
-//////////////////////
-
-model MedicalRecord {
-  id String @id @default(uuid())
-
-  reportId String
-  report   AnimalReport @relation(fields: [reportId], references: [id])
-
-  vetId String
-  vet   User   @relation(fields: [vetId], references: [id])
-
-  clinicId String
-  clinic   Clinic @relation(fields: [clinicId], references: [id])
-
-  diagnosis String?
-  treatment String?
-
-  createdAt DateTime @default(now())
-}
-
-//////////////////////
-// PET (ADOPTION READY)
-//////////////////////
-
-model Pet {
-  id String @id @default(uuid())
-
-  reportId String?       @unique
-  report   AnimalReport? @relation(fields: [reportId], references: [id])
-
-  clinicId String?
-  clinic   Clinic? @relation(fields: [clinicId], references: [id])
-
-  ownerId String
-  owner   User   @relation("PetOwner", fields: [ownerId], references: [id])
-
-  name        String?
-  breed       String?
-  age         Int?
-  gender      String?
-  size        String?
-  description String?
-
-  status String @default("AVAILABLE")
-
-  adoptionRequests AdoptionRequest[]
-
-  createdAt DateTime @default(now())
-}
-
-//////////////////////
-// ADOPTION REQUEST
-//////////////////////
-
-model AdoptionRequest {
-  id String @id @default(uuid())
-
-  petId String
-  pet   Pet    @relation(fields: [petId], references: [id])
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  status      AdoptionStatus @default(PENDING)
-  formDetails Json
-
-  interviewDate     DateTime?
-  interviewTime     String?
-  interviewLocation String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-//////////////////////
-// CAMPAIGNS
-//////////////////////
-
-model Campaign {
-  id String @id @default(uuid())
-
-  title        String
-  description  String
-  goalAmount   Float
-  raisedAmount Float  @default(0)
-
-  clinicId String
-  clinic   Clinic @relation(fields: [clinicId], references: [id])
-
-  reportId String?
-  report   AnimalReport? @relation(fields: [reportId], references: [id])
-
-  createdBy String
-  creator   User   @relation(fields: [createdBy], references: [id])
-
-  purpose      String?
-  startDate    DateTime?
-  endDate      DateTime?
-  startTime    String?
-  location     String?
-  theme        String?
-  image        String?
-  banner       String?
-
-  status CampaignStatus @default(PENDING)
-
-  donations  Donation[]
-  volunteers CampaignVolunteer[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-//////////////////////
-// DONATIONS
-//////////////////////
-
-model Donation {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  amount Float
-  type   DonationType
-
-  clinicId String?
-  clinic   Clinic? @relation(fields: [clinicId], references: [id])
-
-  campaignId String?
-  campaign   Campaign? @relation(fields: [campaignId], references: [id])
-
-  paymentIntentId String @unique
-  status          String @default("PENDING")
-
-  createdAt DateTime @default(now())
-}
-
-//////////////////////
-// SUBSCRIPTIONS
-//////////////////////
-
-model Subscription {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  clinicId String
-  clinic   Clinic @relation(fields: [clinicId], references: [id])
-
-  type SubscriptionType
-
-  stripeSubscriptionId String @unique
-  amount               Float
-
-  status       String   @default("ACTIVE")
-  nextCheckout DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-//////////////////////
-// VOLUNTEERS
-//////////////////////
-
-model GeneralVolunteer {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  lat       Float?
-  lng       Float?
-  status    String   @default("APPLIED")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CampaignVolunteer {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  campaignId String
-  campaign   Campaign @relation(fields: [campaignId], references: [id])
-  status     String   @default("CONFIRMED")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([userId, campaignId])
-}
-
-//////////////////////
-// COMMUNITY
-//////////////////////
-
-model FeedPost {
-  id String @id @default(uuid())
-
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
-
-  content   String
-  mediaUrls String[]
-
-  likesCount Int @default(0)
-
-  comments Comment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Comment {
-  id String @id @default(uuid())
-
-  postId String
-  post   FeedPost @relation(fields: [postId], references: [id])
-
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
-
-  content String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
