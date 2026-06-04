@@ -3,6 +3,8 @@ import doctorClosed from "../../assets/images/doctor-closed.png";
 import doctorOpen from "../../assets/images/doctor-open.png";
 import "../../styles/user/Guide.css";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const TypingIndicator = () => {
   const [dotCount, setDotCount] = useState(0);
 
@@ -111,7 +113,7 @@ function Guide() {
 
     // Backend API Call
     try {
-      const response = await fetch("http://localhost:5000/api/chat", {
+      const response = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

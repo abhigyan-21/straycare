@@ -12,6 +12,8 @@ import ActionLoader from '../../components/ActionLoader';
 
 import { ADOPT_STATUS_OPTIONS, MOCK_ADOPT_DATA } from '../../data/mock_vet_data';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 function VetAdopt() {
     const [activeTab, setActiveTab] = useState('live');
     const [showConfirm, setShowConfirm] = useState(null);
@@ -32,10 +34,10 @@ function VetAdopt() {
         const startTime = Date.now();
         try {
             const [petsRes, reqsRes] = await Promise.all([
-                fetch('/api/adoptions/pets', {
+                fetch(`${API_BASE_URL}/adoptions/pets`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 }),
-                fetch('/api/adoptions/requests', {
+                fetch(`${API_BASE_URL}/adoptions/requests`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 })
             ]);
@@ -111,7 +113,7 @@ function VetAdopt() {
             const statusMap = { 'Adopted': 'ADOPTED', 'Remove': 'REMOVED', 'up for adoption': 'AVAILABLE' };
             const apiStatus = statusMap[value] || value;
 
-            const response = await fetch(`/api/adoptions/pets/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/adoptions/pets/${id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -141,7 +143,7 @@ function VetAdopt() {
 
     const saveTime = async () => {
         try {
-            const response = await fetch(`/api/adoptions/requests/${showTimePicker.id}`, {
+            const response = await fetch(`${API_BASE_URL}/adoptions/requests/${showTimePicker.id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,7 +176,7 @@ function VetAdopt() {
 
     const handlePublishAdoption = async (formData) => {
         try {
-            const response = await fetch('/api/adoptions/pets', {
+            const response = await fetch(`${API_BASE_URL}/adoptions/pets`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

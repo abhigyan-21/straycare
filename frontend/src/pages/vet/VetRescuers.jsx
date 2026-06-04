@@ -5,6 +5,8 @@ import '../../styles/vet/VetRescuers.css';
 import ActionLoader from '../../components/ActionLoader';
 import { MOCK_RESCUERS } from '../../data/mock_vet_data';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const VetRescuers = () => {
     const { user: authUser } = useAuthStore();
     const [rescuers, setRescuers] = useState([]);
@@ -21,7 +23,7 @@ const VetRescuers = () => {
             setIsLoading(true);
             const startTime = Date.now();
             try {
-                const response = await fetch('/api/users/rescuers', {
+                const response = await fetch(`${API_BASE_URL}/users/rescuers`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -54,7 +56,7 @@ const VetRescuers = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/users/rescuers/add', {
+            const response = await fetch(`${API_BASE_URL}/users/rescuers/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -96,7 +98,7 @@ const VetRescuers = () => {
         }
 
         try {
-            const response = await fetch(`/api/users/rescuers/remove/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/users/rescuers/remove/${id}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

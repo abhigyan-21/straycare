@@ -78,7 +78,7 @@ let isBackendAvailable = false;
 export const checkBackend = async () => {
   try {
     // Attempt to ping the health or a simple endpoint
-    await axios.get(`${API_BASE_URL}/auth/health`, { timeout: 1000 });
+    await axios.get(`${API_BASE_URL}/auth/health`, { timeout: 15000 });
     isBackendAvailable = true;
     console.log('Backend connected successfully');
     return true;
@@ -106,7 +106,7 @@ export const getPets = async () => {
   if (!isBackendAvailable) return mockPets;
   try {
     const response = await apiClient.get('/adoptions/pets');
-    return response.data;
+    return response.data.data || response.data;
   } catch (error) {
     return mockPets;
   }

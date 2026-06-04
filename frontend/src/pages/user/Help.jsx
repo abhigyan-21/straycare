@@ -7,6 +7,8 @@ import HighlightCard from '../../components/user/HighlightCard';
 import SupportModal from '../../components/user/SupportModal';
 import { useAuthStore } from '../../store/authStore';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 // Fallback ongoing campaigns list
 const MOCK_ONGOING_CAMPAIGNS = [
     {
@@ -89,7 +91,7 @@ function Help({ openAuthModal }) {
         try {
             const token = localStorage.getItem('token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const res = await fetch('http://localhost:5000/api/funding/campaigns', { headers });
+            const res = await fetch(`${API_BASE_URL}/funding/campaigns`, { headers });
             if (res.ok) {
                 const json = await res.json();
                 if (json.status === 'success' && json.data && json.data.length > 0) {
@@ -118,7 +120,7 @@ function Help({ openAuthModal }) {
         }
 
         try {
-            const res = await fetch('http://localhost:5000/api/funding/campaigns/volunteer/status', {
+            const res = await fetch(`${API_BASE_URL}/funding/campaigns/volunteer/status`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             if (res.ok) {
@@ -201,7 +203,7 @@ function Help({ openAuthModal }) {
         // Helper to register volunteering with coordinates
         const registerWithLocation = async (latitude = null, longitude = null) => {
             try {
-                const res = await fetch('http://localhost:5000/api/funding/campaigns/volunteer', {
+                const res = await fetch(`${API_BASE_URL}/funding/campaigns/volunteer`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -255,7 +257,7 @@ function Help({ openAuthModal }) {
     // Cancel Volunteer Action
     const handleVolunteerCancel = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/funding/campaigns/volunteer/cancel', {
+            const res = await fetch(`${API_BASE_URL}/funding/campaigns/volunteer/cancel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -284,7 +286,7 @@ function Help({ openAuthModal }) {
     // Donation fulfillment logic (real API or mock simulation)
     const handleCampaignDonation = async (campaignId, amount) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/funding/campaigns/${campaignId}/donate-mock`, {
+            const res = await fetch(`${API_BASE_URL}/funding/campaigns/${campaignId}/donate-mock`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

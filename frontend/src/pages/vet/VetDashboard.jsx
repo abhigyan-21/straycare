@@ -8,6 +8,8 @@ import { useAuthStore } from '../../store/authStore';
 
 import { MOCK_DASHBOARD_DATA } from '../../data/mock_vet_data';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 function VetDashboard() {
     const [rescues, setRescues] = useState([]);
     const [stats, setStats] = useState({
@@ -24,10 +26,10 @@ function VetDashboard() {
         const startTime = Date.now();
         try {
             const [reportsRes, petsRes, reqsRes, campsRes] = await Promise.all([
-                fetch('/api/reports/clinic', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                fetch('/api/adoptions/pets', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                fetch('/api/adoptions/requests', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                fetch('/api/funding/campaigns', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+                fetch(`${API_BASE_URL}/reports/clinic`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                fetch(`${API_BASE_URL}/adoptions/pets`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                fetch(`${API_BASE_URL}/adoptions/requests`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                fetch(`${API_BASE_URL}/funding/campaigns`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
             ]);
 
             if (!reportsRes.ok || !petsRes.ok || !reqsRes.ok || !campsRes.ok) throw new Error('Backend offline');

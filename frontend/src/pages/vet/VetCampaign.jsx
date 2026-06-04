@@ -11,6 +11,8 @@ import ActionLoader from '../../components/ActionLoader';
 
 import { MOCK_CAMPAIGNS } from '../../data/mock_vet_data';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 function VetCampaign() {
     const [activeTab, setActiveTab] = useState('manage');
     const [campaigns, setCampaigns] = useState([]);
@@ -32,7 +34,7 @@ function VetCampaign() {
         setIsLoading(true);
         const startTime = Date.now();
         try {
-            const response = await fetch('/api/funding/campaigns', {
+            const response = await fetch(`${API_BASE_URL}/funding/campaigns`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -84,7 +86,7 @@ function VetCampaign() {
     const handleCreateCampaign = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/funding/campaigns', {
+            const response = await fetch(`${API_BASE_URL}/funding/campaigns`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

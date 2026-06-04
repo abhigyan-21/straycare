@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Calendar, MapPin, Target, Users, Clock, Info, Printer, Send, Loader2 } from 'lucide-react';
 import '../../styles/vet/VetCampaign.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
     if (!campaign) return null;
 
@@ -54,7 +56,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
         setBroadcastSuccess(false);
 
         try {
-            const response = await fetch(`/api/funding/campaigns/${campaign.id}/notify`, {
+            const response = await fetch(`${API_BASE_URL}/funding/campaigns/${campaign.id}/notify`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
