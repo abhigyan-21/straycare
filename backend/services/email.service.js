@@ -3,6 +3,8 @@ const nodemailer = require('nodemailer');
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 465;
+const SMTP_SECURE = process.env.SMTP_SECURE !== undefined ? process.env.SMTP_SECURE === 'true' : (SMTP_PORT === 465);
 const FROM_EMAIL = process.env.FROM_EMAIL || SMTP_USER;
 
 let transporter = null;
@@ -10,14 +12,14 @@ let transporter = null;
 if (SMTP_USER && SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: SMTP_HOST,
-    port: 587,
-    secure: false,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
   });
-  console.log(`✅ SMTP Email Transporter initialized successfully (${SMTP_HOST}).`);
+  console.log(`✅ SMTP Email Transporter initialized successfully (${SMTP_HOST}:${SMTP_PORT}, secure=${SMTP_SECURE}).`);
 } else {
   console.warn('⚠️ SMTP credentials missing in .env. Emails will be logged to the console instead.');
 }
