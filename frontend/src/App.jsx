@@ -80,6 +80,13 @@ function App() {
       return;
     }
 
+    if (isLoggedIn && user && !user.isEmailVerified) {
+      if (isFirstLogin) {
+        clearFirstLogin();
+      }
+      return;
+    }
+
     setAppLoading(true);
 
     const criticalImages = [

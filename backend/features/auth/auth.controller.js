@@ -59,13 +59,13 @@ const register = async (req, res) => {
       to: user.email,
       subject: 'Verify your Furzo Account',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
-          <h2 style="color: #346c02; text-align: center;">Welcome to StrayCare!</h2>
-          <p>Please use the following OTP code to verify your email address:</p>
+        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
+          <h1 style="color: #346c02; text-align: center;">Welcome to Furzo!</h1>
+          <p style="font-size: 5rem; text-align: center; color: #666;">Please use the following OTP code to verify your email address:</p>
           <div style="text-align: center; margin: 20px 0;">
-            <span style="font-size: 2rem; font-weight: bold; letter-spacing: 5px; color: #346c02;">${emailOtpData.otp}</span>
+            <span style="font-size: 3rem; font-weight: bold; letter-spacing: 5px; color: #346c02;">${emailOtpData.otp}</span>
           </div>
-          <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
+          <p style="font-size: 0.9rem; text-align: center; color: #666;">This code is valid for 5 minutes.</p>
         </div>
       `
     }).catch(err => console.error(`❌ Error sending registration email to ${user.email}:`, err.message));
