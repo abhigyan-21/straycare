@@ -4,7 +4,7 @@ const prisma = require('./db/prisma');
 async function deleteUser() {
   try {
     const deleted = await prisma.user.deleteMany({
-      where: { email: 'lakshayn02@gmail.com' }
+      where: { email: 'abhigyandutta@yahoo.com' }
     });
     console.log('Deleted user(s):', deleted);
   } catch (error) {

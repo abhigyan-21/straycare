@@ -14,6 +14,7 @@ if (SMTP_USER && SMTP_PASS) {
     host: SMTP_HOST,
     port: SMTP_PORT,
     secure: SMTP_SECURE,
+    family: 4, // Force IPv4 to prevent IPv6 ENETUNREACH errors on platforms like Render
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
