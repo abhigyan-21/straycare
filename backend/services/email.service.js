@@ -1,4 +1,10 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Force Node's DNS resolution to prefer IPv4 first globally (safest production-grade fix for ENETUNREACH on IPv6)
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
@@ -10,24 +16,51 @@ const FROM_EMAIL = process.env.FROM_EMAIL || SMTP_USER;
 let transporter = null;
 
 if (SMTP_USER && SMTP_PASS) {
+  // Proactively perform DNS lookup diagnostics for target host on startup
+  dns.lookup(SMTP_HOST, { all: true }, (dnsErr, addresses) => {
+    if (dnsErr) {
+      console.error(`❌ [SMTP DNS Diagnostics] DNS Resolution failed for host "${SMTP_HOST}":`, dnsErr);
+    } else {
+      console.log(`🔍 [SMTP DNS Diagnostics] DNS Resolution for "${SMTP_HOST}":`);
+      addresses.forEach((addr, idx) => {
+        console.log(`   [${idx + 1}] Address: ${addr.address} | Family: IPv${addr.family}`);
+      });
+      const chosen = addresses[0];
+      if (chosen) {
+        console.log(`🎯 [SMTP DNS Diagnostics] Chosen IP Version: IPv${chosen.family} (IP: ${chosen.address})`);
+      }
+    }
+  });
+
   transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: SMTP_PORT,
     secure: SMTP_SECURE,
-    family: 4, // Force IPv4 to prevent IPv6 ENETUNREACH errors on platforms like Render
+    family: 4, // Explicitly force IPv4 socket connection in Nodemailer
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
+    // Production TLS parameters for reliability and security
+    tls: {
+      rejectUnauthorized: true,
+      minVersion: 'TLSv1.2'
+    }
   });
-  console.log(`⏳ SMTP Email Transporter initialized (${SMTP_HOST}:${SMTP_PORT}, secure=${SMTP_SECURE}). Verifying connection...`);
+
+  console.log(`⏳ SMTP Email Transporter initialized (${SMTP_HOST}:${SMTP_PORT}, secure=${SMTP_SECURE}, forcedFamily=IPv4). Verifying SMTP handshake & credentials...`);
   
   transporter.verify((error, success) => {
     if (error) {
       console.error('❌ SMTP Email Transporter verification failed on startup:');
-      console.error(error);
+      console.error(`   Error Code: ${error.code || 'N/A'}`);
+      console.error(`   Syscall: ${error.syscall || 'N/A'}`);
+      console.error(`   Command: ${error.command || 'N/A'}`);
+      console.error(`   Message: ${error.message}`);
+      console.error(`   SMTP Authentication Status: FAIL (Check host/port/credentials or Gmail App Password configuration)`);
     } else {
       console.log('✅ SMTP Email Transporter is ready to send emails.');
+      console.log(`   SMTP Authentication Status: SUCCESS (Authenticated as ${SMTP_USER})`);
     }
   });
 } else {
@@ -44,16 +77,31 @@ if (SMTP_USER && SMTP_PASS) {
 const sendEmail = async ({ to, subject, html }) => {
   if (transporter) {
     try {
+      console.log(`✉️ [SMTP Send Mail] Initiating email delivery:`);
+      console.log(`   Recipient: ${to}`);
+      console.log(`   SMTP Server: ${SMTP_HOST}:${SMTP_PORT}`);
+      console.log(`   Forced IP Version: IPv4`);
+      console.log(`   SMTP Auth User: ${SMTP_USER}`);
+      
       const info = await transporter.sendMail({
         from: `"Furzo" <${FROM_EMAIL}>`,
         to,
         subject,
         html,
       });
-      console.log(`✉️ Email sent successfully to ${to}. MessageId: ${info.messageId}`);
+      
+      console.log(`✅ [SMTP Send Mail] Delivery SUCCESS:`);
+      console.log(`   Recipient: ${to}`);
+      console.log(`   Message ID: ${info.messageId}`);
+      console.log(`   Response: ${info.response}`);
+      console.log(`   Accepted Recipients: ${JSON.stringify(info.accepted)}`);
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      console.error(`❌ Error sending email to ${to}:`, error);
+      console.error(`❌ [SMTP Send Mail] Delivery FAIL:`);
+      console.error(`   Recipient: ${to}`);
+      console.error(`   Error Message: ${error.message}`);
+      console.error(`   Error Code: ${error.code || 'N/A'}`);
+      console.error(`   Syscall: ${error.syscall || 'N/A'}`);
       return { success: false, error: error.message || error };
     }
   } else {
