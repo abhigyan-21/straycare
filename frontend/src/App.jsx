@@ -9,6 +9,8 @@ import About from "./pages/user/About";
 import Guide from "./pages/user/Guide";
 import Post from "./pages/user/Post";
 import Help from "./pages/user/Help";
+import Terms from './pages/Terms';
+import Privacy from "./pages/Privacy"
 import Profile from "./pages/user/Profile";
 import LiveTracking from "./pages/user/LiveTracking";
 import AuthModal from "./components/AuthModal";
@@ -158,6 +160,10 @@ function App() {
               <Route path="dashboard" element={<RescuerDashboard />} />
               <Route path="nav/:reportId" element={<RescuerNavigation />} />
             </Route>
+
+             {/*Footer routes*/}
+             <Route path ="/privacy" element = { <Privacy />}/>
+             <Route path ="/terms" element = {<Terms/>} />
           </Route>
         </Routes>
 
