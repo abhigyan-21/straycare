@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../styles/AuthModal.css';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -11,17 +11,17 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const otpInputsRef = useRef([]);
 
-    const { 
-        isLoggedIn, 
-        user, 
-        isLoading, 
-        loginAction, 
-        registerAction, 
-        verifyEmailAction, 
-        verifyPhoneAction, 
-        resendEmailOtpAction, 
-        resendPhoneOtpAction, 
-        logout 
+    const {
+        isLoggedIn,
+        user,
+        isLoading,
+        loginAction,
+        registerAction,
+        verifyEmailAction,
+        verifyPhoneAction,
+        resendEmailOtpAction,
+        resendPhoneOtpAction,
+        logout
     } = useAuthStore();
     const navigate = useNavigate();
 
@@ -64,7 +64,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         e.preventDefault();
         setError('');
         setSuccessMessage('');
-        
+
         const formData = new FormData(e.currentTarget);
         const email = formData.get('email');
         const password = formData.get('password');
@@ -121,7 +121,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                 await verifyEmailAction(otpString);
                 setSuccessMessage('Email verified successfully!');
                 setOtpDigits(['', '', '', '', '', '']);
-                
+
                 // If phone also needs verification, transition to phone verify
                 if (user && !user.isPhoneVerified) {
                     setTimeout(() => {
@@ -181,7 +181,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         newDigits[index] = value;
         setOtpDigits(newDigits);
 
-        // Auto tabbing to next input
+        // Auto tabbing to the next input
         if (value && index < 5) {
             otpInputsRef.current[index + 1]?.focus();
         }
@@ -221,13 +221,13 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     const renderVerificationView = () => {
         const isEmail = mode === 'verify-email';
         const target = isEmail ? user?.email : user?.phone;
-        
+
         return (
             <div className="auth-verification-view">
                 <h2 className="auth-title">
                     {isEmail ? 'Verify Your Email' : 'Verify Your Phone'}
                 </h2>
-                
+
                 <p className="auth-subtitle">
                     Enter the 6-digit OTP code sent to <br />
                     <span className="auth-target-highlight">{target || 'your registered contact'}</span>
@@ -257,9 +257,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                         ))}
                     </div>
 
-                    <button 
-                        type="submit" 
-                        className="auth-submit-btn" 
+                    <button
+                        type="submit"
+                        className="auth-submit-btn"
                         disabled={isLoading || otpDigits.join('').length !== 6}
                     >
                         {isLoading ? 'Verifying...' : 'Verify & Continue'}
@@ -270,9 +270,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     {timer > 0 ? (
                         <p className="auth-timer-text">Resend code in <strong>{timer}s</strong></p>
                     ) : (
-                        <button 
-                            type="button" 
-                            className="auth-link-btn resend-btn" 
+                        <button
+                            type="button"
+                            className="auth-link-btn resend-btn"
                             onClick={handleResendOtp}
                             disabled={isLoading}
                         >
@@ -282,9 +282,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                 </div>
 
                 <div className="auth-cancel-action">
-                    <button 
-                        type="button" 
-                        className="auth-cancel-btn" 
+                    <button
+                        type="button"
+                        className="auth-cancel-btn"
                         onClick={handleCancelVerification}
                         disabled={isLoading}
                     >
@@ -331,6 +331,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                         <input name="email" type="email" placeholder="john@example.com" disabled={isLoading} required />
                     </div>
 
+
                     <div className="auth-form-group">
                         <label>Password</label>
                         <input name="password" type="password" placeholder="••••••••" disabled={isLoading} required />
@@ -364,8 +365,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         <div className="auth-modal-overlay" onClick={handleClose}>
             <div className="auth-modal-content" onClick={e => e.stopPropagation()}>
                 <button className="auth-close-btn" onClick={handleClose}>&times;</button>
-                
-                {(mode === 'verify-email' || mode === 'verify-phone') 
+
+                {(mode === 'verify-email' || mode === 'verify-phone')
                     ? renderVerificationView()
                     : renderFormView()}
             </div>
