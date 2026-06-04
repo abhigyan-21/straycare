@@ -18,9 +18,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         loginAction,
         registerAction,
         verifyEmailAction,
-        verifyPhoneAction,
         resendEmailOtpAction,
-        resendPhoneOtpAction,
         logout
     } = useAuthStore();
     const navigate = useNavigate();
@@ -32,7 +30,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             setError('');
             setSuccessMessage('');
             setOtpDigits(['', '', '', '', '', '']);
-            if (initialMode === 'verify-email' || initialMode === 'verify-phone') {
+            if (initialMode === 'verify-email') {
                 setTimer(60);
             } else {
                 setTimer(0);
@@ -54,7 +52,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
     const handleClose = () => {
         // Force logout if modal is closed while unverified
-        if (isLoggedIn && user && (!user.isEmailVerified || !user.isPhoneVerified)) {
+        if (isLoggedIn && user && !user.isEmailVerified) {
             logout();
         }
         onClose();
@@ -79,9 +77,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     if (!loggedInUser.isEmailVerified) {
                         setMode('verify-email');
                         setTimer(60);
-                    } else if (!loggedInUser.isPhoneVerified) {
-                        setMode('verify-phone');
-                        setTimer(60);
                     } else {
                         onClose();
                     }
@@ -92,9 +87,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     const loggedInUser = res.user;
                     if (!loggedInUser.isEmailVerified) {
                         setMode('verify-email');
-                        setTimer(60);
-                    } else if (!loggedInUser.isPhoneVerified) {
-                        setMode('verify-phone');
                         setTimer(60);
                     } else {
                         onClose();
@@ -122,21 +114,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                 setSuccessMessage('Email verified successfully!');
                 setOtpDigits(['', '', '', '', '', '']);
 
-                // If phone also needs verification, transition to phone verify
-                if (user && !user.isPhoneVerified) {
-                    setTimeout(() => {
-                        setSuccessMessage('');
-                        setMode('verify-phone');
-                        setTimer(60);
-                    }, 1500);
-                } else {
-                    setTimeout(() => {
-                        onClose();
-                    }, 1500);
-                }
-            } else if (mode === 'verify-phone') {
-                await verifyPhoneAction(otpString);
-                setSuccessMessage('Phone number verified successfully!');
                 setTimeout(() => {
                     onClose();
                 }, 1500);
@@ -154,9 +131,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             if (mode === 'verify-email') {
                 await resendEmailOtpAction();
                 setSuccessMessage('A new Email OTP has been sent!');
-            } else {
-                await resendPhoneOtpAction();
-                setSuccessMessage('A new Phone OTP has been sent!');
             }
             setTimer(60);
             setOtpDigits(['', '', '', '', '', '']);
@@ -219,18 +193,17 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     };
 
     const renderVerificationView = () => {
-        const isEmail = mode === 'verify-email';
-        const target = isEmail ? user?.email : user?.phone;
+        const target = user?.email;
 
         return (
             <div className="auth-verification-view">
                 <h2 className="auth-title">
-                    {isEmail ? 'Verify Your Email' : 'Verify Your Phone'}
+                    Verify Your Email
                 </h2>
 
                 <p className="auth-subtitle">
                     Enter the 6-digit OTP code sent to <br />
-                    <span className="auth-target-highlight">{target || 'your registered contact'}</span>
+                    <span className="auth-target-highlight">{target || 'your registered email'}</span>
                 </p>
 
                 {error && <div className="auth-error-banner">{error}</div>}
@@ -366,7 +339,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             <div className="auth-modal-content" onClick={e => e.stopPropagation()}>
                 <button className="auth-close-btn" onClick={handleClose}>&times;</button>
 
-                {(mode === 'verify-email' || mode === 'verify-phone')
+                {mode === 'verify-email'
                     ? renderVerificationView()
                     : renderFormView()}
             </div>

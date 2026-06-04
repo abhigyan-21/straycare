@@ -96,43 +96,12 @@ export const useAuthStore = create(
         }
       },
 
-      verifyPhoneAction: async (otp) => {
-        set({ isLoading: true });
-        try {
-          await apiClient.post('/auth/verify-phone', { otp });
-          
-          // Update store state
-          const currentUser = get().user;
-          if (currentUser) {
-            set({
-              user: { ...currentUser, isPhoneVerified: true }
-            });
-          }
-          set({ isLoading: false });
-          return { success: true };
-        } catch (error) {
-          set({ isLoading: false });
-          const errorMsg = error.response?.data?.error || 'Verification failed';
-          throw new Error(errorMsg);
-        }
-      },
-
       resendEmailOtpAction: async () => {
         try {
           const response = await apiClient.post('/auth/request-email-otp');
           return response.data;
         } catch (error) {
           const errorMsg = error.response?.data?.error || 'Failed to resend email OTP';
-          throw new Error(errorMsg);
-        }
-      },
-
-      resendPhoneOtpAction: async () => {
-        try {
-          const response = await apiClient.post('/auth/request-phone-otp');
-          return response.data;
-        } catch (error) {
-          const errorMsg = error.response?.data?.error || 'Failed to resend phone OTP';
           throw new Error(errorMsg);
         }
       },

@@ -579,12 +579,12 @@ const notifyNearbyVolunteers = async (req, res) => {
           </div>
         `;
 
-        // Send email
-        await sendEmail({
+        // Send email in the background
+        sendEmail({
           to: volunteer.user.email,
           subject: `[Volunteer Callout] Help needed for: ${campaign.title}`,
           html: htmlContent
-        });
+        }).catch(err => console.error(`❌ Error sending volunteer callout email to ${volunteer.user.email}:`, err.message));
 
         notifiedVolunteers.push({
           userId: volunteer.userId,

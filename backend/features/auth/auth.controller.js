@@ -41,7 +41,6 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const emailOtpData = generateOTP();
-    const phoneOtpData = generateOTP();
 
     const user = await prisma.user.create({
       data: {
@@ -51,13 +50,12 @@ const register = async (req, res) => {
         password: hashedPassword,
         emailOtp: emailOtpData.otp,
         emailOtpExpiry: emailOtpData.expiry,
-        phoneOtp: phoneOtpData.otp,
-        phoneOtpExpiry: phoneOtpData.expiry
+        isPhoneVerified: true
       }
     });
 
-    // Send verification emails and SMS notifications
-    await sendEmail({
+    // Send verification email in the background
+    sendEmail({
       to: user.email,
       subject: 'Verify your Furzo Account',
       html: `
@@ -70,15 +68,10 @@ const register = async (req, res) => {
           <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
         </div>
       `
-    });
-
-    await sendSMS(
-      user.phone,
-      `Welcome to Furzo!! Your verification OTP code is ${phoneOtpData.otp}. It is valid for 5 minutes.`
-    );
+    }).catch(err => console.error(`❌ Error sending registration email to ${user.email}:`, err.message));
 
     // Exclude password and OTP details from response
-    const { password: _, emailOtp: _1, emailOtpExpiry: _2, phoneOtp: _3, phoneOtpExpiry: _4, ...userWithoutPassword } = user;
+    const { password: _, emailOtp: _1, emailOtpExpiry: _2, ...userWithoutPassword } = user;
 
     res.status(201).json(userWithoutPassword);
   } catch (error) {
@@ -206,44 +199,6 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-const verifyPhone = async (req, res) => {
-  try {
-    const { otp } = req.body;
-    const userId = req.user.id;
-
-    if (!otp) {
-      return res.status(400).json({ error: 'OTP code is required' });
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (user.isPhoneVerified) {
-      return res.status(400).json({ error: 'Phone number is already verified' });
-    }
-
-    if (user.phoneOtp !== otp || new Date() > user.phoneOtpExpiry) {
-      return res.status(400).json({ error: 'Invalid or expired OTP code' });
-    }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        isPhoneVerified: true,
-        phoneOtp: null,
-        phoneOtpExpiry: null
-      }
-    });
-
-    res.status(200).json({ status: 'success', message: 'Phone number verified successfully!' });
-  } catch (error) {
-    console.error('Error verifying phone OTP:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
 
 const requestEmailOtp = async (req, res) => {
   try {
@@ -268,7 +223,7 @@ const requestEmailOtp = async (req, res) => {
       }
     });
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: 'New Email Verification OTP',
       html: `
@@ -281,7 +236,7 @@ const requestEmailOtp = async (req, res) => {
           <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
         </div>
       `
-    });
+    }).catch(err => console.error(`❌ Error sending verification email to ${user.email}:`, err.message));
 
     res.status(200).json({ status: 'success', message: 'New email verification OTP code sent successfully!' });
   } catch (error) {
@@ -290,47 +245,11 @@ const requestEmailOtp = async (req, res) => {
   }
 };
 
-const requestPhoneOtp = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (user.isPhoneVerified) {
-      return res.status(400).json({ error: 'Phone number is already verified' });
-    }
-
-    const { otp, expiry } = generateOTP();
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        phoneOtp: otp,
-        phoneOtpExpiry: expiry
-      }
-    });
-
-    await sendSMS(
-      user.phone,
-      `Your new StrayCare phone verification OTP code is ${otp}. It is valid for 5 minutes.`
-    );
-
-    res.status(200).json({ status: 'success', message: 'New phone verification OTP code sent successfully!' });
-  } catch (error) {
-    console.error('Error resending phone OTP:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
 
 module.exports = {
   register,
   login,
   refresh,
   verifyEmail,
-  verifyPhone,
   requestEmailOtp,
-  requestPhoneOtp,
 };

@@ -21,7 +21,7 @@ model User {
   emailOtp           String?
   emailOtpExpiry     DateTime?
   isEmailVerified    Boolean             @default(false)
-  isPhoneVerified    Boolean             @default(false)
+  isPhoneVerified    Boolean             @default(true)
   phone              String              @unique
   phoneOtp           String?
   phoneOtpExpiry     DateTime?

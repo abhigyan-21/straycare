@@ -11,10 +11,8 @@ const authLimiter = rateLimit({
 });
 
 router.post('/request-email-otp', verifyToken, authController.requestEmailOtp);
-router.post('/request-phone-otp', verifyToken, authController.requestPhoneOtp);
 
 router.post('/verify-email', verifyToken, authController.verifyEmail);
-router.post('/verify-phone', verifyToken, authController.verifyPhone);
 
 
 router.post('/register', authLimiter, authController.register);

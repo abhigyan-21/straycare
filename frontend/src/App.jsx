@@ -61,8 +61,8 @@ function App() {
     const isPortalRoute = window.location.pathname.startsWith('/vet') || window.location.pathname.startsWith('/admin');
     if (isPortalRoute) return;
 
-    if (isLoggedIn && user && (!user.isEmailVerified || !user.isPhoneVerified)) {
-      const mode = !user.isEmailVerified ? 'verify-email' : 'verify-phone';
+    if (isLoggedIn && user && !user.isEmailVerified) {
+      const mode = 'verify-email';
       if (!isAuthModalOpen || authMode !== mode) {
         setAuthMode(mode);
         setIsAuthModalOpen(true);
