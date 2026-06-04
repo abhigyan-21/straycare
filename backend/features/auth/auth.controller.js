@@ -54,6 +54,9 @@ const register = async (req, res) => {
       }
     });
 
+    console.log(`[OTP Info] Generated registration OTP for ${user.email}: ${emailOtpData.otp} (expires: ${emailOtpData.expiry})`);
+    console.log(`[OTP Info] Attempting to send registration email to ${user.email}...`);
+
     // Send verification email in the background
     sendEmail({
       to: user.email,
@@ -68,7 +71,15 @@ const register = async (req, res) => {
           <p style="font-size: 0.9rem; text-align: center; color: #666;">This code is valid for 5 minutes.</p>
         </div>
       `
-    }).catch(err => console.error(`❌ Error sending registration email to ${user.email}:`, err.message));
+    })
+      .then(result => {
+        if (result.success) {
+          console.log(`✅ [OTP Success] Registration email successfully sent to ${user.email}`);
+        } else {
+          console.error(`❌ [OTP Error] Failed to send registration email to ${user.email}:`, result.error);
+        }
+      })
+      .catch(err => console.error(`❌ [OTP Error] Exception sending registration email to ${user.email}:`, err));
 
     // Exclude password and OTP details from response
     const { password: _, emailOtp: _1, emailOtpExpiry: _2, ...userWithoutPassword } = user;
@@ -180,6 +191,7 @@ const verifyEmail = async (req, res) => {
     }
 
     if (user.emailOtp !== otp || new Date() > user.emailOtpExpiry) {
+      console.warn(`⚠️ [OTP Warning] Verification failed for user ${user.email}. Provided OTP: ${otp}, expected: ${user.emailOtp}, expiry: ${user.emailOtpExpiry}`);
       return res.status(400).json({ error: 'Invalid or expired OTP code' });
     }
 
@@ -191,6 +203,8 @@ const verifyEmail = async (req, res) => {
         emailOtpExpiry: null
       }
     });
+
+    console.log(`✅ [OTP Success] Email verified successfully for user ${user.email}`);
 
     res.status(200).json({ status: 'success', message: 'Email address verified successfully!' });
   } catch (error) {
@@ -214,6 +228,7 @@ const requestEmailOtp = async (req, res) => {
     }
 
     const { otp, expiry } = generateOTP();
+    console.log(`[OTP Info] Generated new verification OTP for user ID ${userId} (${user.email}): ${otp} (expires: ${expiry})`);
 
     await prisma.user.update({
       where: { id: userId },
@@ -223,6 +238,7 @@ const requestEmailOtp = async (req, res) => {
       }
     });
 
+    console.log(`[OTP Info] Attempting to send new OTP verification email to ${user.email}...`);
     sendEmail({
       to: user.email,
       subject: 'New Email Verification OTP',
@@ -236,7 +252,15 @@ const requestEmailOtp = async (req, res) => {
           <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
         </div>
       `
-    }).catch(err => console.error(`❌ Error sending verification email to ${user.email}:`, err.message));
+    })
+      .then(result => {
+        if (result.success) {
+          console.log(`✅ [OTP Success] Verification email successfully sent to ${user.email}`);
+        } else {
+          console.error(`❌ [OTP Error] Failed to send verification email to ${user.email}:`, result.error);
+        }
+      })
+      .catch(err => console.error(`❌ [OTP Error] Exception sending verification email to ${user.email}:`, err));
 
     res.status(200).json({ status: 'success', message: 'New email verification OTP code sent successfully!' });
   } catch (error) {

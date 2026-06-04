@@ -16,10 +16,24 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 const app = express();
+
+// Trust reverse proxy (Render load balancer) for rate limiting and client IP detection
+app.set('trust proxy', 1);
+
+// CORS allowed origins list (Vercel production and local dev)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://furzo.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5000'
+].filter(Boolean);
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: allowedOrigins,
+    credentials: true
   }
 });
 
@@ -48,8 +62,32 @@ io.on('connection', (socket) => {
 
 // ── Middleware Setup ────────────────────────────────────────
 
-app.use(cors());
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Fallback for non-production environments
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+};
+
+app.use((req, res, next) => {
+  console.log(`[Request Log] ${req.method} ${req.url} | IP: ${req.ip} | X-Forwarded-For: ${req.headers['x-forwarded-for']}`);
+  next();
+});
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Favicon dummy handler to prevent console clutter/CSP errors
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // ── Apply Routes ─────────────────────────────────────────────
 app.use('/api/chat', chatRoutes);

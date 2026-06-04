@@ -19,7 +19,16 @@ if (SMTP_USER && SMTP_PASS) {
       pass: SMTP_PASS,
     },
   });
-  console.log(`✅ SMTP Email Transporter initialized successfully (${SMTP_HOST}:${SMTP_PORT}, secure=${SMTP_SECURE}).`);
+  console.log(`⏳ SMTP Email Transporter initialized (${SMTP_HOST}:${SMTP_PORT}, secure=${SMTP_SECURE}). Verifying connection...`);
+  
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ SMTP Email Transporter verification failed on startup:');
+      console.error(error);
+    } else {
+      console.log('✅ SMTP Email Transporter is ready to send emails.');
+    }
+  });
 } else {
   console.warn('⚠️ SMTP credentials missing in .env. Emails will be logged to the console instead.');
 }
@@ -43,8 +52,8 @@ const sendEmail = async ({ to, subject, html }) => {
       console.log(`✉️ Email sent successfully to ${to}. MessageId: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      console.error(`❌ Error sending email to ${to}:`, error.message);
-      return { success: false, error: error.message };
+      console.error(`❌ Error sending email to ${to}:`, error);
+      return { success: false, error: error.message || error };
     }
   } else {
     // Fallback simulation logger
