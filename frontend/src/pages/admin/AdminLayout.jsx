@@ -58,12 +58,8 @@ const AdminLayout = () => {
                     <div className="admin-header-left">
                         <h3>{user?.name ? `Hello, ${user.name.split(' ')[0]}!` : 'Welcome back!'}</h3>
                     </div>
-                    
+
                     <div className="admin-header-right" style={{ gap: '24px' }}>
-                        <div className="admin-search-wrapper">
-                            <Search size={18} className="admin-search-icon" />
-                            <input type="text" placeholder="Quick search..." className="admin-search-input" />
-                        </div>
                         <div className="admin-header-profile">
                             <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Admin'}&background=5ebd3e&color=fff&bold=true`} alt="Profile" />
                         </div>
