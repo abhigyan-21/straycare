@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
 import AdminBadge from '../../components/admin/AdminBadge';
-import { getAdminUsers, updateAdminUserStatus } from '../../services/api';
+import { getAdminUsers, updateAdminUserStatus, deleteAdminUser } from '../../services/api';
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
@@ -42,6 +42,18 @@ const AdminUsers = () => {
         } catch (error) {
             console.error('Failed to approve user:', error);
             alert('Error approving user: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleDeleteUser = async (id) => {
+        if (window.confirm("Are you sure you want to permanently delete this user?")) {
+            try {
+                await deleteAdminUser(id);
+                setUsers(users.filter(u => u.id !== id));
+            } catch (error) {
+                console.error("Failed to delete user:", error);
+                alert("Error deleting user: " + (error.response?.data?.error || error.message));
+            }
         }
     };
 
@@ -111,8 +123,8 @@ const AdminUsers = () => {
                 {filteredUsers.map(user => (
                     <tr key={user.id}>
                         <td>
-                            <span className="admin-text-primary">{user.name}</span>
-                            <span className="admin-text-secondary">{user.email}</span>
+                            <div className="admin-text-primary" style={{ fontWeight: 600 }}>{user.name}</div>
+                            <div className="admin-text-secondary" style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>{user.email}</div>
                         </td>
                         <td>
                             <AdminBadge rounded color={user.role === 'user' ? 'light' : 'primary'}>
@@ -139,6 +151,9 @@ const AdminUsers = () => {
                                         {user.status === 'Active' ? 'Suspend' : 'Reactivate'}
                                     </button>
                                 )}
+                                <button onClick={() => handleDeleteUser(user.id)} className="admin-btn-action danger-flex" style={{ background: '#e0645c', color: 'white' }}>
+                                    Delete
+                                </button>
                             </div>
                         </td>
                     </tr>

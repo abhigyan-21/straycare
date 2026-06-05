@@ -4,7 +4,7 @@ import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2, Sea
 import "../../styles/admin/admin.css";
 
 const AdminLayout = () => {
-    const { user } = useAuthStore();
+    const { user, logout } = useAuthStore();
 
     return (
         <div className="admin-container">
@@ -46,7 +46,7 @@ const AdminLayout = () => {
                 </nav>
 
                 <div className="admin-sidebar-footer">
-                    <button className="logout-btn" onClick={() => window.location.href = '/'}>
+                    <button className="logout-btn" onClick={() => { logout(); window.location.href = '/'; }}>
                         <LogOut size={20} />
                         Exit Admin
                     </button>

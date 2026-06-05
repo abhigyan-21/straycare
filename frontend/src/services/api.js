@@ -2,7 +2,42 @@ import axios from 'axios';
 import { storiesData } from '../data/storiesData';
 import { highlightsData } from '../data/highlightsData';
 import { mockPets } from '../data/mockPets';
-import { adminStats, mockUsers, mockTracking, mockDocuments, mockPosts } from '../data/adminMockData';
+
+// Inline mock data fallbacks for admin portal (to avoid importing deleted adminMockData.js)
+const adminStats = {
+  adoptions: 12,
+  rescues: 24,
+  urgentReports: 8,
+  funding: "₹45,200",
+  month: "April 2026"
+};
+
+const mockUsers = [
+  { id: 1, name: 'Helping Paws NGO', email: 'contact@helpingpaws.org', role: 'ngo', status: 'Active', joined: '2025-10-12' },
+  { id: 2, name: 'City Vet Clinic', email: 'dr.smith@cityvet.com', role: 'partner', status: 'Active', joined: '2025-12-05' },
+  { id: 3, name: 'Rescue Rangers', email: 'info@rrangers.org', role: 'ngo', status: 'Pending', joined: '2026-03-08' },
+  { id: 4, name: 'Abhigyan Kumar', email: 'abhigyan@example.com', role: 'user', status: 'Active', joined: '2026-04-01' },
+  { id: 5, name: 'Dr. Rahul Sharma', email: 'rahul@vetclinic.com', role: 'partner', status: 'Active', joined: '2026-04-10' },
+];
+
+const mockDocuments = [
+  { id: 'DOC-101', title: 'Medical History - Bella', type: 'PDF', size: '2.4 MB', date: '2026-03-08' },
+  { id: 'DOC-102', title: 'Adoption Agreement Form', type: 'DOCX', size: '1.1 MB', date: '2026-03-01' },
+  { id: 'DOC-103', title: 'NGO Verification - Helping Paws', type: 'PDF', size: '3.5 MB', date: '2026-02-15' }
+];
+
+const mockTracking = [
+  { id: 'TRK-001', name: "Bella (Stray)", type: "Dog", reporter: "John Doe", status: "Reported", date: "2026-03-08", location: "Downtown Park" },
+  { id: 'TRK-002', name: "Luna", type: "Cat", reporter: "Jane Smith", status: "Rescue in Progress", date: "2026-03-07", location: "Northside Alley" },
+  { id: 'TRK-003', name: "Max", type: "Dog", reporter: "Mike Ross", status: "At Clinic", date: "2026-03-05", location: "East Ave" },
+];
+
+const mockPosts = [
+  { id: 1, author: 'Jane Smith', authorAvatar: 'https://i.pravatar.cc/150?u=jane', content: 'Found a stray dog near Central Park. Please share! He looks hungry but friendly.', date: '2 hours ago', status: 'Published', reports: 0 },
+  { id: 2, author: 'John Doe', authorAvatar: 'https://i.pravatar.cc/150?u=john', content: 'Here are some tips for fostering cats in summer. Keep them hydrated and avoid direct sun during peak hours.', date: '5 hours ago', status: 'Published', reports: 0 },
+  { id: 3, author: 'SpamBot', authorAvatar: 'https://i.pravatar.cc/150?u=spam', content: 'Click here for free dog food!!! Limited time offer! NO SCAM!! 100% REAL!!', date: '1 day ago', status: 'Reported', reports: 12 },
+  { id: 4, author: 'Mike Ross', authorAvatar: 'https://i.pravatar.cc/150?u=mike', content: 'Aggressive dog spotted near the subway entrance. Be careful everyone.', date: '3 days ago', status: 'Pending', reports: 2 }
+];
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -36,7 +71,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Check if error is 401 Unauthorized and not already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -53,7 +88,7 @@ apiClient.interceptors.response.use(
           // Request a new token using standard axios to avoid interceptor loop
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
           const newToken = response.data.token;
-          
+
           // Dynamically import store to update state reactively
           const { useAuthStore } = await import('../store/authStore');
           useAuthStore.getState().setToken(newToken);
@@ -93,72 +128,72 @@ export const checkBackend = async () => {
 checkBackend();
 
 export const getStories = async () => {
-  if (!isBackendAvailable) return storiesData;
   try {
     const response = await apiClient.get('/feed/stories');
     return response.data;
   } catch (error) {
+    console.warn('Failed to fetch stories, using mock data:', error.message);
     return storiesData;
   }
 };
 
 export const getPets = async () => {
-  if (!isBackendAvailable) return mockPets;
   try {
     const response = await apiClient.get('/adoptions/pets');
     return response.data.data || response.data;
   } catch (error) {
+    console.warn('Failed to fetch pets, using mock data:', error.message);
     return mockPets;
   }
 };
 
 export const getHighlights = async () => {
-  if (!isBackendAvailable) return highlightsData;
   try {
     const response = await apiClient.get('/feed/highlights');
     return response.data;
   } catch (error) {
+    console.warn('Failed to fetch highlights, using mock data:', error.message);
     return highlightsData;
   }
 };
 
 // Admin Endpoints
 export const getAdminStats = async () => {
-  if (!isBackendAvailable) return adminStats;
   try {
     const response = await apiClient.get('/admin/stats');
     return response.data;
   } catch (error) {
+    console.warn('Failed to fetch admin stats, using mock data:', error.message);
     return adminStats;
   }
 };
 
 export const getAdminUsers = async () => {
-  if (!isBackendAvailable) return mockUsers;
   try {
     const response = await apiClient.get('/admin/users');
     return response.data;
   } catch (error) {
+    console.warn('Failed to fetch admin users, using mock data:', error.message);
     return mockUsers;
   }
 };
 
 export const getAdminTracking = async () => {
-  if (!isBackendAvailable) return mockTracking;
   try {
     const response = await apiClient.get('/admin/tracking');
     return response.data;
   } catch (error) {
+    console.warn('Failed to fetch admin tracking, using mock data:', error.message);
     return mockTracking;
   }
 };
 
 export const getAdminDocs = async () => {
-  if (!isBackendAvailable) return mockDocuments;
   try {
     const response = await apiClient.get('/admin/documents');
     return response.data;
   } catch (error) {
+    console.warn('Failed to fetch admin documents, using mock data:', error.message);
     return mockDocuments;
   }
 };
@@ -167,6 +202,12 @@ export const updateAdminUserStatus = async (id, status) => {
   const response = await apiClient.patch(`/admin/users/${id}/status`, { status });
   return response.data;
 };
+
+export const deleteAdminUser = async (id) => {
+  const response = await apiClient.delete(`/admin/users/${id}`);
+  return response.data;
+};
+
 
 export const getAdminPosts = async () => {
   if (!isBackendAvailable) return mockPosts;
@@ -186,6 +227,28 @@ export const updateAdminPostStatus = async (id, status) => {
 export const deleteAdminPost = async (id) => {
   const response = await apiClient.delete(`/admin/posts/${id}`);
   return response.data;
+};
+
+export const getAdminReports = async (start, end) => {
+  try {
+    const params = {};
+    if (start) params.start = start;
+    if (end) params.end = end;
+    const response = await apiClient.get('/admin/reports', { params });
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin reports, using mock data:', error.message);
+    return {
+      adoptions: "156",
+      rescues: "432",
+      userGrowth: "+15%",
+      donations: "₹2,84,500",
+      campaigns: [
+        { id: 'c-1', name: 'Summer Water Bowl Drive', goal: '₹50,000', raised: '₹42,000', status: 'Active', efficiency: '84%' },
+        { id: 'c-2', name: 'Central Park Rescue Center', goal: '₹5,00,000', raised: '₹2,10,000', status: 'Ongoing', efficiency: '42%' }
+      ]
+    };
+  }
 };
 
 export default apiClient;

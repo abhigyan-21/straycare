@@ -2,7 +2,6 @@ import { Target, HeartHandshake, AlertCircle, Calendar, PlusCircle, UserPlus, Fi
 import StatCard from "../../components/admin/StatCard";
 import { useState, useEffect } from "react";
 import { getAdminStats } from "../../services/api";
-import { recentActivity } from "../../data/adminMockData";
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -92,7 +91,7 @@ const AdminDashboard = () => {
                 <div className="admin-card">
                     <h3 className="admin-card-title">Community Activity</h3>
                     <div className="admin-activity-timeline" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {recentActivity.map(activity => (
+                        {(stats?.recentActivity || []).map(activity => (
                             <div key={activity.id} className="activity-item admin-flex-row" style={{ gap: '16px' }}>
                                 <div className={`admin-badge ${activity.type === 'emergency' ? 'red' : activity.type === 'adoption' ? 'green' : 'light'}`} style={{ padding: '8px' }}>
                                     {activity.icon === 'heart' && <HeartHandshake size={14} />}
@@ -105,6 +104,9 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         ))}
+                        {(stats?.recentActivity || []).length === 0 && (
+                            <p className="admin-empty-text" style={{ textAlign: 'center', padding: '20px 0' }}>No recent activities logged.</p>
+                        )}
                     </div>
                 </div>
             </div>

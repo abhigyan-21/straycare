@@ -1,10 +1,33 @@
 import { BarChart2, Calendar, Download, TrendingUp, Heart, Target, IndianRupee } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import StatCard from '../../components/admin/StatCard';
+import { getAdminReports } from '../../services/api';
 
 const AdminReports = () => {
-    const [dateRange, setDateRange] = useState({ start: '2026-04-01', end: '2026-04-30' });
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [reportsData, setReportsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const fetchReports = async (start, end) => {
+        setLoading(true);
+        try {
+            const data = await getAdminReports(start, end);
+            setReportsData(data);
+        } catch (error) {
+            console.error("Error fetching reports:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const handleApplyFilter = () => {
+        fetchReports(dateRange.start, dateRange.end);
+    };
 
     return (
         <div>
@@ -38,7 +61,9 @@ const AdminReports = () => {
                                 onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
                             />
                         </div>
-                        <button className="admin-btn-action primary-flex">Apply Filter</button>
+                        <button className="admin-btn-action primary-flex" onClick={handleApplyFilter}>
+                            {loading ? 'Loading...' : 'Apply Filter'}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -47,25 +72,25 @@ const AdminReports = () => {
                 <StatCard 
                     icon={Heart} 
                     title="Total Adoptions" 
-                    value="156" 
+                    value={reportsData?.adoptions ?? "0"} 
                     colorClass="green" 
                 />
                 <StatCard 
                     icon={Target} 
                     title="Successful Rescues" 
-                    value="432" 
+                    value={reportsData?.rescues ?? "0"} 
                     colorClass="light" 
                 />
                 <StatCard 
                     icon={TrendingUp} 
                     title="User Growth" 
-                    value="+15%" 
+                    value={reportsData?.userGrowth ?? "+0%"} 
                     colorClass="primary" 
                 />
                 <StatCard 
                     icon={IndianRupee} 
                     title="Total Donations" 
-                    value="₹2,84,500" 
+                    value={reportsData?.donations ?? "₹0"} 
                     colorClass="green" 
                 />
             </div>
@@ -101,20 +126,26 @@ const AdminReports = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Summer Water Bowl Drive</td>
-                                <td>₹50,000</td>
-                                <td>₹42,000</td>
-                                <td><span className="admin-badge green">Active</span></td>
-                                <td>84%</td>
-                            </tr>
-                            <tr>
-                                <td>Central Park Rescue Center</td>
-                                <td>₹5,00,000</td>
-                                <td>₹2,10,000</td>
-                                <td><span className="admin-badge light">Ongoing</span></td>
-                                <td>42%</td>
-                            </tr>
+                            {(reportsData?.campaigns || []).map(campaign => (
+                                <tr key={campaign.id}>
+                                    <td>{campaign.name}</td>
+                                    <td>{campaign.goal}</td>
+                                    <td>{campaign.raised}</td>
+                                    <td>
+                                        <span className={`admin-badge ${campaign.status === 'Active' ? 'green' : 'light'}`}>
+                                            {campaign.status}
+                                        </span>
+                                    </td>
+                                    <td>{campaign.efficiency}</td>
+                                </tr>
+                            ))}
+                            {(reportsData?.campaigns || []).length === 0 && (
+                                <tr>
+                                    <td colSpan="5" className="center admin-empty-text" style={{ padding: '20px 0' }}>
+                                        No campaigns found for the selected period.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
