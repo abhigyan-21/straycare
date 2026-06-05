@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@getbrevo/brevo": "^5.0.4",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.6.0",
     "axios": "^1.13.6",
@@ -26,7 +27,6 @@
     "nodemailer": "^8.0.9",
     "pg": "^8.20.0",
     "razorpay": "^2.9.5",
-    "resend": "^6.12.4",
     "socket.io": "^4.8.3",
     "twilio": "^6.0.2"
   },

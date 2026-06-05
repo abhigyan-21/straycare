@@ -4,11 +4,11 @@
  * Production-grade email service for Node.js applications deployed on
  * platforms with blocked SMTP ports (Render, Vercel, Railway, Fly.io, etc.).
  *
- * PRIMARY:  Resend HTTP API  (port 443 — never blocked)
+ * PRIMARY:  Brevo HTTP API  (port 443 — never blocked)
  * FALLBACK: SMTP via Nodemailer (works only if port 587/465 is open)
  *
  * Strategy:
- *   - Resend is the default and recommended path for all PaaS deployments.
+ *   - Brevo is the default and recommended path for all PaaS deployments.
  *   - SMTP is available as an optional fallback for self-hosted or VPS setups.
  *   - Retries with exponential backoff are applied to transient failures.
  *   - All failures surface structured errors — never silent swallows.
@@ -18,7 +18,7 @@
 
 const dns = require('dns');
 const nodemailer = require('nodemailer');
-const { Resend } = require('resend'); // Official Resend SDK
+const { BrevoClient } = require('@getbrevo/brevo'); // Official Brevo SDK
 
 // ---------------------------------------------------------------------------
 // 1. DNS: Force IPv4 globally to prevent ENETUNREACH on dual-stack hosts.
@@ -32,7 +32,7 @@ if (typeof dns.setDefaultResultOrder === 'function') {
 // 2. Configuration — validated at startup, fails loudly if misconfigured.
 // ---------------------------------------------------------------------------
 const config = {
-  resendApiKey: process.env.RESEND_API_KEY || null,
+  brevoApiKey: process.env.BREVO_API_KEY || null,
 
   smtp: {
     host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
@@ -58,9 +58,7 @@ const config = {
 
 // Resolve effective sender address based on available credentials
 if (!config.fromEmail) {
-  if (config.resendApiKey) {
-    config.fromEmail = 'onboarding@resend.dev'; // Resend sandbox sender
-  } else if (config.smtp.user) {
+  if (config.smtp.user) {
     config.fromEmail = config.smtp.user;
   } else {
     config.fromEmail = 'noreply@example.com';
@@ -70,22 +68,22 @@ if (!config.fromEmail) {
 // ---------------------------------------------------------------------------
 // 3. Transport selection — determined once at startup.
 // ---------------------------------------------------------------------------
-let activeTransport = 'none'; // 'resend' | 'smtp' | 'none'
-let resendClient    = null;
+let activeTransport = 'none'; // 'brevo' | 'smtp' | 'none'
+let brevoClient     = null;
 let smtpTransporter = null;
 
 function initializeTransport() {
-  if (config.resendApiKey) {
-    // ── Resend (recommended for PaaS) ────────────────────────────────────
-    resendClient   = new Resend(config.resendApiKey);
-    activeTransport = 'resend';
-    log('info', 'Transport: Resend HTTP API (port 443). SMTP ports are not used.');
+  if (config.brevoApiKey) {
+    // ── Brevo (recommended for PaaS) ────────────────────────────────────
+    brevoClient    = new BrevoClient({ apiKey: config.brevoApiKey });
+    activeTransport = 'brevo';
+    log('info', 'Transport: Brevo HTTP API (port 443). SMTP ports are not used.');
 
   } else if (config.smtp.user && config.smtp.pass) {
     // ── SMTP (self-hosted / VPS only) ─────────────────────────────────────
     // IMPORTANT: On Render, Railway, Vercel, Fly.io — port 587 is blocked at
     // the network level. SMTP will always time out on these platforms.
-    // Use Resend instead by setting RESEND_API_KEY in your environment.
+    // Use Brevo instead by setting BREVO_API_KEY in your environment.
     smtpTransporter = nodemailer.createTransport({
       host:   config.smtp.host,
       port:   config.smtp.port,
@@ -110,7 +108,7 @@ function initializeTransport() {
     activeTransport = 'smtp';
     log('info', `Transport: SMTP (${config.smtp.host}:${config.smtp.port}, IPv4-forced)`);
     log('warn', 'SMTP note: Port 587 is blocked on Render/Vercel/Railway/Fly.io. ' +
-                'If you see ETIMEDOUT, set RESEND_API_KEY instead.');
+                'If you see ETIMEDOUT, set BREVO_API_KEY instead.');
 
     // Verify SMTP credentials asynchronously; don't block startup.
     smtpTransporter.verify((err) => {
@@ -129,7 +127,7 @@ function initializeTransport() {
     // ── No credentials — console simulation ──────────────────────────────
     activeTransport = 'none';
     log('warn', 'No email credentials configured. Emails will be simulated to console.');
-    log('warn', 'Set RESEND_API_KEY (recommended) or SMTP_USER + SMTP_PASS in your environment.');
+    log('warn', 'Set BREVO_API_KEY (recommended) or SMTP_USER + SMTP_PASS in your environment.');
   }
 }
 
@@ -194,29 +192,27 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // 5. Core send implementations.
 // ---------------------------------------------------------------------------
 
-async function sendViaResend({ to, subject, html, text, replyTo }) {
+async function sendViaBrevo({ to, subject, html, text, replyTo }) {
+  const recipients = (Array.isArray(to) ? to : [to]).map(email => ({ email }));
+
   const payload = {
-    from:    `${config.fromName} <${config.fromEmail}>`,
-    to:      Array.isArray(to) ? to : [to],
+    sender: {
+      email: config.fromEmail,
+      name:  config.fromName,
+    },
+    to: recipients,
     subject,
-    html,
-    ...(text    && { text }),
-    ...(replyTo && { reply_to: replyTo }),
+    htmlContent: html,
+    ...(text    && { textContent: text }),
+    ...(replyTo && { replyTo: { email: replyTo } }),
   };
 
-  log('info', `[Resend] Sending to ${payload.to.join(', ')} — "${subject}"`);
+  log('info', `[Brevo] Sending to ${recipients.map(r => r.email).join(', ')} — "${subject}"`);
 
-  const { data, error } = await resendClient.emails.send(payload);
+  const data = await brevoClient.transactionalEmails.sendTransacEmail(payload);
 
-  if (error) {
-    const err = new Error(error.message || 'Resend API error');
-    err.statusCode = error.statusCode;
-    err.code = error.name;
-    throw err;
-  }
-
-  log('info', `[Resend] Delivered. ID: ${data.id}`);
-  return { success: true, messageId: data.id, provider: 'resend' };
+  log('info', `[Brevo] Delivered. ID: ${data.messageId}`);
+  return { success: true, messageId: data.messageId, provider: 'brevo' };
 }
 
 async function sendViaSmtp({ to, subject, html, text, replyTo }) {
@@ -274,9 +270,9 @@ async function sendEmail({ to, subject, html, text, replyTo } = {}) {
 
   try {
     switch (activeTransport) {
-      case 'resend':
+      case 'brevo':
         return await withRetry(
-          () => sendViaResend(params),
+          () => sendViaBrevo(params),
           config.retry.maxAttempts,
           config.retry.initialDelayMs,
         );

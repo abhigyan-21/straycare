@@ -241,9 +241,9 @@ const requestEmailOtp = async (req, res) => {
     console.log(`[OTP Info] Attempting to send new OTP verification email to ${user.email}...`);
     sendEmail({
       to: user.email,
-      subject: 'New Email Verification OTP',
+      subject: 'Email Verification OTP',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 5px solid #bdf9aeff; border-radius: 8px;">
+        <div style="font-family: Arial, sans-serif; max-width: auto; margin: 0 auto; padding: 20px; border: 5px solid #bdf9aeff; border-radius: 8px;">
           <h1 style="text-align: center;">Welcome to Furzo!</h1>
           <h2 style="color: #346c02; text-align: center;">Email Verification Code</h2>
           <p>Please use the following new OTP code to verify your email address:</p>
