@@ -4,9 +4,14 @@ const bcrypt = require('bcryptjs');
 
 async function seed() {
   try {
-    const email = 'furzo.app@gmail.com';
-    const password = 'furzo_app@211';
-    const phone = '9999999999';
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+    const phone = process.env.ADMIN_PHONE || '9999999999';
+
+    if (!email || !password) {
+      console.error('Error: ADMIN_EMAIL and ADMIN_PASSWORD environment variables are not set.');
+      process.exit(1);
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

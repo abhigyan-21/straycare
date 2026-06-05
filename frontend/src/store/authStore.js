@@ -127,6 +127,24 @@ export const useAuthStore = create(
         }
       },
 
+      changePasswordAction: async (currentPassword, newPassword) => {
+        set({ isLoading: true });
+        try {
+          const response = await apiClient.post('/auth/change-password', { currentPassword, newPassword });
+          set({ isLoading: false });
+          return { success: true, message: response.data.message };
+        } catch (error) {
+          set({ isLoading: false });
+          let errorMsg = 'Failed to change password';
+          if (error.response && error.response.data) {
+             errorMsg = error.response.data.error || error.response.data.message || 'Failed to change password';
+          } else if (error.message) {
+             errorMsg = error.message;
+          }
+          throw new Error(errorMsg);
+        }
+      },
+
       logout: () => {
         set({
           isLoggedIn: false,

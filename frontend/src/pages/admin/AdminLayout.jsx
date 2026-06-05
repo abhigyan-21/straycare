@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from '../../store/authStore';
-import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2, Search, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2, Search, ShieldAlert, Settings } from "lucide-react";
 import "../../styles/admin/admin.css";
 
 const AdminLayout = () => {
@@ -40,6 +40,10 @@ const AdminLayout = () => {
                             <NavLink to="/admin/reports" className={({ isActive }) => (isActive ? "active" : "")}>
                                 <BarChart2 size={20} />
                                 Reports & Analytics
+                            </NavLink>
+                            <NavLink to="/admin/settings" className={({ isActive }) => (isActive ? "active" : "")}>
+                                <Settings size={20} />
+                                Settings
                             </NavLink>
                         </>
                     )}
