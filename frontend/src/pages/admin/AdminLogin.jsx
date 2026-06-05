@@ -7,24 +7,31 @@ import bgImage from '../../assets/images/happy_animals_bg.png';
 const AdminLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, user, logout } = useAuthStore();
+    const [errorMsg, setErrorMsg] = useState('');
+    const { loginAction, user, logout, isLoading } = useAuthStore();
     const navigate = useNavigate();
 
     const isUnauthorized = user && !['ADMIN', 'admin'].includes(user.role);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMsg('');
 
-        // Mocking Admin authentication
-        const userData = {
-            name: 'System Administrator',
-            email: email,
-            role: 'ADMIN'
-        };
-
-        login(userData);
-        alert('Admin Login successful!');
-        navigate('/admin');
+        try {
+            const result = await loginAction(email, password);
+            if (result.success) {
+                const userRole = result.user?.role?.toUpperCase();
+                if (userRole !== 'ADMIN') {
+                    setErrorMsg('Access Denied: Your account is not authorized for the Admin Portal.');
+                    logout();
+                    return;
+                }
+                alert('Admin Login successful!');
+                navigate('/admin');
+            }
+        } catch (error) {
+            setErrorMsg(error.message || 'Login failed. Please check credentials.');
+        }
     };
 
     return (
@@ -74,7 +81,7 @@ const AdminLogin = () => {
                 <h2 className="auth-title" style={{ color: '#333' }}>Admin Portal</h2>
                 <p className="auth-subtitle">Restricted access for system administrators.</p>
 
-                {isUnauthorized && (
+                {(isUnauthorized || errorMsg) && (
                     <div style={{
                         background: '#fff4f4',
                         border: '1px solid #ffcdd2',
@@ -84,23 +91,25 @@ const AdminLogin = () => {
                         fontSize: '0.85rem',
                         color: '#b71c1c'
                     }}>
-                        <strong>Access Denied:</strong> Your account (<em>{user.email}</em>) is not authorized for the Admin Portal.
-                        <button
-                            onClick={logout}
-                            style={{
-                                display: 'block',
-                                marginTop: '10px',
-                                background: '#b71c1c',
-                                color: 'white',
-                                border: 'none',
-                                padding: '5px 10px',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '0.75rem'
-                            }}
-                        >
-                            Log Out to Switch Account
-                        </button>
+                        <strong>{errorMsg ? 'Login Error:' : 'Access Denied:'}</strong> {errorMsg || <>Your account (<em>{user?.email}</em>) is not authorized for the Admin Portal.</>}
+                        {(isUnauthorized || user) && (
+                            <button
+                                onClick={logout}
+                                style={{
+                                    display: 'block',
+                                    marginTop: '10px',
+                                    background: '#b71c1c',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '5px 10px',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.75rem'
+                                }}
+                            >
+                                Log Out to Switch Account
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -127,8 +136,8 @@ const AdminLogin = () => {
                         />
                     </div>
 
-                    <button type="submit" className="auth-submit-btn" style={{ background: '#000000ff', color: 'white' }}>
-                        SIGN IN AS ADMIN
+                    <button type="submit" disabled={isLoading} className="auth-submit-btn" style={{ background: '#000000ff', color: 'white' }}>
+                        {isLoading ? 'SIGNING IN...' : 'SIGN IN AS ADMIN'}
                     </button>
 
                     <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#888', marginTop: '20px' }}>

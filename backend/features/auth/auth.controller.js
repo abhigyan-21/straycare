@@ -109,6 +109,13 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (user.status === 'Suspended') {
+      return res.status(403).json({ error: 'Your account has been suspended. Please contact support.' });
+    }
+    if (user.status === 'Pending') {
+      return res.status(403).json({ error: 'Your account is pending administrator approval.' });
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -156,6 +163,10 @@ const refresh = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(403).json({ error: 'Invalid refresh token' });
+    }
+
+    if (user.status !== 'Active') {
+      return res.status(403).json({ error: 'Forbidden: Account is not active' });
     }
 
     const token = jwt.sign(

@@ -12,6 +12,7 @@ model User {
   email              String              @unique
   password           String
   role               Role                @default(USER)
+  status             String              @default("Active")
   avatarUrl          String?
   refreshToken       String?
   clinicId           String?
@@ -216,6 +217,8 @@ model FeedPost {
   content    String
   mediaUrls  String[]
   likesCount Int       @default(0)
+  status     String    @default("Published")
+  reports    Int       @default(0)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   comments   Comment[]

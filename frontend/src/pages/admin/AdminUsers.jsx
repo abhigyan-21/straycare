@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
 import AdminBadge from '../../components/admin/AdminBadge';
-import { getAdminUsers } from '../../services/api';
+import { getAdminUsers, updateAdminUserStatus } from '../../services/api';
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
@@ -22,14 +22,27 @@ const AdminUsers = () => {
 
     if (loading) return <div className="admin-loading">Loading Users...</div>;
 
-    const toggleStatus = (id, currentStatus) => {
-        setUsers(users.map(u =>
-            u.id === id ? { ...u, status: currentStatus === 'Active' ? 'Suspended' : 'Active' } : u
-        ));
+    const toggleStatus = async (id, currentStatus) => {
+        const nextStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
+        try {
+            await updateAdminUserStatus(id, nextStatus);
+            setUsers(users.map(u =>
+                u.id === id ? { ...u, status: nextStatus } : u
+            ));
+        } catch (error) {
+            console.error('Failed to update user status:', error);
+            alert('Error updating user status: ' + (error.response?.data?.error || error.message));
+        }
     };
 
-    const approveUser = (id) => {
-        setUsers(users.map(u => u.id === id ? { ...u, status: 'Active' } : u));
+    const approveUser = async (id) => {
+        try {
+            await updateAdminUserStatus(id, 'Active');
+            setUsers(users.map(u => u.id === id ? { ...u, status: 'Active' } : u));
+        } catch (error) {
+            console.error('Failed to approve user:', error);
+            alert('Error approving user: ' + (error.response?.data?.error || error.message));
+        }
     };
 
     const filteredUsers = users.filter(user => {

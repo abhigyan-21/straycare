@@ -2,7 +2,7 @@ import axios from 'axios';
 import { storiesData } from '../data/storiesData';
 import { highlightsData } from '../data/highlightsData';
 import { mockPets } from '../data/mockPets';
-import { adminStats, mockUsers, mockTracking, mockDocuments } from '../data/adminMockData';
+import { adminStats, mockUsers, mockTracking, mockDocuments, mockPosts } from '../data/adminMockData';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -161,6 +161,31 @@ export const getAdminDocs = async () => {
   } catch (error) {
     return mockDocuments;
   }
+};
+
+export const updateAdminUserStatus = async (id, status) => {
+  const response = await apiClient.patch(`/admin/users/${id}/status`, { status });
+  return response.data;
+};
+
+export const getAdminPosts = async () => {
+  if (!isBackendAvailable) return mockPosts;
+  try {
+    const response = await apiClient.get('/admin/posts');
+    return response.data;
+  } catch (error) {
+    return mockPosts;
+  }
+};
+
+export const updateAdminPostStatus = async (id, status) => {
+  const response = await apiClient.patch(`/admin/posts/${id}/status`, { status });
+  return response.data;
+};
+
+export const deleteAdminPost = async (id) => {
+  const response = await apiClient.delete(`/admin/posts/${id}`);
+  return response.data;
 };
 
 export default apiClient;
