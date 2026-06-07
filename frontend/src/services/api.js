@@ -157,6 +157,11 @@ export const getHighlights = async () => {
   }
 };
 
+export const registerPartner = async (partnerData) => {
+  const response = await apiClient.post('/auth/register-partner', partnerData);
+  return response.data;
+};
+
 // Admin Endpoints
 export const getAdminStats = async () => {
   try {
@@ -175,6 +180,16 @@ export const getAdminUsers = async () => {
   } catch (error) {
     console.warn('Failed to fetch admin users, using mock data:', error.message);
     return mockUsers;
+  }
+};
+
+export const getPartnerApplications = async () => {
+  try {
+    const response = await apiClient.get('/admin/partner-applications');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch partner applications, returning empty:', error.message);
+    return [];
   }
 };
 

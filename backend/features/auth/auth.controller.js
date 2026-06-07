@@ -92,6 +92,99 @@ const register = async (req, res) => {
 };
 
 /**
+ * @desc Register a new partner (NGO / Vet Clinic / Hospital)
+ * @route POST /api/auth/register-partner
+ * @access Public
+ */
+const registerPartner = async (req, res) => {
+  try {
+    const { organizationName, organizationType, email, phone, registrationNumber, address, password } = req.body;
+
+    if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordStrengthRegex.test(password)) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a digit, and a special character' });
+    }
+
+    const existingUserByEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingUserByEmail) {
+      return res.status(400).json({ error: 'Email is already in use' });
+    }
+
+    const existingUserByPhone = await prisma.user.findUnique({ where: { phone } });
+    if (existingUserByPhone) {
+      return res.status(400).json({ error: 'Phone number is already in use' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Determine role: NGO or VET
+    const dbRole = organizationType === 'ngo' ? 'NGO' : 'VET';
+
+    // If role is VET, we also create a Clinic record
+    let clinicId = null;
+    if (dbRole === 'VET') {
+      const clinic = await prisma.clinic.create({
+        data: {
+          name: organizationName,
+          address: address,
+          contact: phone,
+          isVerified: false
+        }
+      });
+      clinicId = clinic.id;
+    }
+
+    // Create User record
+    const user = await prisma.user.create({
+      data: {
+        name: organizationName,
+        email,
+        phone,
+        password: hashedPassword,
+        role: dbRole,
+        status: 'Pending',
+        isEmailVerified: true, // Auto verify email since it is reviewed by administrator
+        clinicId: clinicId,
+        contact: phone
+      }
+    });
+
+    // Create PetDocument storing the registration number and address details
+    await prisma.petDocument.create({
+      data: {
+        userId: user.id,
+        name: `Registration Certificate - ${organizationName}`,
+        type: 'REGISTRATION',
+        fileData: JSON.stringify({
+          organizationName,
+          organizationType,
+          registrationNumber,
+          address,
+          email,
+          phone
+        })
+      }
+    });
+
+    // Exclude password and other fields from the response
+    const { password: _, refreshToken: __, ...userWithoutPassword } = user;
+    res.status(201).json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error during partner registration:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
  * @desc Authenticate user and get tokens
  * @route POST /api/auth/login
  * @access Public
@@ -498,6 +591,7 @@ const resetPassword = async (req, res) => {
 
 module.exports = {
   register,
+  registerPartner,
   login,
   refresh,
   verifyEmail,

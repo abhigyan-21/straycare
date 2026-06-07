@@ -1,4 +1,5 @@
 const prisma = require('../../db/prisma');
+const { sendEmail } = require('../../services/email.service');
 
 /**
  * @desc Get administrative analytics statistics
@@ -151,7 +152,59 @@ const getUsers = async (req, res) => {
 };
 
 /**
- * @desc Update a user's account status (Active, Suspended, Pending)
+ * @desc Get all pending partner applications
+ * @route GET /api/admin/partner-applications
+ * @access Private (Admin only)
+ */
+const getPartnerApplications = async (req, res) => {
+  try {
+    const pendingUsers = await prisma.user.findMany({
+      where: {
+        status: 'Pending',
+        role: { in: ['NGO', 'VET'] }
+      },
+      include: {
+        documents: {
+          where: { type: 'REGISTRATION' }
+        },
+        clinic: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const applications = pendingUsers.map(user => {
+      const regDoc = user.documents[0];
+      let details = {};
+      if (regDoc && regDoc.fileData) {
+        try {
+          details = JSON.parse(regDoc.fileData);
+        } catch (e) {
+          details = { registrationNumber: regDoc.fileData };
+        }
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role === 'NGO' ? 'ngo' : 'partner',
+        registrationNumber: details.registrationNumber || 'N/A',
+        address: details.address || user.clinic?.address || 'N/A',
+        appliedDate: user.createdAt.toISOString().split('T')[0],
+        documentId: regDoc?.id
+      };
+    });
+
+    res.json(applications);
+  } catch (error) {
+    console.error('Error fetching partner applications:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Update a user's account status (Active, Suspended, Pending, Rejected)
  * @route PATCH /api/admin/users/:id/status
  * @access Private (Admin only)
  */
@@ -164,7 +217,7 @@ const updateUserStatus = async (req, res) => {
       return res.status(400).json({ error: 'Status is required' });
     }
 
-    const validStatuses = ['Active', 'Suspended', 'Pending'];
+    const validStatuses = ['Active', 'Suspended', 'Pending', 'Rejected'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
     }
@@ -173,6 +226,35 @@ const updateUserStatus = async (req, res) => {
       where: { id },
       data: { status }
     });
+
+    // If we are activating a VET user, let's also verify their clinic if they have one
+    if (status === 'Active' && updatedUser.clinicId) {
+      await prisma.clinic.update({
+        where: { id: updatedUser.clinicId },
+        data: { isVerified: true }
+      });
+    }
+
+    // If we are rejecting a partner user, send a rejection email notification
+    if (status === 'Rejected') {
+      sendEmail({
+        to: updatedUser.email,
+        subject: 'Application Status Update - StrayCare',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
+            <h2 style="color: #c93b2b; text-align: center;">Partner Application Update</h2>
+            <p>Dear Admin/Representative of ${updatedUser.name},</p>
+            <p>Thank you for submitting a partner application to StrayCare.</p>
+            <p>After reviewing the registration details, we regret to inform you that your application has been rejected at this time.</p>
+            <p>This could be due to incorrect details, unverified license numbers, or formatting issues. You are welcome to submit a new application with corrected details, or contact our support team if you believe this was an error.</p>
+            <br/>
+            <p style="font-size: 0.9rem; color: #666; text-align: center;">Please note: Rejected applications are automatically purged from our system after 3 days.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+            <p style="font-size: 0.85rem; color: #888; text-align: center;">Best regards,<br/>The StrayCare Admin Team</p>
+          </div>
+        `
+      }).catch(err => console.error('Error sending rejection email:', err));
+    }
 
     res.json({ success: true, user: updatedUser });
   } catch (error) {
@@ -480,7 +562,18 @@ const deleteUser = async (req, res) => {
     // 19. Delete pet documents uploaded by the user
     await prisma.petDocument.deleteMany({ where: { userId: id } });
 
-    // 20. Delete the user
+    // 20. If user has a linked clinic, delete it
+    const userToDelete = await prisma.user.findUnique({ where: { id } });
+    if (userToDelete && userToDelete.clinicId) {
+      const clinicIdToDelete = userToDelete.clinicId;
+      await prisma.user.updateMany({
+        where: { clinicId: clinicIdToDelete },
+        data: { clinicId: null }
+      });
+      await prisma.clinic.deleteMany({ where: { id: clinicIdToDelete } });
+    }
+
+    // 21. Delete the user
     await prisma.user.deleteMany({ where: { id } });
 
     res.json({ success: true, message: 'User deleted successfully' });
@@ -493,6 +586,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getStats,
   getUsers,
+  getPartnerApplications,
   updateUserStatus,
   getDocuments,
   getTracking,

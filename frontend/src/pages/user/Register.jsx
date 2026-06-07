@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { registerPartner } from '../../services/api';
 import '../../styles/user/Register.css';
 
 const Register = () => {
@@ -17,19 +18,41 @@ const Register = () => {
         confirmPassword: ''
     });
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
             alert("Passwords do not match!");
             return;
         }
-        // In a real app this would send data to backend to become a partner
-        alert("Registration submitted for review!");
-        navigate('/');
+        setIsSubmitting(true);
+        setSubmitError(null);
+        try {
+            await registerPartner({
+                organizationName: formData.organizationName,
+                organizationType: formData.organizationType,
+                email: formData.email,
+                phone: formData.phone,
+                registrationNumber: formData.registrationNumber,
+                address: formData.address,
+                password: formData.password
+            });
+            alert("Partner registration application submitted successfully for review!");
+            navigate('/');
+        } catch (err) {
+            console.error(err);
+            const msg = err.response?.data?.error || err.message || "Failed to submit partner application.";
+            setSubmitError(msg);
+            alert("Error submitting registration: " + msg);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -170,7 +193,14 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <button type="submit" className="register-submit-btn">Register as Partner</button>
+                    {submitError && (
+                        <div style={{ color: '#e0645c', textAlign: 'center', marginBottom: '16px', fontSize: '0.9rem', fontWeight: '500' }}>
+                            {submitError}
+                        </div>
+                    )}
+                    <button type="submit" className="register-submit-btn" disabled={isSubmitting}>
+                        {isSubmitting ? "Submitting application..." : "Register as Partner"}
+                    </button>
                 </form>
                 
                 {/* <div className="register-circle circle-1">

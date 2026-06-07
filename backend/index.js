@@ -1,4 +1,5 @@
 require('dotenv').config();
+const prisma = require('./db/prisma');
 const dns = require('dns');
 if (typeof dns.setDefaultResultOrder === 'function') {
   dns.setDefaultResultOrder('ipv4first');
@@ -112,6 +113,68 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+// Daily Cleanup Job for Rejected Partner Applications (> 3 days old)
+const cleanupRejectedUsers = async () => {
+  try {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    const rejectedUsers = await prisma.user.findMany({
+      where: {
+        status: 'Rejected',
+        updatedAt: {
+          lte: threeDaysAgo
+        }
+      }
+    });
+
+    if (rejectedUsers.length > 0) {
+      console.log(`[Cleanup] Found ${rejectedUsers.length} rejected users to clean up.`);
+      for (const u of rejectedUsers) {
+        // Perform cascade deletions
+        await prisma.generalVolunteer.deleteMany({ where: { userId: u.id } });
+        await prisma.campaignVolunteer.deleteMany({ where: { userId: u.id } });
+        await prisma.comment.deleteMany({ where: { authorId: u.id } });
+        await prisma.comment.deleteMany({ where: { post: { authorId: u.id } } });
+        await prisma.feedPost.deleteMany({ where: { authorId: u.id } });
+        await prisma.donation.deleteMany({ where: { campaign: { createdBy: u.id } } });
+        await prisma.campaignVolunteer.deleteMany({ where: { campaign: { createdBy: u.id } } });
+        await prisma.campaign.deleteMany({ where: { createdBy: u.id } });
+        await prisma.donation.deleteMany({ where: { userId: u.id } });
+        await prisma.subscription.deleteMany({ where: { userId: u.id } });
+        await prisma.adoptionRequest.deleteMany({ where: { userId: u.id } });
+        await prisma.adoptionRequest.deleteMany({ where: { pet: { ownerId: u.id } } });
+        await prisma.medicalRecord.deleteMany({ where: { vetId: u.id } });
+        await prisma.medicalRecord.deleteMany({ where: { report: { reporterId: u.id } } });
+        await prisma.campaign.deleteMany({ where: { report: { reporterId: u.id } } });
+        await prisma.pet.deleteMany({ where: { report: { reporterId: u.id } } });
+        await prisma.pet.deleteMany({ where: { ownerId: u.id } });
+        await prisma.animalReport.deleteMany({ where: { reporterId: u.id } });
+        await prisma.petDocument.deleteMany({ where: { userId: u.id } });
+
+        if (u.clinicId) {
+          const clinicIdToDelete = u.clinicId;
+          await prisma.user.updateMany({
+            where: { clinicId: clinicIdToDelete },
+            data: { clinicId: null }
+          });
+          await prisma.clinic.deleteMany({ where: { id: clinicIdToDelete } });
+        }
+
+        await prisma.user.deleteMany({ where: { id: u.id } });
+        console.log(`[Cleanup] Successfully deleted rejected user: ${u.email}`);
+      }
+    }
+  } catch (error) {
+    console.error('[Cleanup Error] Failed to run rejected users cleanup:', error);
+  }
+};
+
+// Run cleanup immediately on startup, then every 24 hours
+cleanupRejectedUsers();
+setInterval(cleanupRejectedUsers, 24 * 60 * 60 * 1000);
+
 server.listen(PORT, () => {
   console.log(`Backend server with Socket.io running on port ${PORT}`);
 });
