@@ -304,3 +304,7 @@
     .profile-nav { flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 20px; }
     .nav-btn.active::after { display: none; }
 }
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1 !important;
+}

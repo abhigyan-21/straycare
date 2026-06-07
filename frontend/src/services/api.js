@@ -291,4 +291,19 @@ export const getAdminReports = async (start, end) => {
   }
 };
 
+export const getUserDocuments = async () => {
+  const response = await apiClient.get('/medical/documents');
+  return response.data;
+};
+
+export const uploadUserDocument = async (data) => {
+  const response = await apiClient.post('/medical/documents', data);
+  return response.data;
+};
+
+export const deleteUserDocument = async (id) => {
+  const response = await apiClient.delete(`/medical/documents/${id}`);
+  return response.data;
+};
+
 export default apiClient;
