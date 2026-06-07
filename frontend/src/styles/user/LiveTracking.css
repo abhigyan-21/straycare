@@ -76,7 +76,7 @@
 }
 
 /* Status Card */
-.status-card {
+.tracking-status-card {
   background: #3eba11;
   color: white;
   padding: 40px 20px;
@@ -86,14 +86,14 @@
   margin-bottom: 20px;
 }
 
-.status-card h2 {
+.tracking-status-card h2 {
   font-size: 2.5rem;
   margin: 0;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.status-card .arrival-time {
+.tracking-status-card .arrival-time {
   font-size: 1.8rem;
   margin-top: 10px;
   font-weight: 600;

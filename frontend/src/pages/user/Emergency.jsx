@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Mic, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/Emergency.css';
+import { useAuthStore } from '../../store/authStore';
+import apiClient from '../../services/api';
 
-function Emergency() {
+function Emergency({ openAuthModal }) {
     const navigate = useNavigate();
+    const { isLoggedIn } = useAuthStore();
     const [imagePreview, setImagePreview] = useState(null);
     const [location, setLocation] = useState('Fetching location...');
     const [isReporting, setIsReporting] = useState(false);
+    const [coordinates, setCoordinates] = useState({ lat: 30.7333, lon: 76.7794 });
 
     useEffect(() => {
         if ("geolocation" in navigator) {
@@ -15,6 +19,7 @@ function Emergency() {
                 async (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
+                    setCoordinates({ lat, lon });
                     try {
                         const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
                         const data = await response.json();
@@ -44,15 +49,41 @@ function Emergency() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!isLoggedIn) {
+            alert("Please sign in or register to report an emergency.");
+            if (openAuthModal) {
+                openAuthModal('signin');
+            }
+            return;
+        }
+
         setIsReporting(true);
         
-        // Final redirection after 2 seconds
-        setTimeout(() => {
-            const mockReportId = "demo-" + Math.random().toString(36).substr(2, 9);
-            navigate(`/live-track/${mockReportId}`);
-        }, 2000);
+        try {
+            const descriptionVal = e.target.querySelector('textarea').value;
+            
+            // Post emergency report to the backend API
+            const response = await apiClient.post('/reports', {
+                locationLat: coordinates.lat,
+                locationLng: coordinates.lon,
+                description: descriptionVal,
+                mediaUrls: imagePreview ? [imagePreview] : []
+            });
+            
+            setTimeout(() => {
+                navigate(`/live-track/${response.data.id}`);
+            }, 1000);
+        } catch (err) {
+            console.error("Error submitting report to API:", err);
+            // Fallback to mock on failure
+            setTimeout(() => {
+                const mockReportId = "demo-" + Math.random().toString(36).substr(2, 9);
+                navigate(`/live-track/${mockReportId}`);
+            }, 2000);
+        }
     };
 
     if (isReporting) {

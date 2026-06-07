@@ -2,39 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/RescuerPages.css';
 import ActionLoader from '../../components/ActionLoader';
+import { useAuthStore } from '../../store/authStore';
+import apiClient from '../../services/api';
 
-const MOCK_REPORTS = [
-  {
-    id: 'rescue-101',
-    type: 'Dog',
-    description: 'Injured limb, bleeding slightly. Very friendly.',
-    location: [30.7420, 76.8188], // Near Sukhna Lake
-    address: 'Sukhna Lake Road, Sector 1',
-    reportedBy: 'Rahul Singh',
-    contact: '+91 91234 56789'
-  },
-  {
-    id: 'rescue-102',
-    type: 'Cat',
-    description: 'Stuck inside a drain pipe for 2 days.',
-    location: [30.7333, 76.7794], // Sector 17
-    address: 'Sector 17 Market, Plaza',
-    reportedBy: 'Anjali Sharma',
-    contact: '+91 99887 76655'
-  },
-  {
-    id: 'rescue-103',
-    type: 'Puppy',
-    description: 'High fever and shivering. Needs immediate care.',
-    location: [30.7046, 76.7179], // Mohali
-    address: 'Phase 7, Industrial Area',
-    reportedBy: 'Vikram Mehta',
-    contact: '+91 98765 12345'
-  }
-];
+// Sub-component to reverse geocode lat/lng to readable address
+const ReportAddress = ({ lat, lng, fallbackAddress }) => {
+  const [address, setAddress] = useState(fallbackAddress || 'Fetching address...');
+
+  useEffect(() => {
+    if (fallbackAddress) {
+      setAddress(fallbackAddress);
+      return;
+    }
+    if (!lat || !lng) {
+      setAddress('No location coordinates');
+      return;
+    }
+    
+    let active = true;
+    const fetchAddress = async () => {
+      try {
+        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+        const data = await response.json();
+        if (active) {
+          const formatted = `${data.locality || data.city || 'Unknown Location'}, ${data.principalSubdivision || data.countryName}`;
+          setAddress(formatted);
+        }
+      } catch (err) {
+        if (active) {
+          setAddress(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
+        }
+      }
+    };
+    fetchAddress();
+    return () => {
+      active = false;
+    };
+  }, [lat, lng, fallbackAddress]);
+
+  return <>{address}</>;
+};
 
 // Haversine formula to calculate distance in KM
 function getDistance(lat1, lon1, lat2, lon2) {
+  if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined) return 0;
   const R = 6371; // Radius of the earth in km
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -48,57 +59,106 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 function RescuerDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [rescuerPos, setRescuerPos] = useState(null);
-  const [sortedReports, setSortedReports] = useState(MOCK_REPORTS);
+  const [sortedReports, setSortedReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-    const startTime = Date.now();
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setRescuerPos({ lat: latitude, lon: longitude });
-          
-          // Sort reports by distance
-          const sorted = [...MOCK_REPORTS].sort((a, b) => {
-            const distA = getDistance(latitude, longitude, a.location[0], a.location[1]);
-            const distB = getDistance(latitude, longitude, b.location[0], b.location[1]);
-            return distA - distB;
-          });
-          
-          // Add distance property for display
-          const withDist = sorted.map(r => ({
-            ...r,
-            distance: getDistance(latitude, longitude, r.location[0], r.location[1]).toFixed(1)
-          }));
-          
-          setSortedReports(withDist);
-          
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(0, 1000 - elapsedTime);
-          setTimeout(() => {
-            setIsLoading(false);
-          }, remainingTime);
-        },
-        (error) => {
-          console.error("Error getting location", error);
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(0, 1000 - elapsedTime);
-          setTimeout(() => {
-            setIsLoading(false);
-          }, remainingTime);
-        }
-      );
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
+    const fetchReportsAndLocation = async () => {
+      setIsLoading(true);
+      const startTime = Date.now();
+      
+      let fetchedReports = [];
+      try {
+        const response = await apiClient.get('/reports');
+        fetchedReports = response.data || [];
+      } catch (err) {
+        console.error("Error fetching reports", err);
+      }
 
-  const handleAcceptRescue = (reportId) => {
-    console.log("Accepting rescue for:", reportId);
-    navigate(`/rescuer/nav/${reportId}`);
+      // Filter reports:
+      // Show reports that are status 'REPORTED', OR status 'ASSIGNED' and assigned to current user
+      const filtered = fetchedReports.filter(r => 
+        r.status === 'REPORTED' || 
+        (r.status === 'ASSIGNED' && r.assignedRescuerId === user?.id)
+      );
+
+      const finishLoading = (reportsList) => {
+        setSortedReports(reportsList);
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(0, 1000 - elapsedTime);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, remainingTime);
+      };
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setRescuerPos({ lat: latitude, lon: longitude });
+            
+            // Sort by distance
+            const sorted = [...filtered].sort((a, b) => {
+              const latA = a.locationLat !== undefined ? a.locationLat : (a.location?.[0] || 0);
+              const lonA = a.locationLng !== undefined ? a.locationLng : (a.location?.[1] || 0);
+              const latB = b.locationLat !== undefined ? b.locationLat : (b.location?.[0] || 0);
+              const lonB = b.locationLng !== undefined ? b.locationLng : (b.location?.[1] || 0);
+              
+              const distA = getDistance(latitude, longitude, latA, lonA);
+              const distB = getDistance(latitude, longitude, latB, lonB);
+              return distA - distB;
+            });
+            
+            // Map distance property for display
+            const withDist = sorted.map(r => {
+              const rLat = r.locationLat !== undefined ? r.locationLat : (r.location?.[0] || 0);
+              const rLon = r.locationLng !== undefined ? r.locationLng : (r.location?.[1] || 0);
+              return {
+                ...r,
+                distance: getDistance(latitude, longitude, rLat, rLon).toFixed(1)
+              };
+            });
+            
+            finishLoading(withDist);
+          },
+          (error) => {
+            console.error("Error getting location", error);
+            // Default mapping without distance if location fails
+            const withoutDist = filtered.map(r => ({
+              ...r,
+              distance: null
+            }));
+            finishLoading(withoutDist);
+          }
+        );
+      } else {
+        const withoutDist = filtered.map(r => ({
+          ...r,
+          distance: null
+        }));
+        finishLoading(withoutDist);
+      }
+    };
+
+    fetchReportsAndLocation();
+  }, [user?.id]);
+
+  const handleAcceptRescue = async (reportId, isAlreadyAssigned) => {
+    if (isAlreadyAssigned) {
+      navigate(`/rescuer/nav/${reportId}`);
+      return;
+    }
+    
+    try {
+      // Call self-assign backend endpoint
+      await apiClient.patch(`/reports/${reportId}/assign`, { rescuerId: user?.id });
+      navigate(`/rescuer/nav/${reportId}`);
+    } catch (err) {
+      console.error("Error accepting rescue:", err);
+      alert("Failed to accept rescue. It may have been taken by another rescuer.");
+    }
   };
 
   return (
@@ -106,45 +166,60 @@ function RescuerDashboard() {
       <div className="rescuer-header">
         <h1>RESCUER DASHBOARD</h1>
         <div className="user-profile-badge">
-            <strong>DR. AMAN SHARMA</strong>
+            <strong>{user?.name?.toUpperCase() || 'RESCUER'}</strong>
         </div>
       </div>
 
       <div className="rescue-feed">
         {isLoading ? (
           <ActionLoader message="Locating nearby rescues..." />
+        ) : sortedReports.length === 0 ? (
+          <div className="no-rescues-message">
+            <p>No active rescues available at the moment.</p>
+          </div>
         ) : (
           sortedReports.map(report => (
             <div key={report.id} className="rescue-card">
               <div className="pet-pic-placeholder">
-                pet pic
+                {report.mediaUrls && report.mediaUrls[0] ? (
+                  <img src={report.mediaUrls[0]} alt="pet preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                ) : (
+                  'pet pic'
+                )}
               </div>
               
               <div className="rescue-details">
                 <div className="detail-block">
                   <strong>Report:</strong>
-                  <p>{report.type}: {report.description}</p>
+                  <p>{report.type ? `${report.type}: ` : ''}{report.description}</p>
                 </div>
                 <div className="detail-block">
                   <strong>Location:</strong>
-                  <p>{report.address} ({report.distance || '?'} km away)</p>
+                  <p>
+                    <ReportAddress 
+                      lat={report.locationLat !== undefined ? report.locationLat : report.location?.[0]} 
+                      lng={report.locationLng !== undefined ? report.locationLng : report.location?.[1]} 
+                      fallbackAddress={report.address} 
+                    />
+                    {' '}({report.distance ? `${report.distance} km away` : 'distance unknown'})
+                  </p>
                 </div>
                 <div className="detail-block">
                   <strong>Reported By:</strong>
-                  <p>{report.reportedBy}</p>
+                  <p>{report.reporter?.name || report.reportedBy || 'Anonymous'}</p>
                 </div>
                 <div className="detail-block">
                   <strong>Contact:</strong>
-                  <p>{report.contact}</p>
+                  <p>{report.reporter?.phone || report.contact || 'N/A'}</p>
                 </div>
               </div>
 
               <div className="rescue-actions">
                 <button 
                   className="rescue-btn"
-                  onClick={() => handleAcceptRescue(report.id)}
+                  onClick={() => handleAcceptRescue(report.id, report.assignedRescuerId === user?.id)}
                 >
-                  I'll Rescue
+                  {report.assignedRescuerId === user?.id ? 'Track Rescue' : "I'll Rescue"}
                 </button>
               </div>
             </div>

@@ -22,7 +22,7 @@ router.get('/:id', verifyToken, reportController.getReportById);
 router.patch('/:id/status', verifyToken, allowRoles('ADMIN', 'VET', 'RESCUER', 'NGO'), reportController.updateReportStatus);
 
 // Assign a report
-router.patch('/:id/assign', verifyToken, allowRoles('ADMIN', 'VET', 'NGO'), reportController.assignReport);
+router.patch('/:id/assign', verifyToken, allowRoles('ADMIN', 'VET', 'NGO', 'RESCUER'), reportController.assignReport);
 
 // Update rescuer location
 router.patch('/:id/location', verifyToken, allowRoles('RESCUER'), reportController.updateRescuerLocation);

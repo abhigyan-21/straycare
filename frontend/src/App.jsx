@@ -145,7 +145,7 @@ function App() {
           <Route element={<UserLayout openAuthModal={openAuthModal} />}>
             <Route path="/" element={<Home />} />
             <Route path="/adopt" element={<Adopt />} />
-            <Route path="/emergency" element={<Emergency />} />
+            <Route path="/emergency" element={<Emergency openAuthModal={openAuthModal} />} />
             <Route path="/track" element={<Track />} />
             <Route path="/live-track/:reportId" element={<LiveTracking />} />
             <Route path="/about" element={<About />} />

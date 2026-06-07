@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-
 import L from 'leaflet';
 import io from 'socket.io-client';
 import '../../styles/user/LiveTracking.css';
+import apiClient from '../../services/api';
 
 // Asset Imports
 import ambulanceImg from '../../assets/images/ambulance.png';
@@ -37,10 +38,42 @@ function LiveTracking() {
   const { reportId } = useParams();
   const { startRescue, updateRescueEta, endRescue } = useRescueStore();
 
-  const hospitalPos = [30.7500, 76.8000];
-  const userPos = [30.7200, 76.7600];
+  const defaultHospitalPos = [30.7500, 76.8000];
+  const defaultUserPos = [30.7200, 76.7600];
 
-  const [rescuerPos, setRescuerPos] = useState(hospitalPos);
+  const [report, setReport] = useState(null);
+  const [isLoadingReport, setIsLoadingReport] = useState(true);
+
+  // Fetch live report details
+  useEffect(() => {
+    const fetchReport = async () => {
+      if (!reportId || reportId.startsWith('demo-')) {
+        setIsLoadingReport(false);
+        return;
+      }
+      try {
+        const response = await apiClient.get(`/reports/${reportId}`);
+        setReport(response.data);
+      } catch (err) {
+        console.error("Error fetching report for live tracking:", err);
+      } finally {
+        setIsLoadingReport(false);
+      }
+    };
+    fetchReport();
+  }, [reportId]);
+
+  const reportUserPos = report
+    ? (report.location || [report.locationLat, report.locationLng])
+    : defaultUserPos;
+
+  const reportHospitalPos = report?.rescuer?.clinic?.lat && report?.rescuer?.clinic?.lng
+    ? [report.rescuer.clinic.lat, report.rescuer.clinic.lng]
+    : report?.clinic?.lat && report?.clinic?.lng
+    ? [report.clinic.lat, report.clinic.lng]
+    : defaultHospitalPos;
+
+  const [rescuerPos, setRescuerPos] = useState(reportHospitalPos);
   const [fullRoute, setFullRoute] = useState([]);
   const [journeyStage, setJourneyStage] = useState('EN_ROUTE');
   const [arrivalTime, setArrivalTime] = useState(10);
@@ -57,10 +90,12 @@ function LiveTracking() {
 
   // Fetch Route from OSRM
   useEffect(() => {
+    if (isLoadingReport) return;
+
     const fetchRoute = async () => {
       try {
-        const start = journeyStage === 'EN_ROUTE' ? hospitalPos : userPos;
-        const end = journeyStage === 'EN_ROUTE' ? userPos : hospitalPos;
+        const start = journeyStage === 'EN_ROUTE' ? reportHospitalPos : reportUserPos;
+        const end = journeyStage === 'EN_ROUTE' ? reportUserPos : reportHospitalPos;
 
         const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
         const res = await fetch(url);
@@ -76,13 +111,13 @@ function LiveTracking() {
         }
       } catch (err) {
         console.error("Routing error:", err);
-        setFullRoute([hospitalPos, userPos]);
+        setFullRoute([reportHospitalPos, reportUserPos]);
       }
     };
 
     fetchRoute();
     startRescue(reportId || 'demo-123', 'user', 10);
-  }, [journeyStage, reportId, startRescue]);
+  }, [journeyStage, reportId, startRescue, isLoadingReport, reportUserPos[0], reportUserPos[1], reportHospitalPos[0], reportHospitalPos[1]]);
 
   useEffect(() => {
     socketRef.current = io(SOCKET_URL);
@@ -145,6 +180,13 @@ function LiveTracking() {
     ? Math.max(5, Math.min(95, 100 - progress))
     : Math.max(5, Math.min(95, progress));
 
+  // Determine rescuer card details dynamically
+  const isDemo = !reportId || reportId.startsWith('demo-');
+  const rescuerName = report?.rescuer?.name || (isDemo ? 'Dr. Aman Sharma' : 'Assigning Rescuer...');
+  const rescuerContact = report?.rescuer?.phone || report?.rescuer?.contact || (isDemo ? '+91 98765 43210' : 'N/A');
+  const clinicName = report?.rescuer?.clinic?.name || report?.clinic?.name || (isDemo ? 'StrayCare North Center' : 'Pending Association...');
+  const rescuerAvatarUrl = report?.rescuer?.avatarUrl || rescuerAvatar;
+
   return (
     <div className="live-tracking-page">
       <div className="tracking-header">
@@ -170,7 +212,7 @@ function LiveTracking() {
 
       <div className="tracking-grid">
         <div className="tracking-left">
-          <div className="status-card">
+          <div className="tracking-status-card">
             <h2>{status}</h2>
             <div className="arrival-time">
               {journeyStage === 'EN_ROUTE' ?
@@ -181,10 +223,10 @@ function LiveTracking() {
 
           <div className="info-card">
             <div className="rescuer-avatar-container">
-              <img src={rescuerAvatar} alt="Rescuer" className="rescuer-avatar" />
+              <img src={rescuerAvatarUrl} alt="Rescuer" className="rescuer-avatar" style={{ objectFit: 'cover' }} />
             </div>
             <div className="details-content">
-              <h3>Dr. Aman Sharma</h3>
+              <h3>{rescuerName}</h3>
               <p className="specialty">Certified Lead Rescuer</p>
 
               <div className="details-grid">
@@ -192,10 +234,10 @@ function LiveTracking() {
                   <strong>Vehicle:</strong> <span>Ambulance CH01-SC-2024</span>
                 </div>
                 <div className="detail-item">
-                  <strong>Clinic:</strong> <span>StrayCare North Center</span>
+                  <strong>Clinic:</strong> <span>{clinicName}</span>
                 </div>
                 <div className="detail-item">
-                  <strong>Contact:</strong> <span>+91 98765 43210</span>
+                  <strong>Contact:</strong> <span>{rescuerContact}</span>
                 </div>
                 <div className="detail-item">
                   <strong>Status:</strong> <span>{journeyStage === 'EN_ROUTE' ? 'En route to you' : 'Heading to clinic'}</span>
@@ -221,8 +263,8 @@ function LiveTracking() {
                 <Polyline positions={fullRoute} color="#8BC34A" weight={6} opacity={0.8} />
               )}
 
-              <Marker position={userPos} icon={userIcon}><Popup>Your Location</Popup></Marker>
-              <Marker position={hospitalPos} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
+              <Marker position={reportUserPos} icon={userIcon}><Popup>Your Location</Popup></Marker>
+              <Marker position={reportHospitalPos} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
 
               {/* Force rescuer marker to be on top with higher zIndexOffset */}
               <Marker

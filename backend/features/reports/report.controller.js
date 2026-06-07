@@ -74,6 +74,7 @@ const getReports = async (req, res) => {
             id: true,
             name: true,
             avatarUrl: true,
+            phone: true,
           },
         },
         clinic: {
@@ -110,6 +111,7 @@ const getReportById = async (req, res) => {
             id: true,
             name: true,
             avatarUrl: true,
+            phone: true,
           },
         },
         clinic: {
@@ -118,6 +120,8 @@ const getReportById = async (req, res) => {
             name: true,
             address: true,
             contact: true,
+            lat: true,
+            lng: true,
           },
         },
         medicalRecords: true,
@@ -138,7 +142,18 @@ const getReportById = async (req, res) => {
           name: true,
           email: true,
           contact: true,
+          phone: true,
           avatarUrl: true,
+          clinic: {
+            select: {
+              id: true,
+              name: true,
+              address: true,
+              contact: true,
+              lat: true,
+              lng: true,
+            }
+          }
         }
       });
     }
@@ -259,7 +274,7 @@ const getClinicReports = async (req, res) => {
       where: { assignedClinicId: clinicId },
       include: {
         reporter: {
-          select: { name: true, avatarUrl: true }
+          select: { name: true, avatarUrl: true, phone: true }
         }
       },
       orderBy: { createdAt: 'desc' }
