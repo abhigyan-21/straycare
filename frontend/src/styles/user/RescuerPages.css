@@ -154,6 +154,23 @@
   cursor: pointer;
 }
 
+.google-maps-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.google-maps-btn:hover {
+  background: #43A047;
+}
+
 .nav-map-container {
   position: relative;
   height: 100%;

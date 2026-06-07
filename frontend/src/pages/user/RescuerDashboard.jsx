@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/RescuerPages.css';
 import ActionLoader from '../../components/ActionLoader';
 import { useAuthStore } from '../../store/authStore';
 import apiClient from '../../services/api';
+import io from 'socket.io-client';
 
 // Sub-component to reverse geocode lat/lng to readable address
 const ReportAddress = ({ lat, lng, fallbackAddress }) => {
@@ -57,6 +58,8 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+
 function RescuerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -64,86 +67,112 @@ function RescuerDashboard() {
   const [sortedReports, setSortedReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchReportsAndLocation = async () => {
-      setIsLoading(true);
-      const startTime = Date.now();
-      
-      let fetchedReports = [];
-      try {
-        const response = await apiClient.get('/reports');
-        fetchedReports = response.data || [];
-      } catch (err) {
-        console.error("Error fetching reports", err);
-      }
+  const socketRef = useRef();
 
-      // Filter reports:
-      // Show reports that are status 'REPORTED', OR status 'ASSIGNED' and assigned to current user
-      const filtered = fetchedReports.filter(r => 
-        r.status === 'REPORTED' || 
-        (r.status === 'ASSIGNED' && r.assignedRescuerId === user?.id)
-      );
+  const fetchReportsAndLocation = useCallback(async (showLoader = false) => {
+    if (showLoader) setIsLoading(true);
+    const startTime = Date.now();
+    
+    let fetchedReports = [];
+    try {
+      const response = await apiClient.get('/reports');
+      fetchedReports = response.data || [];
+    } catch (err) {
+      console.error("Error fetching reports", err);
+    }
 
-      const finishLoading = (reportsList) => {
-        setSortedReports(reportsList);
+    // Filter reports:
+    // Show reports that are status 'REPORTED', OR status 'ASSIGNED' and assigned to current user
+    const filtered = fetchedReports.filter(r => 
+      r.status === 'REPORTED' || 
+      (r.status === 'ASSIGNED' && r.assignedRescuerId === user?.id)
+    );
+
+    const finishLoading = (reportsList) => {
+      setSortedReports(reportsList);
+      if (showLoader) {
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(0, 1000 - elapsedTime);
         setTimeout(() => {
           setIsLoading(false);
         }, remainingTime);
-      };
-
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setRescuerPos({ lat: latitude, lon: longitude });
-            
-            // Sort by distance
-            const sorted = [...filtered].sort((a, b) => {
-              const latA = a.locationLat !== undefined ? a.locationLat : (a.location?.[0] || 0);
-              const lonA = a.locationLng !== undefined ? a.locationLng : (a.location?.[1] || 0);
-              const latB = b.locationLat !== undefined ? b.locationLat : (b.location?.[0] || 0);
-              const lonB = b.locationLng !== undefined ? b.locationLng : (b.location?.[1] || 0);
-              
-              const distA = getDistance(latitude, longitude, latA, lonA);
-              const distB = getDistance(latitude, longitude, latB, lonB);
-              return distA - distB;
-            });
-            
-            // Map distance property for display
-            const withDist = sorted.map(r => {
-              const rLat = r.locationLat !== undefined ? r.locationLat : (r.location?.[0] || 0);
-              const rLon = r.locationLng !== undefined ? r.locationLng : (r.location?.[1] || 0);
-              return {
-                ...r,
-                distance: getDistance(latitude, longitude, rLat, rLon).toFixed(1)
-              };
-            });
-            
-            finishLoading(withDist);
-          },
-          (error) => {
-            console.error("Error getting location", error);
-            // Default mapping without distance if location fails
-            const withoutDist = filtered.map(r => ({
-              ...r,
-              distance: null
-            }));
-            finishLoading(withoutDist);
-          }
-        );
-      } else {
-        const withoutDist = filtered.map(r => ({
-          ...r,
-          distance: null
-        }));
-        finishLoading(withoutDist);
       }
     };
 
-    fetchReportsAndLocation();
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setRescuerPos({ lat: latitude, lon: longitude });
+          
+          // Sort by distance
+          const sorted = [...filtered].sort((a, b) => {
+            const latA = a.locationLat !== undefined ? a.locationLat : (a.location?.[0] || 0);
+            const lonA = a.locationLng !== undefined ? a.locationLng : (a.location?.[1] || 0);
+            const latB = b.locationLat !== undefined ? b.locationLat : (b.location?.[0] || 0);
+            const lonB = b.locationLng !== undefined ? b.locationLng : (b.location?.[1] || 0);
+            
+            const distA = getDistance(latitude, longitude, latA, lonA);
+            const distB = getDistance(latitude, longitude, latB, lonB);
+            return distA - distB;
+          });
+          
+          // Map distance property for display
+          const withDist = sorted.map(r => {
+            const rLat = r.locationLat !== undefined ? r.locationLat : (r.location?.[0] || 0);
+            const rLon = r.locationLng !== undefined ? r.locationLng : (r.location?.[1] || 0);
+            return {
+              ...r,
+              distance: getDistance(latitude, longitude, rLat, rLon).toFixed(1)
+            };
+          });
+          
+          finishLoading(withDist);
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          // Default mapping without distance if location fails
+          const withoutDist = filtered.map(r => ({
+            ...r,
+            distance: null
+          }));
+          finishLoading(withoutDist);
+        }
+      );
+    } else {
+      const withoutDist = filtered.map(r => ({
+        ...r,
+        distance: null
+      }));
+      finishLoading(withoutDist);
+    }
   }, [user?.id]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchReportsAndLocation(true);
+  }, [fetchReportsAndLocation]);
+
+  // WebSocket real-time updates listener
+  useEffect(() => {
+    socketRef.current = io(SOCKET_URL);
+
+    socketRef.current.on('new-report', (newReport) => {
+      console.log('Real-time: new report created. Refreshing rescues list...', newReport);
+      fetchReportsAndLocation(false);
+    });
+
+    socketRef.current.on('report-updated', (updatedReport) => {
+      console.log('Real-time: report updated. Refreshing rescues list...', updatedReport);
+      fetchReportsAndLocation(false);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [fetchReportsAndLocation]);
 
   const handleAcceptRescue = async (reportId, isAlreadyAssigned) => {
     if (isAlreadyAssigned) {

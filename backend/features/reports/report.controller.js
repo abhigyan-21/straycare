@@ -24,6 +24,10 @@ const createReport = async (req, res) => {
       },
     });
 
+    if (req.io) {
+      req.io.emit('new-report', report);
+    }
+
     res.status(201).json(report);
   } catch (error) {
     console.error('Error creating report:', error);
@@ -189,6 +193,10 @@ const updateReportStatus = async (req, res) => {
       data: { status },
     });
 
+    if (req.io) {
+      req.io.emit('report-updated', report);
+    }
+
     res.json(report);
   } catch (error) {
     console.error('Error updating report status:', error);
@@ -220,6 +228,10 @@ const assignReport = async (req, res) => {
       where: { id },
       data,
     });
+
+    if (req.io) {
+      req.io.emit('report-updated', report);
+    }
 
     res.json(report);
   } catch (error) {

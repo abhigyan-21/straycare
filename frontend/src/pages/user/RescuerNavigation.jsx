@@ -17,13 +17,7 @@ const ambulanceIcon = new L.Icon({ iconUrl: ambulanceImg, iconSize: [60, 40], ic
 const hospitalIcon = new L.Icon({ iconUrl: hospitalImg, iconSize: [50, 50], iconAnchor: [25, 50] });
 const strayIcon = new L.Icon({ iconUrl: pickupImg, iconSize: [45, 45], iconAnchor: [22, 45] });
 
-const MOCK_REPORTS = {
-  'rescue-101': { type: 'Dog', description: 'Injured limb, Sector 1', location: [30.7420, 76.8188], reporter: 'Rahul Singh', contact: '+91 91234 56789' },
-  'rescue-102': { type: 'Cat', description: 'Stuck in pipe, Sector 17', location: [30.7333, 76.7794], reporter: 'Anjali Sharma', contact: '+91 99887 76655' },
-  'rescue-103': { type: 'Puppy', description: 'High fever, Mohali', location: [30.7046, 76.7179], reporter: 'Vikram Mehta', contact: '+91 98765 12345' },
-};
 
-const HOSPITAL_POS = [30.7500, 76.8000];
 
 function RescuerNavigation() {
   const { reportId } = useParams();
@@ -34,46 +28,22 @@ function RescuerNavigation() {
   const [report, setReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [rescuerPos, setRescuerPos] = useState([30.7200, 76.7600]); // Mock starting pos, updated via geolocation
+  const [initialPos, setInitialPos] = useState(null);
   const [stage, setStage] = useState('TO_STRAY'); // 'TO_STRAY' or 'TO_HOSPITAL'
   const [route, setRoute] = useState([]);
-  const [isDriving, setIsDriving] = useState(false);
   const [resolvedAddress, setResolvedAddress] = useState('Fetching location address...');
-  const routeIndexRef = useRef(0);
 
   // Fetch live report details
   useEffect(() => {
+    if (!reportId) return;
+
     const fetchReport = async () => {
       setIsLoading(true);
-      // Check if it's a mock report id
-      if (reportId && (reportId.startsWith('rescue-10') || reportId.startsWith('demo-'))) {
-        const mock = MOCK_REPORTS[reportId] || MOCK_REPORTS['rescue-101'];
-        setReport({
-          id: reportId,
-          type: mock.type,
-          description: mock.description,
-          location: mock.location,
-          reporter: { name: mock.reporter, phone: mock.contact },
-          address: mock.address || 'Mock Address'
-        });
-        setIsLoading(false);
-        return;
-      }
-
       try {
         const response = await apiClient.get(`/reports/${reportId}`);
         setReport(response.data);
       } catch (err) {
         console.error("Error fetching report from API:", err);
-        // Fallback to mock
-        const mock = MOCK_REPORTS['rescue-101'];
-        setReport({
-          id: 'rescue-101',
-          type: mock.type,
-          description: mock.description,
-          location: mock.location,
-          reporter: { name: mock.reporter, phone: mock.contact },
-          address: mock.address || 'Mock Address'
-        });
       } finally {
         setIsLoading(false);
       }
@@ -82,18 +52,35 @@ function RescuerNavigation() {
     fetchReport();
   }, [reportId]);
 
-  // Geolocation for rescuer starting position
+  // Geolocation for rescuer real-time position tracking
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setRescuerPos([position.coords.latitude, position.coords.longitude]);
-        },
-        (error) => {
-          console.error("Error getting live geolocation for rescuer navigation:", error);
-        }
-      );
+    if (!("geolocation" in navigator)) {
+      console.warn("Geolocation is not supported by this browser");
+      return;
     }
+
+    const handleSuccess = (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      setRescuerPos([lat, lng]);
+      setInitialPos(prev => prev || [lat, lng]);
+    };
+
+    const handleError = (error) => {
+      console.error("Error watching live geolocation for rescuer navigation:", error);
+    };
+
+    const options = {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000
+    };
+
+    const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, options);
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   // Compute location arrays safely
@@ -107,7 +94,7 @@ function RescuerNavigation() {
     ? [user.clinic.lat, user.clinic.lng]
     : report?.clinic?.lat && report?.clinic?.lng
     ? [report.clinic.lat, report.clinic.lng]
-    : HOSPITAL_POS;
+    : null;
 
   // Resolve human-readable address
   useEffect(() => {
@@ -134,12 +121,39 @@ function RescuerNavigation() {
     fetchAddress();
   }, [report]);
 
-  // Fetch Route from OSRM
+  // Start rescue session on mount
   useEffect(() => {
-    if (!reportLocation) return;
+    if (reportId) {
+      startRescue(reportId, 'rescuer', 8);
+    }
+  }, [reportId, startRescue]);
+
+  // Update live coordinates in database
+  useEffect(() => {
+    if (!reportId) return;
+
+    const updateDBLocation = async () => {
+      try {
+        await apiClient.patch(`/reports/${reportId}/location`, {
+          lat: rescuerPos[0],
+          lng: rescuerPos[1]
+        });
+      } catch (err) {
+        console.error("Error updating location in DB:", err);
+      }
+    };
+
+    // Debounce/Throttle to avoid overloading (update every 1 second while driving)
+    const timer = setTimeout(updateDBLocation, 1000);
+    return () => clearTimeout(timer);
+  }, [rescuerPos[0], rescuerPos[1], reportId]);
+
+  // Fetch Route from OSRM (using static initial position to avoid rate limits)
+  useEffect(() => {
+    if (!reportLocation || !initialPos) return;
     
     const fetchRoute = async () => {
-      const start = rescuerPos;
+      const start = initialPos;
       const end = stage === 'TO_STRAY' ? reportLocation : hospitalLocation;
       
       try {
@@ -150,50 +164,32 @@ function RescuerNavigation() {
         if (data.routes && data.routes[0]) {
           const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
           setRoute(coords);
-          routeIndexRef.current = 0;
         }
       } catch (err) {
         console.error("Routing error:", err);
       }
     };
     fetchRoute();
-    startRescue(reportId || 'rescue-101', 'rescuer', 8);
-  }, [stage, reportLocation, hospitalLocation, reportId, startRescue, rescuerPos]);
+  }, [
+    stage,
+    reportLocation?.[0],
+    reportLocation?.[1],
+    hospitalLocation?.[0],
+    hospitalLocation?.[1],
+    initialPos?.[0],
+    initialPos?.[1]
+  ]);
 
-  // Driving Simulation
-  useEffect(() => {
-    if (!isDriving || route.length === 0) return;
-
-    const interval = setInterval(() => {
-      const idx = routeIndexRef.current;
-      if (idx < route.length - 1) {
-        const nextIdx = idx + 1;
-        setRescuerPos(route[nextIdx]);
-        routeIndexRef.current = nextIdx;
-        
-        // Update ETA (Simple mock calculation based on remaining route distance)
-        const remainingIdx = route.length - nextIdx;
-        const estimatedMins = Math.max(1, Math.ceil(remainingIdx / 10));
-        updateRescueEta(estimatedMins);
-      } else {
-        setIsDriving(false);
-        if (stage === 'TO_STRAY') {
-          alert("You have reached the stray animal!");
-        } else {
-          alert("You have reached the hospital!");
-          handleRescueCompleted();
-        }
-      }
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, [isDriving, route, stage]);
+  const handleOpenGoogleMaps = () => {
+    const destination = stage === 'TO_STRAY' ? reportLocation : hospitalLocation;
+    if (!destination) return;
+    
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${rescuerPos[0]},${rescuerPos[1]}&destination=${destination[0]},${destination[1]}&travelmode=driving`;
+    window.open(url, '_blank');
+  };
 
   const handleConfirmPickup = async () => {
-    if (!reportId || reportId.startsWith('rescue-10') || reportId.startsWith('demo-')) {
-      setStage('TO_HOSPITAL');
-      return;
-    }
+    if (!reportId) return;
     try {
       await apiClient.patch(`/reports/${reportId}/status`, { status: 'RESCUED' });
       setStage('TO_HOSPITAL');
@@ -204,11 +200,7 @@ function RescuerNavigation() {
   };
 
   const handleRescueCompleted = async () => {
-    if (!reportId || reportId.startsWith('rescue-10') || reportId.startsWith('demo-')) {
-      endRescue();
-      navigate('/rescuer/dashboard');
-      return;
-    }
+    if (!reportId) return;
     try {
       await apiClient.patch(`/reports/${reportId}/status`, { status: 'TREATED' });
     } catch (err) {
@@ -264,8 +256,8 @@ function RescuerNavigation() {
               Rescue Completed
             </button>
           )}
-          <button className="sim-toggle-btn" onClick={() => setIsDriving(!isDriving)}>
-            {isDriving ? 'Pause Navigation' : 'Start Driving'}
+          <button className="google-maps-btn" onClick={handleOpenGoogleMaps}>
+            Navigate with Google Maps
           </button>
         </div>
       </div>
@@ -283,7 +275,9 @@ function RescuerNavigation() {
             )}
 
             <Marker position={reportLocation} icon={strayIcon}><Popup>Stray Animal</Popup></Marker>
-            <Marker position={hospitalLocation} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
+            {hospitalLocation && (
+              <Marker position={hospitalLocation} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
+            )}
             <Marker position={rescuerPos} icon={ambulanceIcon} zIndexOffset={1000}><Popup>Your Location</Popup></Marker>
             
             <MapRecenter center={rescuerPos} />

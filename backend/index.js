@@ -95,6 +95,12 @@ app.use(express.json());
 // Favicon dummy handler to prevent console clutter/CSP errors
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
+// Expose io instance to routes
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // ── Apply Routes ─────────────────────────────────────────────
 app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
