@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import '../../styles/user/Adopt.css';
-import { getPets } from '../../services/api';
+import { getPets, submitAdoptionRequest } from '../../services/api';
 import PetCarousel from '../../components/user/PetCarousel';
 import FilterModal from '../../components/user/FilterModal';
 
@@ -58,16 +58,29 @@ function Adopt() {
         setCurrentPetIndex(0); // reset index when filters change
     };
 
-    const handleInterested = (pet) => {
-        setInterestedPets(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(pet.id)) {
+    const handleInterested = async (pet) => {
+        const isCurrentlyInterested = interestedPets.has(pet.id);
+        if (isCurrentlyInterested) {
+            // Toggle off locally
+            setInterestedPets(prev => {
+                const newSet = new Set(prev);
                 newSet.delete(pet.id);
-            } else {
+                return newSet;
+            });
+            return;
+        }
+
+        try {
+            await submitAdoptionRequest(pet.id);
+            setInterestedPets(prev => {
+                const newSet = new Set(prev);
                 newSet.add(pet.id);
-            }
-            return newSet;
-        });
+                return newSet;
+            });
+        } catch (error) {
+            console.error('Failed to submit adoption request:', error);
+            alert('Failed to submit adoption request. Please try again.');
+        }
     };
 
     return (

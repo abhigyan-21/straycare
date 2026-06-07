@@ -11,7 +11,7 @@ router.get('/pets/:id', adoptionController.getPetDetails);
 router.get('/clinic-pets', verifyToken, allowRoles('VET', 'ADMIN', 'NGO'), adoptionController.getClinicPets);
 router.post('/pets', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.listPetForAdoption);
 router.patch('/pets/:id', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.updatePet);
-router.post('/requests', verifyToken, allowRoles('USER'), adoptionController.submitAdoptionRequest);
+router.post('/requests', verifyToken, allowRoles('USER', 'RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.submitAdoptionRequest);
 router.get('/requests', verifyToken, adoptionController.getAdoptionRequests);
 router.patch('/requests/:id', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.updateRequestStatus);
 

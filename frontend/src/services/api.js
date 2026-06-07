@@ -306,4 +306,9 @@ export const deleteUserDocument = async (id) => {
   return response.data;
 };
 
+export const submitAdoptionRequest = async (petId, formDetails = {}) => {
+  const response = await apiClient.post('/adoptions/requests', { petId, formDetails });
+  return response.data;
+};
+
 export default apiClient;
