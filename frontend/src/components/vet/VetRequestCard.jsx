@@ -3,6 +3,9 @@ import { Check, X } from 'lucide-react';
 import '../../styles/vet/VetRequestCard.css';
 
 function VetRequestCard({ req, isNew = false, onAccept, onReject, onSetTime }) {
+    const showActions = isNew || req.status === 'interview_scheduled';
+    const isInterviewScheduled = req.status === 'interview_scheduled';
+
     return (
         <div className={`vet-request-card ${isNew ? 'new-request' : 'current-request'}`}>
             <div className="request-details">
@@ -18,17 +21,19 @@ function VetRequestCard({ req, isNew = false, onAccept, onReject, onSetTime }) {
 
             <div className="request-status-section">
                 <span className="status-title">Status</span>
-                {isNew ? (
+                {showActions ? (
                     <div className="request-action-btns">
-                        <button className="request-action-btn accept-btn" onClick={onAccept}>
+                        <button className="request-action-btn accept-btn" onClick={onAccept} title="Accept Application">
                             <Check size={20} />
                         </button>
-                        <button className="request-action-btn reject-btn" onClick={onReject}>
+                        <button className="request-action-btn reject-btn" onClick={onReject} title="Reject Application">
                             <X size={20} />
                         </button>
-                        <button className="request-action-btn time-btn" onClick={() => onSetTime(req)}>
-                            set time
-                        </button>
+                        {!isInterviewScheduled && (
+                            <button className="request-action-btn time-btn" onClick={() => onSetTime(req)}>
+                                set time
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className={`request-status-badge ${req.status}`}>

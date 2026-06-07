@@ -38,7 +38,8 @@ function VetDashboard() {
 
             const latestCamp = camps.data?.[0];
 
-            setRescues(reports.map(r => ({
+            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');
+            setRescues(liveRescues.map(r => ({
                 id: r.id.substring(0, 8).toUpperCase(),
                 description: r.description,
                 status: r.status.toLowerCase().replace('_', ' '),

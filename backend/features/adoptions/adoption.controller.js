@@ -1,4 +1,5 @@
 const prisma = require('../../db/prisma');
+const { sendEmail } = require('../../services/email.service');
 
 const mapPetData = (pet) => {
   if (!pet) return null;
@@ -326,7 +327,23 @@ const updateRequestStatus = async (req, res) => {
 
     const request = await prisma.adoptionRequest.findUnique({
       where: { id: requestId },
-      include: { pet: true },
+      include: {
+        pet: {
+          include: {
+            clinic: true,
+            owner: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            contact: true,
+          },
+        },
+      },
     });
 
     if (!request) {
@@ -360,6 +377,210 @@ const updateRequestStatus = async (req, res) => {
         await prisma.animalReport.update({
           where: { id: request.pet.reportId },
           data: { status: 'ADOPTED' },
+        });
+      }
+
+      // Send Approval Email to Adopter
+      sendEmail({
+        to: request.user.email,
+        subject: `Adoption Request Approved! - ${request.pet.name || 'Unnamed Pet'}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h2 style="color: #2f855a; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adoption Request Approved! 🎉</h2>
+            <p>Dear ${request.user.name},</p>
+            <p>We are absolutely thrilled to inform you that your request to adopt <strong>${request.pet.name || 'Unnamed'}</strong> (ID: <code>${request.pet.id}</code>) has been <strong>Approved</strong>!</p>
+            <p>Our team or the coordinator will get in touch with you shortly to finalize the adoption process and arrange for the pick-up/handover.</p>
+            <div style="background-color: #f0fff4; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #38a169;">
+              <p style="margin: 0; color: #276749; font-weight: bold;">Congratulations on welcoming your new furry family member!</p>
+            </div>
+            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+          </div>
+        `
+      }).then(result => {
+        if (result.success) {
+          console.log(`✅ [Email Success] Adoption approved email sent to ${request.user.email}`);
+        } else {
+          console.error(`❌ [Email Error] Failed to send adoption approved email:`, result.error);
+        }
+      }).catch(err => {
+        console.error(`❌ [Email Error] Unexpected exception sending approval email:`, err);
+      });
+    }
+
+    if (status === 'REJECTED') {
+      // Send Rejection Email to Adopter
+      sendEmail({
+        to: request.user.email,
+        subject: `Adoption Request Update - ${request.pet.name || 'Unnamed Pet'}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h2 style="color: #c53030; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adoption Request Update</h2>
+            <p>Dear ${request.user.name},</p>
+            <p>Thank you for your interest in adopting <strong>${request.pet.name || 'Unnamed'}</strong> (ID: <code>${request.pet.id}</code>).</p>
+            <p>After careful consideration, we regret to inform you that your adoption application has been <strong>Rejected</strong> at this time.</p>
+            <p>We appreciate your love for stray animals and encourage you to explore other pets listed on StrayCare in the future.</p>
+            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+          </div>
+        `
+      }).then(result => {
+        if (result.success) {
+          console.log(`✅ [Email Success] Adoption rejected email sent to ${request.user.email}`);
+        } else {
+          console.error(`❌ [Email Error] Failed to send adoption rejected email:`, result.error);
+        }
+      }).catch(err => {
+        console.error(`❌ [Email Error] Unexpected exception sending rejection email:`, err);
+      });
+    }
+
+    if (status === 'INTERVIEW_SCHEDULED') {
+      const centerName = request.pet.clinic?.name || request.interviewLocation || 'StrayCare Partner Center';
+      const centerAddress = request.pet.clinic?.address 
+        ? `${request.pet.clinic.address}${request.pet.clinic.city ? ', ' + request.pet.clinic.city : ''}` 
+        : 'Will be shared by the coordinator';
+        
+      const dateObj = interviewDate ? new Date(interviewDate) : null;
+      const formattedDate = dateObj && !isNaN(dateObj) 
+        ? dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) 
+        : (interviewDate || 'To be determined');
+
+      // Email 1: To the Adopter (Applicant)
+      sendEmail({
+        to: request.user.email,
+        subject: `Interview Scheduled for Pet Adoption - ${request.pet.name || 'Unnamed Pet'}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+            <h2 style="color: #2b6cb0; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adoption Interview Scheduled!</h2>
+            <p>Dear ${request.user.name},</p>
+            <p>We are pleased to inform you that an interview has been scheduled or updated for your adoption request.</p>
+            
+            <div style="background-color: #f7fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+              <h3 style="color: #2d3748; margin-top: 0;">Interview Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 6px 0; font-weight: bold; width: 140px; color: #4a5568;">Center Name:</td>
+                  <td style="padding: 6px 0; color: #2d3748;">${centerName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Location:</td>
+                  <td style="padding: 6px 0; color: #2d3748;">${centerAddress}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Date:</td>
+                  <td style="padding: 6px 0; color: #2d3748;">${formattedDate}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Time:</td>
+                  <td style="padding: 6px 0; color: #2d3748;">${interviewTime || 'Scheduled Time'}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="background-color: #ebf8ff; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3182ce;">
+              <h3 style="color: #2b6cb0; margin-top: 0;">Pet Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 6px 0; font-weight: bold; width: 140px; color: #4a5568;">Pet Name:</td>
+                  <td style="padding: 6px 0; color: #2d3748;">${request.pet.name || 'Unnamed'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Pet ID:</td>
+                  <td style="padding: 6px 0; color: #2d3748;"><code>${request.pet.id}</code></td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="color: #718096; font-size: 0.9em; margin-top: 30px;">If you have any questions or need to reschedule, please contact the center/rescuer directly.</p>
+            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+          </div>
+        `
+      }).then(result => {
+        if (result.success) {
+          console.log(`✅ [Email Success] Adoption interview email sent to applicant: ${request.user.email}`);
+        } else {
+          console.error(`❌ [Email Error] Failed to send interview email to applicant ${request.user.email}:`, result.error);
+        }
+      }).catch(err => {
+        console.error(`❌ [Email Error] Unexpected exception sending interview email to applicant:`, err);
+      });
+
+      // Email 2: To the Listing Owner (Confirmation)
+      if (request.pet.owner?.email) {
+        const adopterContact = request.user.phone || request.user.contact || 'No phone number provided';
+        sendEmail({
+          to: request.pet.owner.email,
+          subject: `Adoption Interview Scheduled - Adopter: ${request.user.name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+              <h2 style="color: #2b6cb0; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adoption Interview Confirmation</h2>
+              <p>Dear ${request.pet.owner.name},</p>
+              <p>An interview has been scheduled or updated for a pet you listed for adoption.</p>
+              
+              <div style="background-color: #fffaf0; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #dd6b20;">
+                <h3 style="color: #dd6b20; margin-top: 0;">Adopter Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; width: 140px; color: #4a5568;">Name:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${request.user.name}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Email:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${request.user.email}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Contact/Phone:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${adopterContact}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="background-color: #f7fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <h3 style="color: #2d3748; margin-top: 0;">Interview Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; width: 140px; color: #4a5568;">Center Name:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${centerName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Location:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${centerAddress}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Date:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${formattedDate}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Time:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${interviewTime || 'Scheduled Time'}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="background-color: #ebf8ff; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3182ce;">
+                <h3 style="color: #2b6cb0; margin-top: 0;">Pet Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; width: 140px; color: #4a5568;">Pet Name:</td>
+                    <td style="padding: 6px 0; color: #2d3748;">${request.pet.name || 'Unnamed'}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; font-weight: bold; color: #4a5568;">Pet ID:</td>
+                    <td style="padding: 6px 0; color: #2d3748;"><code>${request.pet.id}</code></td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+            </div>
+          `
+        }).then(result => {
+          if (result.success) {
+            console.log(`✅ [Email Success] Adoption interview confirmation email sent to owner: ${request.pet.owner.email}`);
+          } else {
+            console.error(`❌ [Email Error] Failed to send confirmation email to owner ${request.pet.owner.email}:`, result.error);
+          }
+        }).catch(err => {
+          console.error(`❌ [Email Error] Unexpected exception sending confirmation email to owner:`, err);
         });
       }
     }

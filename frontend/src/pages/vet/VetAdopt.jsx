@@ -58,7 +58,7 @@ function VetAdopt() {
                     contact: r.user.contact || r.user.email,
                     time: r.interviewTime
                 })),
-                currentRequests: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED' || r.status === 'APPROVED').map(r => ({
+                currentRequests: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED').map(r => ({
                     id: r.id,
                     name: r.user.name,
                     contact: r.user.email,
@@ -142,6 +142,28 @@ function VetAdopt() {
         setSelectedTime('');
     };
 
+    const handleAcceptRequest = async (reqId) => {
+        try {
+            await apiClient.patch(`/adoptions/requests/${reqId}`, {
+                status: 'APPROVED'
+            });
+            fetchData();
+        } catch (error) {
+            console.error('Failed to accept request:', error);
+        }
+    };
+
+    const handleRejectRequest = async (reqId) => {
+        try {
+            await apiClient.patch(`/adoptions/requests/${reqId}`, {
+                status: 'REJECTED'
+            });
+            fetchData();
+        } catch (error) {
+            console.error('Failed to reject request:', error);
+        }
+    };
+
     const handlePublishAdoption = async (formData) => {
         try {
             await apiClient.post('/adoptions/pets', formData);
@@ -173,7 +195,19 @@ function VetAdopt() {
                         {data.todaysInterviews.map((interview) => (
                             <InterviewCard key={interview.id} interview={interview} />
                         ))}
-                        {data.todaysInterviews.length === 0 && <p className="no-data">No interviews for today</p>}
+                        {data.todaysInterviews.length === 0 && (
+                            <div className="rescue-card-white" style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '15px', width: '100%' }}>
+                                <Calendar size={48} color="#999" style={{ strokeWidth: 1.5 }} />
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ fontSize: '1.4rem', color: '#333', fontWeight: '700' }}>
+                                        No interviews today
+                                    </div>
+                                    <div style={{ fontSize: '1rem', color: '#888', fontWeight: '400' }}>
+                                        There are no rescue adoption interviews scheduled for today.
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -196,7 +230,12 @@ function VetAdopt() {
                         ))}
 
                         {activeTab === 'current' && data.currentRequests.map(req => (
-                            <VetRequestCard key={req.id} req={req} />
+                            <VetRequestCard 
+                                key={req.id} 
+                                req={req} 
+                                onAccept={() => handleAcceptRequest(req.id)}
+                                onReject={() => handleRejectRequest(req.id)}
+                            />
                         ))}
 
                         {activeTab === 'new' && data.newRequests.map(req => (
@@ -205,8 +244,8 @@ function VetAdopt() {
                                 req={req} 
                                 isNew={true}
                                 onSetTime={handleSetTime}
-                                onAccept={() => console.log('Accepted', req.id)}
-                                onReject={() => console.log('Rejected', req.id)}
+                                onAccept={() => handleAcceptRequest(req.id)}
+                                onReject={() => handleRejectRequest(req.id)}
                             />
                         ))}
                         {activeTab === 'live' && data.liveAdoptions.length === 0 && <p className="no-data">No live adoptions</p>}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/vet/VetDashboard.css';
+import { Inbox } from 'lucide-react';
 
 function LiveStatusView({ rescues, title = "current pet being rescued" }) {
     const navigate = useNavigate();
@@ -55,8 +56,16 @@ function LiveStatusView({ rescues, title = "current pet being rescued" }) {
                             </div>
                         ))
                     ) : (
-                        <div className="no-rescues-message" style={{textAlign: 'center', padding: '20px', color: '#666'}}>
-                            No active rescues at the moment.
+                        <div className="rescue-card-white" style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '15px' }}>
+                            <Inbox size={48} color="#999" style={{ strokeWidth: 1.5 }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                                <div style={{ fontSize: '1.4rem', color: '#333', fontWeight: '700' }}>
+                                    No current rescue
+                                </div>
+                                <div style={{ fontSize: '1rem', color: '#888', fontWeight: '400' }}>
+                                    All reported strays have been safely rescued and treated.
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
