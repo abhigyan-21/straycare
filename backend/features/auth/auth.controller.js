@@ -378,6 +378,123 @@ const changePassword = async (req, res) => {
   }
 };
 
+/**
+ * @desc Request password reset OTP
+ * @route POST /api/auth/forgot-password
+ * @access Public
+ */
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: 'No user registered with this email address' });
+    }
+
+    const { otp, expiry } = generateOTP();
+    console.log(`[Forgot Password OTP Info] Generated reset OTP for user ${email}: ${otp} (expires: ${expiry})`);
+
+    await prisma.user.update({
+      where: { email },
+      data: {
+        emailOtp: otp,
+        emailOtpExpiry: expiry
+      }
+    });
+
+    console.log(`[Forgot Password OTP Info] Attempting to send reset email to ${email}...`);
+    sendEmail({
+      to: email,
+      subject: 'Reset your Furzo Password',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: auto; margin: 0 auto; padding: 20px; border: 5px solid #bdf9aeff; border-radius: 8px;">
+          <h1 style="text-align: center;">Welcome to Furzo!</h1>
+          <h2 style="color: #346c02; text-align: center;">Reset Code</h2>
+          <p>Please use the following OTP code to reset your password:</p>
+          <div style="text-align: center; margin: 20px 0;">
+            <span style="font-size: 2rem; font-weight: bold; letter-spacing: 5px; color: #346c02;">${otp}</span>
+          </div>
+          <p style="font-size: 0.9rem; color: #666;">Thank you for using Furzo!</p>
+          <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
+          <p style="font-size: 0.9rem; color: #666;">Disclaimer: This is an auto-generated email. Please do not reply to this email.</p>
+          <p style="font-size: 0.9rem; color: #666;">If you didn't request this code, please ignore this email.</p>
+        </div>
+      `
+    })
+      .then(result => {
+        if (result.success) {
+          console.log(`✅ [Forgot Password Success] Reset email successfully sent to ${email}`);
+        } else {
+          console.error(`❌ [Forgot Password Error] Failed to send reset email to ${email}:`, result.error);
+        }
+      })
+      .catch(err => console.error(`❌ [Forgot Password Error] Exception sending reset email to ${email}:`, err));
+
+    res.status(200).json({ status: 'success', message: 'Password reset OTP sent successfully' });
+  } catch (error) {
+    console.error('Error requesting password reset:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Verify OTP and reset password
+ * @route POST /api/auth/reset-password
+ * @access Public
+ */
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.emailOtp !== otp || new Date() > user.emailOtpExpiry) {
+      console.warn(`⚠️ [Forgot Password OTP Warning] Verification failed for user ${email}. Provided OTP: ${otp}, expected: ${user.emailOtp}, expiry: ${user.emailOtpExpiry}`);
+      return res.status(400).json({ error: 'Invalid or expired OTP code' });
+    }
+
+    const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordStrengthRegex.test(newPassword)) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a digit, and a special character' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { email },
+      data: {
+        password: hashedPassword,
+        emailOtp: null,
+        emailOtpExpiry: null,
+        isEmailVerified: true
+      }
+    });
+
+    console.log(`✅ [Forgot Password Success] Password successfully reset for user ${email}`);
+
+    res.status(200).json({ status: 'success', message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
 module.exports = {
   register,
@@ -387,4 +504,6 @@ module.exports = {
   requestEmailOtp,
   updateProfile,
   changePassword,
+  forgotPassword,
+  resetPassword,
 };

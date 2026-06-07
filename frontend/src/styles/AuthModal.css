@@ -286,3 +286,39 @@
         font-size: 1.25rem;
     }
 }
+
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    padding-right: 45px !important;
+}
+
+.show-password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, transform 0.1s ease;
+    z-index: 5;
+}
+
+.show-password-toggle:hover {
+    color: #333;
+}
+
+.show-password-toggle:active {
+    transform: scale(0.92);
+}

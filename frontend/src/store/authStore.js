@@ -145,6 +145,42 @@ export const useAuthStore = create(
         }
       },
 
+      forgotPasswordAction: async (email) => {
+        set({ isLoading: true });
+        try {
+          const response = await apiClient.post('/auth/forgot-password', { email });
+          set({ isLoading: false });
+          return { success: true, message: response.data.message };
+        } catch (error) {
+          set({ isLoading: false });
+          let errorMsg = 'Failed to request password reset';
+          if (error.response && error.response.data) {
+             errorMsg = error.response.data.error || error.response.data.message || 'Failed to request password reset';
+          } else if (error.message) {
+             errorMsg = error.message;
+          }
+          throw new Error(errorMsg);
+        }
+      },
+
+      resetPasswordAction: async (email, otp, newPassword) => {
+        set({ isLoading: true });
+        try {
+          const response = await apiClient.post('/auth/reset-password', { email, otp, newPassword });
+          set({ isLoading: false });
+          return { success: true, message: response.data.message };
+        } catch (error) {
+          set({ isLoading: false });
+          let errorMsg = 'Failed to reset password';
+          if (error.response && error.response.data) {
+             errorMsg = error.response.data.error || error.response.data.message || 'Failed to reset password';
+          } else if (error.message) {
+             errorMsg = error.message;
+          }
+          throw new Error(errorMsg);
+        }
+      },
+
       logout: () => {
         set({
           isLoggedIn: false,
