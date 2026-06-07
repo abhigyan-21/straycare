@@ -30,6 +30,8 @@ router.post('/verify-email', otpLimiter, verifyToken, authController.verifyEmail
 
 
 router.post('/register', authLimiter, authController.register);
+router.post('/send-registration-otp', authLimiter, authController.sendRegistrationOtp);
+router.post('/verify-registration-otp', authLimiter, authController.verifyRegistrationOtp);
 router.post('/register-partner', authLimiter, authController.registerPartner);
 router.post('/login', authLimiter, authController.login);
 router.post('/refresh', authController.refresh);

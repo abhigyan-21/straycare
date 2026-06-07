@@ -157,6 +157,16 @@ export const getHighlights = async () => {
   }
 };
 
+export const sendRegistrationOtp = async (email) => {
+  const response = await apiClient.post('/auth/send-registration-otp', { email });
+  return response.data;
+};
+
+export const verifyRegistrationOtp = async (email, otp, verificationToken) => {
+  const response = await apiClient.post('/auth/verify-registration-otp', { email, otp, verificationToken });
+  return response.data;
+};
+
 export const registerPartner = async (partnerData) => {
   const response = await apiClient.post('/auth/register-partner', partnerData);
   return response.data;

@@ -92,21 +92,143 @@ const register = async (req, res) => {
 };
 
 /**
+ * @desc Send OTP for Partner Registration email verification
+ * @route POST /api/auth/send-registration-otp
+ * @access Public
+ */
+const sendRegistrationOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // Check if email is already in use
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use' });
+    }
+
+    const { otp, expiry } = generateOTP();
+    console.log(`[Registration OTP] Generated OTP for ${email}: ${otp} (expires: ${expiry})`);
+
+    // Send verification email in the background
+    sendEmail({
+      to: email,
+      subject: 'Verify your email for StrayCare Partner Registration',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
+          <h2 style="color: #346c02; text-align: center;">Partner Registration Email Verification</h2>
+          <p>Thank you for starting your partner registration with StrayCare.</p>
+          <p>Please use the following 6-digit OTP code to verify your email address:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 2.5rem; font-weight: bold; letter-spacing: 5px; color: #346c02;">${otp}</span>
+          </div>
+          <p style="font-size: 0.9rem; color: #666; text-align: center;">This code is valid for 5 minutes.</p>
+        </div>
+      `
+    })
+      .then(result => {
+        if (result.success) {
+          console.log(`✅ [OTP Success] Registration OTP email successfully sent to ${email}`);
+        } else {
+          console.error(`❌ [OTP Error] Failed to send registration OTP email to ${email}:`, result.error);
+        }
+      })
+      .catch(err => console.error(`❌ [OTP Error] Exception sending registration OTP email to ${email}:`, err));
+
+    // Create a signed token containing the email and otp
+    const verificationToken = jwt.sign(
+      { email, otp },
+      process.env.JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    res.status(200).json({ verificationToken });
+  } catch (error) {
+    console.error('Error sending registration OTP:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Verify OTP for Partner Registration email verification
+ * @route POST /api/auth/verify-registration-otp
+ * @access Public
+ */
+const verifyRegistrationOtp = async (req, res) => {
+  try {
+    const { email, otp, verificationToken } = req.body;
+    if (!email || !otp || !verificationToken) {
+      return res.status(400).json({ error: 'Email, OTP, and verification token are required' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ error: 'Verification session expired or invalid. Please request a new OTP.' });
+    }
+
+    if (decoded.email !== email || decoded.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP code' });
+    }
+
+    // Generate a register token that registration endpoint can verify
+    const registerToken = jwt.sign(
+      { email, verified: true },
+      process.env.JWT_SECRET,
+      { expiresIn: '10m' }
+    );
+
+    res.status(200).json({ success: true, registerToken });
+  } catch (error) {
+    console.error('Error verifying registration OTP:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
  * @desc Register a new partner (NGO / Vet Clinic / Hospital)
  * @route POST /api/auth/register-partner
  * @access Public
  */
 const registerPartner = async (req, res) => {
   try {
-    const { organizationName, organizationType, email, phone, registrationNumber, address, password } = req.body;
+    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken } = req.body;
 
     if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    if (!registerToken) {
+      return res.status(400).json({ error: 'Email verification is required before registration.' });
+    }
+
+    let decodedRegister;
+    try {
+      decodedRegister = jwt.verify(registerToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ error: 'Email verification expired. Please verify your email again.' });
+    }
+
+    if (decodedRegister.email !== email || !decodedRegister.verified) {
+      return res.status(400).json({ error: 'Email verification does not match registration email.' });
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
     }
 
     const passwordStrengthRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
@@ -592,6 +714,8 @@ const resetPassword = async (req, res) => {
 module.exports = {
   register,
   registerPartner,
+  sendRegistrationOtp,
+  verifyRegistrationOtp,
   login,
   refresh,
   verifyEmail,
