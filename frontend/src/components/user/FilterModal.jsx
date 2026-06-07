@@ -4,7 +4,6 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilters }) => {
     const [filters, setFilters] = useState(currentFilters || {
         type: '',
         breed: '',
-        color: '',
         ageGroup: ''
     });
 
@@ -20,7 +19,7 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilters }) => {
     };
 
     const handleClear = () => {
-        const cleared = { type: '', breed: '', color: '', ageGroup: '' };
+        const cleared = { type: '', breed: '', ageGroup: '' };
         setFilters(cleared);
         onApply(cleared);
     };
@@ -50,17 +49,6 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilters }) => {
                             name="breed"
                             placeholder="e.g. Golden Retriever"
                             value={filters.breed}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Color</label>
-                        <input
-                            type="text"
-                            name="color"
-                            placeholder="e.g. Black"
-                            value={filters.color}
                             onChange={handleChange}
                         />
                     </div>

@@ -43,12 +43,14 @@ function VetAdopt() {
             const today = new Date().toISOString().split('T')[0];
 
             setData({
-                liveAdoptions: pets.map(p => ({
-                    id: p.id,
-                    petName: p.name,
-                    status: p.status === 'AVAILABLE' ? 'up for adoption' : p.status.toLowerCase().replace('_', ' '),
-                    image: p.mediaUrls?.[0] || null
-                })),
+                liveAdoptions: pets
+                    .filter(p => p.status === 'AVAILABLE')
+                    .map(p => ({
+                        id: p.id,
+                        petName: p.name,
+                        status: 'up for adoption',
+                        image: p.image || null
+                    })),
                 todaysInterviews: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED' && r.interviewDate?.startsWith(today)).map(r => ({
                     id: r.id,
                     petId: r.petId,
@@ -185,6 +187,7 @@ function VetAdopt() {
                             <VetStatusCard 
                                 key={pet.id}
                                 id={pet.id}
+                                name={pet.petName}
                                 status={pet.status}
                                 onChange={(val) => handleStatusChange(pet.id, val)}
                                 options={ADOPT_STATUS_OPTIONS}

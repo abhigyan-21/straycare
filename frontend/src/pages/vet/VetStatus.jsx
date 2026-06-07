@@ -61,6 +61,7 @@ function VetStatus() {
                     displayId: r.id.substring(0, 8).toUpperCase(),
                     status: r.status === 'RESCUED' ? 'under treatment' : r.status === 'TREATED' ? 'treated' : r.status.toLowerCase().replace('_', ' '),
                     image: r.mediaUrls?.[0] || null,
+                    name: r.description ? (r.description.length > 20 ? r.description.substring(0, 20) + '...' : r.description) : 'Stray Animal',
                     isReport: true
                 }));
 
@@ -71,7 +72,8 @@ function VetStatus() {
                     id: p.id,
                     displayId: p.id.substring(0, 8).toUpperCase(),
                     status: p.status.toLowerCase().replace('_', ' '),
-                    image: p.mediaUrls?.[0] || null,
+                    image: p.image || null,
+                    name: p.name || 'Unknown Pet',
                     isPet: true
                 }));
 
@@ -160,6 +162,7 @@ function VetStatus() {
                     <VetStatusCard
                         key={item.id}
                         id={item.displayId}
+                        name={item.name}
                         status={item.status}
                         onChange={(val) => handleStatusChange(item, val)}
                         options={item.isReport ? REPORT_STATUS_OPTIONS : PET_STATUS_OPTIONS}

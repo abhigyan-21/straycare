@@ -1,5 +1,73 @@
 const prisma = require('../../db/prisma');
 
+const mapPetData = (pet) => {
+  if (!pet) return null;
+  let descriptionText = pet.description || '';
+  let hobbies = '';
+  let talents = '';
+  let medicalHistory = '';
+  let image = '';
+  let type = 'Dog';
+  let age = pet.age ? `${pet.age} Years` : 'Unknown';
+
+  try {
+    if (pet.description && pet.description.startsWith('{')) {
+      const parsed = JSON.parse(pet.description);
+      descriptionText = parsed.description || '';
+      hobbies = parsed.hobbies || '';
+      talents = parsed.talents || '';
+      medicalHistory = parsed.healthStatus || '';
+      image = parsed.image || '';
+      type = parsed.species || 'Dog';
+      if (parsed.age) {
+        age = parsed.age;
+      }
+    }
+  } catch (e) {
+    console.error('Error parsing pet description:', e);
+  }
+
+  // Fallback for image: if not in description, try report.mediaUrls[0]
+  if (!image && pet.report && pet.report.mediaUrls && pet.report.mediaUrls.length > 0) {
+    image = pet.report.mediaUrls[0];
+  }
+
+  let ageGroup = 'Adult';
+  const ageLower = age.toLowerCase();
+  const speciesLower = type.toLowerCase();
+
+  if (ageLower.includes('month') || ageLower.includes('puppy') || ageLower.includes('kitten') || ageLower === '0') {
+    ageGroup = speciesLower === 'cat' ? 'Kitten' : 'Puppy';
+  } else {
+    const val = parseInt(ageLower);
+    if (!isNaN(val)) {
+      if (val < 1) {
+        ageGroup = speciesLower === 'cat' ? 'Kitten' : 'Puppy';
+      } else if (val === 1) {
+        ageGroup = 'Young';
+      } else if (val >= 5) {
+        ageGroup = 'Senior';
+      } else {
+        ageGroup = 'Adult';
+      }
+    }
+  }
+
+  return {
+    ...pet,
+    type,
+    sex: pet.gender || 'Unknown',
+    image: image || null,
+    description: descriptionText,
+    hobbies,
+    talents,
+    medicalHistory,
+    age,
+    ageGroup,
+    color: '',
+  };
+};
+
 /**
  * @desc Get all available pets for adoption
  * @route GET /api/adoptions/pets
@@ -21,7 +89,7 @@ const listPets = async (req, res) => {
         },
       },
     });
-    res.json({ status: 'success', data: pets });
+    res.json({ status: 'success', data: pets.map(mapPetData) });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
@@ -51,7 +119,7 @@ const getPetDetails = async (req, res) => {
     if (!pet) {
       return res.status(404).json({ status: 'error', message: 'Pet not found' });
     }
-    res.json({ status: 'success', data: pet });
+    res.json({ status: 'success', data: mapPetData(pet) });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
@@ -76,14 +144,8 @@ const listPetForAdoption = async (req, res) => {
     const userRole = dbUser?.role || req.user.role;
     let clinicId = dbUser?.clinicId || null;
 
-    console.log('[Adoption Debug] Input Body:', req.body);
-    console.log('[Adoption Debug] JWT User:', req.user);
-    console.log('[Adoption Debug] Database User Info:', dbUser);
-    console.log('[Adoption Debug] initial clinicId:', clinicId);
-
     // Validation: Must be associated with a clinic OR be a registered Rescuer
     if (!clinicId && userRole !== 'RESCUER' && userRole !== 'ADMIN' && userRole !== 'NGO') {
-      console.log('[Adoption Debug] Failed general association check');
       return res.status(403).json({ 
         status: 'error', 
         message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer/NGO.' 
@@ -96,27 +158,45 @@ const listPetForAdoption = async (req, res) => {
         where: { id: reportId },
       });
 
-      console.log('[Adoption Debug] Loaded report:', report);
-
       if (!report) {
         return res.status(404).json({ status: 'error', message: 'Animal report not found' });
       }
 
       // If report has a clinic, use it, unless the user is an admin or the rescuer assigned to it
       clinicId = report.assignedClinicId || clinicId;
-      console.log('[Adoption Debug] updated clinicId:', clinicId);
 
       // Check authorization for report-linked pets
       if (userRole !== 'ADMIN' && 
           clinicId !== dbUser?.clinicId && 
           report.assignedRescuerId !== ownerId) {
-        console.log('[Adoption Debug] Authorization failed: user is not admin, clinicId mismatch, and user is not the assigned rescuer');
         return res.status(403).json({ 
           status: 'error', 
           message: 'You are not authorized to list this specific reported stray for adoption.' 
         });
       }
+
+      // Sync the uploaded image to the report's mediaUrls if provided
+      if (req.body.image) {
+        await prisma.animalReport.update({
+          where: { id: reportId },
+          data: {
+            mediaUrls: [req.body.image]
+          }
+        });
+      }
     }
+
+    // Package description, hobbies, talents, healthStatus, species, image and age in JSON
+    const descriptionData = {
+      description: description || '',
+      hobbies: req.body.hobbies || '',
+      talents: req.body.talents || '',
+      healthStatus: req.body.healthStatus || '',
+      image: req.body.image || null,
+      species: req.body.species || 'Dog',
+      age: req.body.age || '',
+    };
+    const serializedDescription = JSON.stringify(descriptionData);
 
     const pet = await prisma.pet.create({
       data: {
@@ -128,15 +208,17 @@ const listPetForAdoption = async (req, res) => {
         age: age ? parseInt(age) : null,
         gender,
         size,
-        description,
+        description: serializedDescription,
         status: 'AVAILABLE',
       },
+      include: {
+        report: true,
+        clinic: true,
+      }
     });
 
-    console.log('[Adoption Debug] Pet created successfully:', pet);
-    res.status(201).json({ status: 'success', data: pet });
+    res.status(201).json({ status: 'success', data: mapPetData(pet) });
   } catch (error) {
-    console.error('[Adoption Debug] Error creating pet:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
@@ -221,7 +303,12 @@ const getAdoptionRequests = async (req, res) => {
       },
     });
 
-    res.json({ status: 'success', data: requests });
+    const mappedRequests = requests.map(r => ({
+      ...r,
+      pet: r.pet ? mapPetData(r.pet) : null,
+    }));
+
+    res.json({ status: 'success', data: mappedRequests });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
@@ -296,7 +383,7 @@ const getClinicPets = async (req, res) => {
       },
       orderBy: { createdAt: 'desc' },
     });
-    res.json({ status: 'success', data: pets });
+    res.json({ status: 'success', data: pets.map(mapPetData) });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }
@@ -333,9 +420,12 @@ const updatePet = async (req, res) => {
         description,
         status,
       },
+      include: {
+        report: true,
+      },
     });
 
-    res.json({ status: 'success', data: updatedPet });
+    res.json({ status: 'success', data: mapPetData(updatedPet) });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }

@@ -12,7 +12,6 @@ function Adopt() {
     const [filters, setFilters] = useState({
         type: '',
         breed: '',
-        color: '',
         ageGroup: ''
     });
 
@@ -28,8 +27,7 @@ function Adopt() {
         return pets.filter(pet => {
             let match = true;
             if (filters.type && pet.type !== filters.type) match = false;
-            if (filters.breed && !pet.breed.toLowerCase().includes(filters.breed.toLowerCase())) match = false;
-            if (filters.color && !pet.color.toLowerCase().includes(filters.color.toLowerCase())) match = false;
+            if (filters.breed && (!pet.breed || !pet.breed.toLowerCase().includes(filters.breed.toLowerCase()))) match = false;
             if (filters.ageGroup && pet.ageGroup !== filters.ageGroup) match = false;
             return match;
         });
