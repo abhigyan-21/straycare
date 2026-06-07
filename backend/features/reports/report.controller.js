@@ -216,7 +216,17 @@ const assignReport = async (req, res) => {
 
     const data = {};
     if (rescuerId) data.assignedRescuerId = rescuerId;
-    if (clinicId) data.assignedClinicId = clinicId;
+    if (clinicId) {
+      data.assignedClinicId = clinicId;
+    } else if (rescuerId) {
+      const rescuer = await prisma.user.findUnique({
+        where: { id: rescuerId },
+        select: { clinicId: true }
+      });
+      if (rescuer?.clinicId) {
+        data.assignedClinicId = rescuer.clinicId;
+      }
+    }
     
     // Auto-update status to ASSIGNED if not already rescued
     const currentReport = await prisma.animalReport.findUnique({ where: { id } });

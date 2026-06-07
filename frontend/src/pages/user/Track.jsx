@@ -28,20 +28,32 @@ function Track() {
             const response = await apiClient.get(`/reports/${idToTrack.trim()}`);
             const r = response.data;
 
-            const statusMap = {
-                'REPORTED': 0,
-                'ASSIGNED': 1,
-                'RESCUED': 2,
-                'TREATED': 3,
-                'ADOPTED': 4
-            };
-            const statusIndex = statusMap[r.status] !== undefined ? statusMap[r.status] : 0;
+            let statusIndex = -1;
+            if (r.status === 'ASSIGNED') {
+                statusIndex = 0;
+            } else if (r.status === 'RESCUED') {
+                statusIndex = 1;
+            } else if (r.status === 'TREATED') {
+                if (r.pet) {
+                    if (r.pet.status === 'AVAILABLE') {
+                        statusIndex = 3;
+                    } else if (r.pet.status === 'ADOPTED') {
+                        statusIndex = 4;
+                    } else {
+                        statusIndex = 2; // treatment
+                    }
+                } else {
+                    statusIndex = 2; // treatment
+                }
+            } else if (r.status === 'ADOPTED') {
+                statusIndex = 4;
+            }
 
             const details = [
                 { label: "Date of Report", value: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) },
                 { label: "Location Coordinates", value: `Lat: ${r.locationLat.toFixed(4)}, Lng: ${r.locationLng.toFixed(4)}` },
                 { label: "Condition Reported", value: r.description || 'N/A' },
-                { label: "Assigned Center", value: r.clinic?.name || 'StrayCare Center' }
+                { label: "Assigned Center", value: r.clinic?.name || r.rescuer?.clinic?.name || 'StrayCare Center' }
             ];
 
             const history = [];
@@ -54,7 +66,7 @@ function Track() {
             });
 
             // 2. assigned
-            if (statusIndex >= 1) {
+            if (r.status !== 'REPORTED') {
                 history.push({
                     date: "Ongoing",
                     stage: "rescuer assigned",
@@ -63,11 +75,11 @@ function Track() {
             }
 
             // 3. rescued
-            if (statusIndex >= 2) {
+            if (r.status === 'RESCUED' || r.status === 'TREATED' || r.status === 'ADOPTED') {
                 history.push({
                     date: r.lastTracked ? new Date(r.lastTracked).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Rescue complete",
                     stage: "reached center",
-                    notes: `Animal successfully rescued and taken to ${r.clinic?.name || 'clinic'} for care.`
+                    notes: `Animal successfully rescued and taken to ${r.clinic?.name || r.rescuer?.clinic?.name || 'clinic'} for care.`
                 });
             }
 
@@ -80,7 +92,13 @@ function Track() {
                         notes: `Diagnosis: ${mr.diagnosis || 'Under Observation'}. Treatment: ${mr.treatment || 'N/A'}`
                     });
                 });
-            } else if (statusIndex === 2) {
+            } else if (r.status === 'RESCUED') {
+                history.push({
+                    date: "Ongoing",
+                    stage: "treatment",
+                    notes: "Admitted into veterinary ward and started medical observation/treatment."
+                });
+            } else if (r.status === 'TREATED' && (!r.pet || r.pet.status === 'UNDER_TREATMENT')) {
                 history.push({
                     date: "Ongoing",
                     stage: "treatment",
@@ -89,7 +107,7 @@ function Track() {
             }
 
             // 5. treated (open for adoption)
-            if (statusIndex >= 3) {
+            if ((r.pet && r.pet.status === 'AVAILABLE') || r.status === 'ADOPTED' || (r.pet && r.pet.status === 'ADOPTED')) {
                 history.push({
                     date: "Completed",
                     stage: "open for adoption",
@@ -98,7 +116,7 @@ function Track() {
             }
 
             // 6. adopted
-            if (statusIndex >= 4) {
+            if (r.status === 'ADOPTED' || (r.pet && r.pet.status === 'ADOPTED')) {
                 history.push({
                     date: "Completed",
                     stage: "Adopted/Fostered",
@@ -108,12 +126,13 @@ function Track() {
 
             setPetData({
                 id: r.id.substring(0, 8),
-                name: r.pet?.name || (r.description.length > 15 ? r.description.substring(0, 15) + '...' : r.description),
+                name: r.pet?.name || null,
                 image: r.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
                 statusIndex: statusIndex,
                 details: details,
                 history: history.reverse()
             });
+
 
             setAnimateTimeline(false);
             setTimeout(() => setAnimateTimeline(true), 100);
@@ -168,9 +187,9 @@ function Track() {
                     <div className="tracking-content">
                         <div className="pet-info-card">
                             <div className="pet-image-container">
-                                <img src={petData.image} alt={petData.name} className="pet-image" />
+                                <img src={petData.image} alt={petData.name || "Pet"} className="pet-image" />
                             </div>
-                            <div className="pet-name-plate">{petData.name}</div>
+                            {petData.name && <div className="pet-name-plate">{petData.name}</div>}
                             <div className="pet-id-pill">id:{petData.id}</div>
                         </div>
 
@@ -224,7 +243,9 @@ function Track() {
                                 <tr>
                                     <td style={{ width: '30%', fontWeight: 'bold' }}>Current Status</td>
                                     <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ textTransform: 'capitalize' }}>{STAGES[petData.statusIndex]}</span>
+                                        <span style={{ textTransform: 'capitalize' }}>
+                                            {petData.statusIndex >= 0 ? STAGES[petData.statusIndex] : 'reported'}
+                                        </span>
                                         <button className="view-more-btn" onClick={() => setShowHistoryModal(true)}>
                                             View More Details
                                         </button>
