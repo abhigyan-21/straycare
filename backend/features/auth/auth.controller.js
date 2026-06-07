@@ -200,7 +200,7 @@ const verifyRegistrationOtp = async (req, res) => {
  */
 const registerPartner = async (req, res) => {
   try {
-    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken } = req.body;
+    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken, lat, lng } = req.body;
 
     if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password) {
       return res.status(400).json({ error: 'All fields are required' });
@@ -259,7 +259,9 @@ const registerPartner = async (req, res) => {
           name: organizationName,
           address: address,
           contact: phone,
-          isVerified: false
+          isVerified: false,
+          lat: lat ? parseFloat(lat) : null,
+          lng: lng ? parseFloat(lng) : null
         }
       });
       clinicId = clinic.id;
@@ -292,7 +294,9 @@ const registerPartner = async (req, res) => {
           registrationNumber,
           address,
           email,
-          phone
+          phone,
+          lat: lat ? parseFloat(lat) : null,
+          lng: lng ? parseFloat(lng) : null
         })
       }
     });
@@ -503,10 +507,10 @@ const requestEmailOtp = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, email, phone, avatarUrl } = req.body;
+    const { name, email, phone, avatarUrl, clinicLat, clinicLng } = req.body;
 
-    if (!name && !email && !phone && avatarUrl === undefined) {
-      return res.status(400).json({ error: 'At least one field (name, email, phone, or avatarUrl) is required to update.' });
+    if (!name && !email && !phone && avatarUrl === undefined && clinicLat === undefined && clinicLng === undefined) {
+      return res.status(400).json({ error: 'At least one field is required to update.' });
     }
 
     // Validate email if provided
@@ -532,6 +536,24 @@ const updateProfile = async (req, res) => {
       }
     }
 
+    // Update clinic coordinates if user is VET
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, clinicId: true }
+    });
+
+    if (currentUser && currentUser.role === 'VET' && currentUser.clinicId) {
+      if (clinicLat !== undefined || clinicLng !== undefined) {
+        await prisma.clinic.update({
+          where: { id: currentUser.clinicId },
+          data: {
+            ...(clinicLat !== undefined && { lat: clinicLat !== null ? parseFloat(clinicLat) : null }),
+            ...(clinicLng !== undefined && { lng: clinicLng !== null ? parseFloat(clinicLng) : null })
+          }
+        });
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -539,6 +561,9 @@ const updateProfile = async (req, res) => {
         ...(email && { email }),
         ...(phone && { phone }),
         ...(avatarUrl !== undefined && { avatarUrl }),
+      },
+      include: {
+        clinic: true
       }
     });
 

@@ -42,6 +42,9 @@ function RescuerNavigation() {
       try {
         const response = await apiClient.get(`/reports/${reportId}`);
         setReport(response.data);
+        if (response.data?.status === 'RESCUED') {
+          setStage('TO_HOSPITAL');
+        }
       } catch (err) {
         console.error("Error fetching report from API:", err);
       } finally {

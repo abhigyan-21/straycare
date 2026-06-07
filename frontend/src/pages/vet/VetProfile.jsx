@@ -19,10 +19,35 @@ import {
     Trash2,
     Upload
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetProfile.css';
 import { getProfile, getUserDocuments, uploadUserDocument, deleteUserDocument } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
+import hospitalImg from '../../assets/images/Hospital.png';
+
+const hospitalIcon = new L.Icon({ 
+    iconUrl: hospitalImg, 
+    iconSize: [45, 45], 
+    iconAnchor: [22, 45] 
+});
+
+function MapEventsHandler({ onMapClick, center }) {
+    const map = useMapEvents({
+        click(e) {
+            onMapClick(e.latlng.lat, e.latlng.lng);
+        }
+    });
+
+    React.useEffect(() => {
+        if (center) {
+            map.flyTo(center, 15);
+        }
+    }, [center, map]);
+
+    return null;
+}
 
 const VetProfile = () => {
     const { user: authUser, logout, updateProfileAction, changePasswordAction } = useAuthStore();
@@ -74,7 +99,9 @@ const VetProfile = () => {
                     experienceFull: 'Board certified veterinary clinic staff.',
                     totalRescues: profileData.stats?.totalRescues || 0,
                     activeCampaigns: profileData.stats?.activeCampaigns || 0,
-                    successfulAdoptions: profileData.stats?.successfulAdoptions || 0
+                    successfulAdoptions: profileData.stats?.successfulAdoptions || 0,
+                    lat: profileData.user.clinic?.lat || null,
+                    lng: profileData.user.clinic?.lng || null
                 });
 
                 // Filter out registration document since we display registration details on main tab
@@ -97,7 +124,9 @@ const VetProfile = () => {
                     experienceFull: 'Over a decade of experience in domestic animal care and surgical procedures.',
                     totalRescues: 142,
                     activeCampaigns: 2,
-                    successfulAdoptions: 89
+                    successfulAdoptions: 89,
+                    lat: 30.7333,
+                    lng: 76.7794
                 });
                 setDocuments([]);
             } finally {
@@ -108,9 +137,20 @@ const VetProfile = () => {
         fetchProfile();
     }, [authUser]);
 
+    // Clinic coordinates update states
+    const [clinicLatVal, setClinicLatVal] = useState(null);
+    const [clinicLngVal, setClinicLngVal] = useState(null);
+    const [profileMapCenter, setProfileMapCenter] = useState([30.7333, 76.7794]);
+    const [isSavingLocation, setIsSavingLocation] = useState(false);
+
     useEffect(() => {
         if (vetData) {
             setNameVal(vetData.name);
+            setClinicLatVal(vetData.lat);
+            setClinicLngVal(vetData.lng);
+            if (vetData.lat && vetData.lng) {
+                setProfileMapCenter([vetData.lat, vetData.lng]);
+            }
         }
     }, [vetData]);
 
@@ -468,6 +508,132 @@ const VetProfile = () => {
                                 </form>
                             </div>
                         </div>
+
+                        {vetData.role === 'VET' && (
+                            <div style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '30px' }}>
+                                <h3 style={{ marginBottom: '10px', fontSize: '1.2rem', color: '#1a1a1a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <MapPin size={22} style={{ color: '#346c02' }} /> Clinic Location Coordinates
+                                </h3>
+                                <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '20px' }}>
+                                    Pin the exact location of your clinic so that rescuers can navigate to it for emergency pick-ups and transfers.
+                                </p>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '30px' }}>
+                                    {/* Map Container */}
+                                    <div className="profile-map-wrapper" style={{ height: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #ddd', position: 'relative', zIndex: 10 }}>
+                                        <MapContainer 
+                                            center={profileMapCenter} 
+                                            zoom={14} 
+                                            scrollWheelZoom={false}
+                                            style={{ height: '100%', width: '100%' }}
+                                        >
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            />
+                                            {clinicLatVal && clinicLngVal && (
+                                                <Marker 
+                                                    position={[clinicLatVal, clinicLngVal]} 
+                                                    icon={hospitalIcon}
+                                                    draggable={true}
+                                                    eventHandlers={{
+                                                        dragend: (e) => {
+                                                            const marker = e.target;
+                                                            const position = marker.getLatLng();
+                                                            setClinicLatVal(position.lat);
+                                                            setClinicLngVal(position.lng);
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                            <MapEventsHandler 
+                                                onMapClick={(lat, lng) => {
+                                                    setClinicLatVal(lat);
+                                                    setClinicLngVal(lng);
+                                                }}
+                                                center={profileMapCenter}
+                                            />
+                                        </MapContainer>
+                                    </div>
+                                    
+                                    {/* Coordinates & Actions */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: '#fcfdfa', padding: '20px', borderRadius: '12px', border: '1px solid #e8f0e0' }}>
+                                        <div>
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Latitude</span>
+                                                <div style={{ padding: '10px 12px', background: '#fff', border: '1px solid #ccc', borderRadius: '6px', fontSize: '0.95rem', fontWeight: '500', color: '#333' }}>
+                                                    {clinicLatVal ? clinicLatVal.toFixed(6) : 'Not Set'}
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: '20px' }}>
+                                                <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Longitude</span>
+                                                <div style={{ padding: '10px 12px', background: '#fff', border: '1px solid #ccc', borderRadius: '6px', fontSize: '0.95rem', fontWeight: '500', color: '#333' }}>
+                                                    {clinicLngVal ? clinicLngVal.toFixed(6) : 'Not Set'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => {
+                                                    if (!("geolocation" in navigator)) {
+                                                        alert("Geolocation is not supported by your browser");
+                                                        return;
+                                                    }
+                                                    navigator.geolocation.getCurrentPosition(
+                                                        (position) => {
+                                                            const { latitude, longitude } = position.coords;
+                                                            setClinicLatVal(latitude);
+                                                            setClinicLngVal(longitude);
+                                                            setProfileMapCenter([latitude, longitude]);
+                                                        },
+                                                        (error) => {
+                                                            alert("Failed to detect current location. Please pick it manually on the map.");
+                                                        }
+                                                    );
+                                                }}
+                                                style={{ padding: '10px', background: '#fff', color: '#346c02', border: '1px solid #346c02', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                            >
+                                                📍 Detect My Current Location
+                                            </button>
+                                            
+                                            <button 
+                                                type="button" 
+                                                onClick={async () => {
+                                                    setSettingsSuccess('');
+                                                    setSettingsError('');
+                                                    if (!clinicLatVal || !clinicLngVal) {
+                                                        setSettingsError('Please pin a location on the map first.');
+                                                        return;
+                                                    }
+                                                    setIsSavingLocation(true);
+                                                    try {
+                                                        const res = await updateProfileAction(undefined, undefined, undefined, undefined, clinicLatVal, clinicLngVal);
+                                                        if (res.success) {
+                                                            setVetData(prev => ({
+                                                                ...prev,
+                                                                lat: clinicLatVal,
+                                                                lng: clinicLngVal
+                                                            }));
+                                                            setSettingsSuccess('Clinic location coordinates saved successfully!');
+                                                        }
+                                                    } catch (err) {
+                                                        setSettingsError(err.message || 'Failed to update clinic location.');
+                                                    } finally {
+                                                        setIsSavingLocation(false);
+                                                    }
+                                                }}
+                                                disabled={isSavingLocation}
+                                                style={{ padding: '12px', background: '#346c02', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+                                            >
+                                                {isSavingLocation ? 'Saving Location...' : 'Save Location Details'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
 

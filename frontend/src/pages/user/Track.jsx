@@ -1,25 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../../styles/user/Track.css';
-
-// Mock Data
-const MOCK_PET = {
-    id: "4435",
-    name: "Bizoo",
-    image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-    statusIndex: 2, // 0 to 4 (e.g. 2 means up to Treatment is complete/active)
-    details: [
-        { label: "Date of Rescue", value: "Oct 12, 2026" },
-        { label: "Location", value: "Sector 14, Main Road" },
-        { label: "Condition", value: "Minor injuries, expected full recovery" },
-        { label: "Assigned Center", value: "StrayCare North Haven" }
-    ],
-    history: [
-        { date: "Oct 12, 10:30 AM", stage: "Rescue in progress", notes: "Team dispatched to reported location." },
-        { date: "Oct 12, 11:45 AM", stage: "Reached center", notes: "Admitted into StrayCare North Haven." },
-        { date: "Oct 13, 09:00 AM", stage: "Treatment", notes: "Started medical treatment for minor wounds." }
-    ]
-};
+import apiClient from '../../services/api';
 
 const STAGES = [
     "rescue in progress",
@@ -35,23 +17,125 @@ function Track() {
     const [petData, setPetData] = useState(null);
     const [animateTimeline, setAnimateTimeline] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+
+    const fetchTrackingDetails = async (idToTrack) => {
+        if (!idToTrack) return;
+        setIsLoading(true);
+        setErrorMsg("");
+        try {
+            const response = await apiClient.get(`/reports/${idToTrack.trim()}`);
+            const r = response.data;
+
+            const statusMap = {
+                'REPORTED': 0,
+                'ASSIGNED': 1,
+                'RESCUED': 2,
+                'TREATED': 3,
+                'ADOPTED': 4
+            };
+            const statusIndex = statusMap[r.status] !== undefined ? statusMap[r.status] : 0;
+
+            const details = [
+                { label: "Date of Report", value: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) },
+                { label: "Location Coordinates", value: `Lat: ${r.locationLat.toFixed(4)}, Lng: ${r.locationLng.toFixed(4)}` },
+                { label: "Condition Reported", value: r.description || 'N/A' },
+                { label: "Assigned Center", value: r.clinic?.name || 'StrayCare Center' }
+            ];
+
+            const history = [];
+
+            // 1. request filed
+            history.push({
+                date: new Date(r.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                stage: "rescue request filed",
+                notes: "Rescue report created with description: " + r.description
+            });
+
+            // 2. assigned
+            if (statusIndex >= 1) {
+                history.push({
+                    date: "Ongoing",
+                    stage: "rescuer assigned",
+                    notes: `Rescuer ${r.rescuer?.name || 'assigned'} has accepted the case and is en-route.`
+                });
+            }
+
+            // 3. rescued
+            if (statusIndex >= 2) {
+                history.push({
+                    date: r.lastTracked ? new Date(r.lastTracked).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Rescue complete",
+                    stage: "reached center",
+                    notes: `Animal successfully rescued and taken to ${r.clinic?.name || 'clinic'} for care.`
+                });
+            }
+
+            // 4. treatment (medical records)
+            if (r.medicalRecords && r.medicalRecords.length > 0) {
+                r.medicalRecords.forEach(mr => {
+                    history.push({
+                        date: new Date(mr.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        stage: "treatment logs",
+                        notes: `Diagnosis: ${mr.diagnosis || 'Under Observation'}. Treatment: ${mr.treatment || 'N/A'}`
+                    });
+                });
+            } else if (statusIndex === 2) {
+                history.push({
+                    date: "Ongoing",
+                    stage: "treatment",
+                    notes: "Admitted into veterinary ward and started medical observation/treatment."
+                });
+            }
+
+            // 5. treated (open for adoption)
+            if (statusIndex >= 3) {
+                history.push({
+                    date: "Completed",
+                    stage: "open for adoption",
+                    notes: "Animal recovery complete. Now listed on our Adopt page for adoption!"
+                });
+            }
+
+            // 6. adopted
+            if (statusIndex >= 4) {
+                history.push({
+                    date: "Completed",
+                    stage: "Adopted/Fostered",
+                    notes: "Animal adopted into a permanent loving family!"
+                });
+            }
+
+            setPetData({
+                id: r.id.substring(0, 8),
+                name: r.pet?.name || (r.description.length > 15 ? r.description.substring(0, 15) + '...' : r.description),
+                image: r.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                statusIndex: statusIndex,
+                details: details,
+                history: history.reverse()
+            });
+
+            setAnimateTimeline(false);
+            setTimeout(() => setAnimateTimeline(true), 100);
+        } catch (err) {
+            console.error("Error fetching tracking details:", err);
+            setErrorMsg("No rescue report found with this ID. Please verify the ID and try again.");
+            setPetData(null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (location.state && location.state.trackingId) {
             setTrackingId(location.state.trackingId);
-            // Auto trigger tracking if we navigated from Reports
-            setPetData(MOCK_PET); // In real app, fetch based on trackingId
-            setAnimateTimeline(false);
-            setTimeout(() => setAnimateTimeline(true), 100);
+            fetchTrackingDetails(location.state.trackingId);
         }
-    }, [location.state]);
+    }, [location.state?.trackingId]);
 
     const handleTrack = () => {
         if (!trackingId) return;
-        // Simulate fetching
-        setPetData(MOCK_PET);
-        setAnimateTimeline(false);
-        setTimeout(() => setAnimateTimeline(true), 100);
+        fetchTrackingDetails(trackingId);
     };
 
     return (
@@ -67,7 +151,19 @@ function Track() {
                 <button className="track-btn" onClick={handleTrack}>track</button>
             </div>
 
-            {petData && (
+            {isLoading && (
+                <div style={{ textAlign: 'center', margin: '40px auto', fontSize: '1.1rem', color: '#666', fontWeight: '500' }}>
+                    Searching database for Report ID...
+                </div>
+            )}
+
+            {errorMsg && (
+                <div style={{ maxWidth: '600px', margin: '30px auto', padding: '16px 20px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '8px', color: '#e74c3c', fontWeight: 'bold', textAlign: 'center', fontSize: '0.95rem' }}>
+                    {errorMsg}
+                </div>
+            )}
+
+            {!isLoading && petData && (
                 <>
                     <div className="tracking-content">
                         <div className="pet-info-card">

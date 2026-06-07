@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useRescueStore } from '../../store/rescueStore';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
@@ -41,16 +41,20 @@ function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of the earth in km
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
+const defaultHospitalPos = [30.7500, 76.8000];
+const defaultUserPos = [30.7200, 76.7600];
+
 function LiveTracking() {
   const { reportId } = useParams();
+  const navigate = useNavigate();
   const { startRescue, updateRescueEta, endRescue } = useRescueStore();
 
   const [report, setReport] = useState(null);
@@ -59,8 +63,6 @@ function LiveTracking() {
   const isDemo = !reportId || reportId.startsWith('demo-');
   const isAssigned = !!report?.assignedRescuerId;
 
-  const defaultHospitalPos = [30.7500, 76.8000];
-  const defaultUserPos = [30.7200, 76.7600];
 
   // Fetch live report details periodically
   useEffect(() => {
@@ -68,7 +70,7 @@ function LiveTracking() {
       setIsLoadingReport(false);
       return;
     }
-    
+
     const fetchReport = async () => {
       try {
         const response = await apiClient.get(`/reports/${reportId}`);
@@ -107,15 +109,19 @@ function LiveTracking() {
 
 
 
-  const reportUserPos = report
-    ? (report.location || [report.locationLat, report.locationLng])
-    : defaultUserPos;
+  const reportUserPos = useMemo(() => {
+    return report
+      ? (report.location || [report.locationLat, report.locationLng])
+      : defaultUserPos;
+  }, [report, defaultUserPos]);
 
-  const reportHospitalPos = report?.rescuer?.clinic?.lat && report?.rescuer?.clinic?.lng
-    ? [report.rescuer.clinic.lat, report.rescuer.clinic.lng]
-    : report?.clinic?.lat && report?.clinic?.lng
-    ? [report.clinic.lat, report.clinic.lng]
-    : defaultHospitalPos;
+  const reportHospitalPos = useMemo(() => {
+    return report?.rescuer?.clinic?.lat && report?.rescuer?.clinic?.lng
+      ? [report.rescuer.clinic.lat, report.rescuer.clinic.lng]
+      : report?.clinic?.lat && report?.clinic?.lng
+        ? [report.clinic.lat, report.clinic.lng]
+        : defaultHospitalPos;
+  }, [report, defaultHospitalPos]);
 
   const [rescuerPos, setRescuerPos] = useState(reportHospitalPos);
   const [fullRoute, setFullRoute] = useState([]);
@@ -150,6 +156,7 @@ function LiveTracking() {
 
     const fetchRoute = async () => {
       try {
+        setFullRoute([]);
         const start = journeyStage === 'EN_ROUTE' ? reportHospitalPos : reportUserPos;
         const end = journeyStage === 'EN_ROUTE' ? reportUserPos : reportHospitalPos;
 
@@ -162,7 +169,7 @@ function LiveTracking() {
           setFullRoute(coords);
           routeIndexRef.current = 0; // Reset index ref
           setIsFlipped(journeyStage === 'RESCUING');
-          
+
           if (isDemo) {
             setRescuerPos(coords[0]);
             setProgress(0);
@@ -224,6 +231,7 @@ function LiveTracking() {
         if (journeyStage === 'EN_ROUTE') {
           setJourneyStage('RESCUING');
           setStatus('RESCUE IN PROGRESS');
+          setProgress(0);
         } else {
           setStatus('RESCUER REACHED CLINIC');
           setIsSimulating(false);
@@ -244,10 +252,18 @@ function LiveTracking() {
       return 0; // Progress is 0 if no rescuer assigned
     }
     const totalDist = getDistance(reportHospitalPos[0], reportHospitalPos[1], reportUserPos[0], reportUserPos[1]);
-    const currentDist = getDistance(rescuerPos[0], rescuerPos[1], reportUserPos[0], reportUserPos[1]);
     if (totalDist <= 0) return 0;
-    return Math.max(0, Math.min(100, Math.round(((totalDist - currentDist) / totalDist) * 100)));
-  }, [isDemo, isAssigned, progress, reportHospitalPos, reportUserPos, rescuerPos]);
+
+    if (journeyStage === 'EN_ROUTE') {
+      const currentDist = getDistance(rescuerPos[0], rescuerPos[1], reportUserPos[0], reportUserPos[1]);
+      return Math.max(0, Math.min(100, Math.round(((totalDist - currentDist) / totalDist) * 100)));
+    } else {
+      // For 'RESCUING', rescuer is moving from User to Hospital.
+      // Progress starts at 0% (at User) and goes to 100% (at Hospital).
+      const distFromUser = getDistance(rescuerPos[0], rescuerPos[1], reportUserPos[0], reportUserPos[1]);
+      return Math.max(0, Math.min(100, Math.round((distFromUser / totalDist) * 100)));
+    }
+  }, [isDemo, isAssigned, progress, reportHospitalPos, reportUserPos, rescuerPos, journeyStage]);
 
   const leftPosition = journeyStage === 'EN_ROUTE'
     ? Math.max(5, Math.min(95, 100 - progressPercent))
@@ -280,6 +296,162 @@ function LiveTracking() {
   const rescuerContact = report?.rescuer?.phone || report?.rescuer?.contact || (isDemo ? '+91 98765 43210' : 'N/A');
   const clinicName = report?.rescuer?.clinic?.name || report?.clinic?.name || (isDemo ? 'StrayCare North Center' : 'Pending Association...');
   const rescuerAvatarUrl = report?.rescuer?.avatarUrl;
+  const isRescueCompleted = report && (report.status === 'TREATED' || report.status === 'ADOPTED');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyId = () => {
+    if (!reportId) return;
+    navigator.clipboard.writeText(reportId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (isRescueCompleted) {
+    return (
+      <div className="rescue-completed-container" style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 'calc(100vh - 80px)',
+        background: '#fcfdfa',
+        fontFamily: "'Outfit', sans-serif",
+        padding: '40px 20px'
+      }}>
+        <div style={{
+          background: 'white',
+          width: '100%',
+          maxWidth: '550px',
+          borderRadius: '24px',
+          padding: '40px',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.06)',
+          textAlign: 'center',
+          border: '1px solid #e8f0e0'
+        }}>
+
+          <h1 style={{
+            fontSize: '1.8rem',
+            fontWeight: '700',
+            color: '#1a1a1a',
+            margin: '0 0 12px 0'
+          }}>
+            Rescue Mission Completed!
+          </h1>
+
+          <p style={{
+            color: '#555',
+            fontSize: '1rem',
+            lineHeight: '1.6',
+            margin: '0 0 30px 0'
+          }}>
+            The reported animal has been safely picked up and admitted to our partner veterinary clinic. Thanks to your prompt action, they are now receiving the care and treatment they need.
+          </p>
+
+          <div style={{
+            background: '#fafbfc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '30px',
+            textAlign: 'left'
+          }}>
+            <span style={{
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              color: '#718096',
+              display: 'block',
+              marginBottom: '8px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              Tracking & Report ID
+            </span>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input
+                type="text"
+                readOnly
+                value={reportId}
+                style={{
+                  flex: 1,
+                  background: 'white',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  fontFamily: 'monospace',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  color: '#334155',
+                  outline: 'none'
+                }}
+              />
+              <button
+                onClick={handleCopyId}
+                style={{
+                  background: copied ? '#346c02' : '#ffd21e',
+                  color: copied ? 'white' : '#000',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  fontWeight: '700',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  minWidth: '90px'
+                }}
+              >
+                {copied ? 'Copied!' : 'Copy ID'}
+              </button>
+            </div>
+            <span style={{
+              fontSize: '0.8rem',
+              color: '#718096',
+              display: 'block',
+              marginTop: '12px',
+              lineHeight: '1.4'
+            }}>
+              ℹ️ This ID is saved inside your **Profile section** under **'My Reports'**. Use it on the track page below to check progress.
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button
+              onClick={() => navigate('/track', { state: { trackingId: reportId } })}
+              style={{
+                width: '100%',
+                background: '#346c02',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '14px',
+                fontWeight: '600',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              Track Progress
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                color: '#346c02',
+                border: '1px solid #346c02',
+                borderRadius: '10px',
+                padding: '12px',
+                fontWeight: '600',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              Go to Homepage
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="live-tracking-page">

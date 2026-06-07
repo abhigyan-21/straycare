@@ -82,10 +82,10 @@ function RescuerDashboard() {
     }
 
     // Filter reports:
-    // Show reports that are status 'REPORTED', OR status 'ASSIGNED' and assigned to current user
+    // Show reports that are status 'REPORTED', OR status 'ASSIGNED' or 'RESCUED' and assigned to current user
     const filtered = fetchedReports.filter(r => 
       r.status === 'REPORTED' || 
-      (r.status === 'ASSIGNED' && r.assignedRescuerId === user?.id)
+      ((r.status === 'ASSIGNED' || r.status === 'RESCUED') && r.assignedRescuerId === user?.id)
     );
 
     const finishLoading = (reportsList) => {
@@ -248,7 +248,9 @@ function RescuerDashboard() {
                   className="rescue-btn"
                   onClick={() => handleAcceptRescue(report.id, report.assignedRescuerId === user?.id)}
                 >
-                  {report.assignedRescuerId === user?.id ? 'Track Rescue' : "I'll Rescue"}
+                  {report.assignedRescuerId === user?.id 
+                    ? (report.status === 'RESCUED' ? 'Resume Rescue' : 'Track Rescue') 
+                    : "I'll Rescue"}
                 </button>
               </div>
             </div>

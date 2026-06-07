@@ -308,3 +308,18 @@
 .avatar-container:hover .avatar-overlay {
     opacity: 1 !important;
 }
+
+/* Clinic Location Map */
+.profile-map-wrapper {
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+}
+
+.profile-map-wrapper:hover {
+    border-color: #346c02 !important;
+}
+
+.profile-map-wrapper:focus-within {
+    border-color: #346c02 !important;
+    box-shadow: 0 0 0 3px rgba(52, 108, 2, 0.15), inset 0 2px 4px rgba(0,0,0,0.06);
+}

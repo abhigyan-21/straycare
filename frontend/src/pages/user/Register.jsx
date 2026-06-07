@@ -1,7 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { registerPartner, sendRegistrationOtp, verifyRegistrationOtp } from '../../services/api';
 import '../../styles/user/Register.css';
+import hospitalImg from '../../assets/images/Hospital.png';
+
+const hospitalIcon = new L.Icon({ 
+    iconUrl: hospitalImg, 
+    iconSize: [45, 45], 
+    iconAnchor: [22, 45] 
+});
+
+function MapEventsHandler({ onMapClick, center }) {
+    const map = useMapEvents({
+        click(e) {
+            onMapClick(e.latlng.lat, e.latlng.lng);
+        }
+    });
+
+    useEffect(() => {
+        if (center) {
+            map.flyTo(center, 15);
+        }
+    }, [center, map]);
+
+    return null;
+}
 
 const Register = () => {
     const navigate = useNavigate();
@@ -15,8 +40,35 @@ const Register = () => {
         registrationNumber: '',
         address: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        lat: null,
+        lng: null
     });
+
+    const [mapCenter, setMapCenter] = useState([30.7333, 76.7794]);
+
+    const detectGpsLocation = () => {
+        if (!("geolocation" in navigator)) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setFormData(prev => ({
+                    ...prev,
+                    lat: latitude,
+                    lng: longitude
+                }));
+                setMapCenter([latitude, longitude]);
+            },
+            (error) => {
+                console.error("GPS detection error:", error);
+                alert("Could not detect location. Please select it manually on the map.");
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    };
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
@@ -170,7 +222,9 @@ const Register = () => {
                 registrationNumber: formData.registrationNumber,
                 address: formData.address,
                 password: formData.password,
-                registerToken: registerToken
+                registerToken: registerToken,
+                lat: formData.lat,
+                lng: formData.lng
             });
 
             alert("Partner registration application submitted successfully for review!");
@@ -268,6 +322,81 @@ const Register = () => {
                             required 
                         ></textarea>
                     </div>
+
+                    {(formData.organizationType === 'vet' || formData.organizationType === 'hospital') && (
+                        <div className="form-group registration-map-group">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <label style={{ fontWeight: '600', color: '#444' }}>Pin Clinic Location (Optional)</label>
+                                <button
+                                    type="button"
+                                    onClick={detectGpsLocation}
+                                    className="btn-gps-detect"
+                                    style={{
+                                        background: '#346c02',
+                                        color: '#fff',
+                                        border: 'none',
+                                        padding: '6px 12px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        transition: 'background-color 0.2s'
+                                    }}
+                                >
+                                    📍 Get Current Location
+                                </button>
+                            </div>
+                            <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                                Helps rescuers locate your clinic in emergency pickups. Click on the map to pin.
+                            </span>
+                            
+                            <div className="register-map-wrapper" style={{ height: '220px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc', marginTop: '8px', position: 'relative', zIndex: 10 }}>
+                                <MapContainer 
+                                    center={mapCenter} 
+                                    zoom={13} 
+                                    scrollWheelZoom={false}
+                                    style={{ height: '100%', width: '100%' }}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+                                    {formData.lat && formData.lng && (
+                                        <Marker 
+                                            position={[formData.lat, formData.lng]} 
+                                            icon={hospitalIcon}
+                                            draggable={true}
+                                            eventHandlers={{
+                                                dragend: (e) => {
+                                                    const marker = e.target;
+                                                    const position = marker.getLatLng();
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        lat: position.lat,
+                                                        lng: position.lng
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    <MapEventsHandler 
+                                        onMapClick={(lat, lng) => {
+                                            setFormData(prev => ({ ...prev, lat, lng }));
+                                        }}
+                                        center={mapCenter}
+                                    />
+                                </MapContainer>
+                            </div>
+                            {formData.lat && formData.lng && (
+                                <div style={{ fontSize: '0.85rem', color: '#346c02', marginTop: '6px', fontWeight: '600' }}>
+                                    Pinned Coordinates: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="form-group-row">
                         <div className="form-group">

@@ -15,8 +15,8 @@ router.get('/clinic', verifyToken, allowRoles('VET', 'ADMIN', 'NGO'), reportCont
 // Get all reports (restricted to staff for map view)
 router.get('/', verifyToken, allowRoles('ADMIN', 'VET', 'RESCUER', 'NGO'), reportController.getReports);
 
-// Get report by ID (any authenticated user can track if they have the ID)
-router.get('/:id', verifyToken, reportController.getReportById);
+// Get report by ID (public route so anyone with the link/ID can track)
+router.get('/:id', reportController.getReportById);
 
 // Update report status (restricted to staff)
 router.patch('/:id/status', verifyToken, allowRoles('ADMIN', 'VET', 'RESCUER', 'NGO'), reportController.updateReportStatus);

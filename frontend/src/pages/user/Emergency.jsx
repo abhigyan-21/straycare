@@ -7,11 +7,25 @@ import apiClient from '../../services/api';
 
 function Emergency({ openAuthModal }) {
     const navigate = useNavigate();
-    const { isLoggedIn } = useAuthStore();
+    const { isLoggedIn, user } = useAuthStore();
     const [imagePreview, setImagePreview] = useState(null);
     const [location, setLocation] = useState('Fetching location...');
     const [isReporting, setIsReporting] = useState(false);
     const [coordinates, setCoordinates] = useState({ lat: 30.7333, lon: 76.7794 });
+
+    // Reporter detail states for autofill
+    const [reporterName, setReporterName] = useState('');
+    const [reporterPhone, setReporterPhone] = useState('');
+    const [reporterEmail, setReporterEmail] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            setReporterName(user.name || '');
+            setReporterPhone(user.phone || user.contact || '');
+            setReporterEmail(user.email || '');
+        }
+    }, [isLoggedIn, user]);
 
     useEffect(() => {
         if ("geolocation" in navigator) {
@@ -51,7 +65,7 @@ function Emergency({ openAuthModal }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!isLoggedIn) {
             alert("Please sign in or register to report an emergency.");
             if (openAuthModal) {
@@ -61,10 +75,11 @@ function Emergency({ openAuthModal }) {
         }
 
         setIsReporting(true);
-        
+        setErrorMessage('');
+
         try {
             const descriptionVal = e.target.querySelector('textarea').value;
-            
+
             // Post emergency report to the backend API
             const response = await apiClient.post('/reports', {
                 locationLat: coordinates.lat,
@@ -72,17 +87,14 @@ function Emergency({ openAuthModal }) {
                 description: descriptionVal,
                 mediaUrls: imagePreview ? [imagePreview] : []
             });
-            
+
             setTimeout(() => {
                 navigate(`/live-track/${response.data.id}`);
             }, 1000);
         } catch (err) {
             console.error("Error submitting report to API:", err);
-            // Fallback to mock on failure
-            setTimeout(() => {
-                const mockReportId = "demo-" + Math.random().toString(36).substr(2, 9);
-                navigate(`/live-track/${mockReportId}`);
-            }, 2000);
+            setErrorMessage("Could not report, please try again.");
+            setIsReporting(false);
         }
     };
 
@@ -117,31 +129,48 @@ function Emergency({ openAuthModal }) {
 
             <div className="emergency-right">
                 <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                    {errorMessage && (
+                        <div className="emergency-error-message" style={{ color: '#e74c3c', padding: '12px 16px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '12px', fontWeight: '600', textAlign: 'center', fontSize: '0.95rem' }}>
+                            ⚠️ {errorMessage}
+                        </div>
+                    )}
                     <div className="description-box">
                         <textarea
                             placeholder="Describe the emergency in brief"
                             aria-label="Emergency description"
                             required
                         ></textarea>
-                        <button type="button" className="mic-button" aria-label="Use voice input">
-                            <Mic size={20} />
-                        </button>
                     </div>
 
                     <div className="details-form">
                         <div className="input-group">
                             <span className="input-label">name<span className="required-star">*</span>:</span>
-                            <input type="text" required />
+                            <input 
+                                type="text" 
+                                required 
+                                value={reporterName} 
+                                onChange={(e) => setReporterName(e.target.value)} 
+                            />
                         </div>
 
                         <div className="input-group">
                             <span className="input-label">phone<span className="required-star">*</span>:</span>
-                            <input type="tel" required />
+                            <input 
+                                type="tel" 
+                                required 
+                                maxLength="10" 
+                                value={reporterPhone} 
+                                onChange={(e) => setReporterPhone(e.target.value)} 
+                            />
                         </div>
 
                         <div className="input-group">
                             <span className="input-label">email:</span>
-                            <input type="email" />
+                            <input 
+                                type="email" 
+                                value={reporterEmail} 
+                                onChange={(e) => setReporterEmail(e.target.value)} 
+                            />
                         </div>
 
                         <div className="input-group">
