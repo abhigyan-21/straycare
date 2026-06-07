@@ -9,10 +9,9 @@ import InterviewCard from '../../components/vet/InterviewCard';
 import VetTabs from '../../components/vet/VetTabs';
 import CreateAdoptionModal from '../../components/vet/CreateAdoptionModal';
 import ActionLoader from '../../components/ActionLoader';
+import apiClient, { getClinicPets, updatePet } from '../../services/api';
 
 import { ADOPT_STATUS_OPTIONS, MOCK_ADOPT_DATA } from '../../data/mock_vet_data';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 function VetAdopt() {
     const [activeTab, setActiveTab] = useState('live');
@@ -34,21 +33,12 @@ function VetAdopt() {
         const startTime = Date.now();
         try {
             const [petsRes, reqsRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/adoptions/pets`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                }),
-                fetch(`${API_BASE_URL}/adoptions/requests`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                })
+                getClinicPets(),
+                apiClient.get('/adoptions/requests')
             ]);
 
-            if (!petsRes.ok || !reqsRes.ok) throw new Error('Backend offline');
-
-            const petsData = await petsRes.json();
-            const reqsData = await reqsRes.json();
-
-            const pets = petsData.data || [];
-            const reqs = reqsData.data || [];
+            const pets = petsRes.data || [];
+            const reqs = reqsRes.data.data || [];
 
             const today = new Date().toISOString().split('T')[0];
 
@@ -56,7 +46,7 @@ function VetAdopt() {
                 liveAdoptions: pets.map(p => ({
                     id: p.id,
                     petName: p.name,
-                    status: p.status === 'AVAILABLE' ? 'up for adoption' : p.status,
+                    status: p.status === 'AVAILABLE' ? 'up for adoption' : p.status.toLowerCase().replace('_', ' '),
                     image: p.mediaUrls?.[0] || null
                 })),
                 todaysInterviews: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED' && r.interviewDate?.startsWith(today)).map(r => ({
@@ -111,22 +101,10 @@ function VetAdopt() {
         const { id, value } = showConfirm;
         try {
             const statusMap = { 'Adopted': 'ADOPTED', 'Remove': 'REMOVED', 'up for adoption': 'AVAILABLE' };
-            const apiStatus = statusMap[value] || value;
+            const apiStatus = statusMap[value] || value.toUpperCase().replace(' ', '_');
 
-            const response = await fetch(`${API_BASE_URL}/adoptions/pets/${id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ status: apiStatus })
-            });
-
-            if (response.ok) {
-                fetchData();
-            } else {
-                throw new Error('Update failed');
-            }
+            await updatePet(id, { status: apiStatus });
+            fetchData();
         } catch (error) {
             console.error('API failed, mock confirm:', error);
             setData(prev => ({
@@ -143,24 +121,12 @@ function VetAdopt() {
 
     const saveTime = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/adoptions/requests/${showTimePicker.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    status: 'INTERVIEW_SCHEDULED',
-                    interviewDate: selectedDate,
-                    interviewTime: selectedTime
-                })
+            await apiClient.patch(`/adoptions/requests/${showTimePicker.id}`, {
+                status: 'INTERVIEW_SCHEDULED',
+                interviewDate: selectedDate,
+                interviewTime: selectedTime
             });
-
-            if (response.ok) {
-                fetchData();
-            } else {
-                throw new Error('Failed to save time');
-            }
+            fetchData();
         } catch (error) {
             console.error('API failed, mock save time:', error);
             setData(prev => ({
@@ -176,20 +142,8 @@ function VetAdopt() {
 
     const handlePublishAdoption = async (formData) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/adoptions/pets`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                fetchData();
-            } else {
-                throw new Error('Failed to publish');
-            }
+            await apiClient.post('/adoptions/pets', formData);
+            fetchData();
         } catch (error) {
             console.error('API failed, mock publish:', error);
             const newPet = { id: `PET-${Date.now()}`, petName: formData.name, status: 'up for adoption', image: null };

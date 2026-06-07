@@ -8,23 +8,21 @@ const VetLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const { login, user, logout } = useAuthStore();
+    const { loginAction, user, logout } = useAuthStore();
     const navigate = useNavigate();
 
     const isUnauthorized = user && !['VET', 'CLINIC', 'NGO', 'vet', 'clinic', 'ngo'].includes(user.role);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Mocking Vet authentication
-        const userData = {
-            name: 'Dr. John Doe',
-            email: email,
-            role: 'VET' // Explicitly setting role to VET for this portal
-        };
-
-        login(userData);
-        navigate('/vet/dashboard');
+        try {
+            const { user: loggedInUser } = await loginAction(email, password);
+            if (['VET', 'CLINIC', 'NGO', 'vet', 'clinic', 'ngo'].includes(loggedInUser?.role)) {
+                navigate('/vet/dashboard');
+            }
+        } catch (error) {
+            alert(error.message || 'Login failed');
+        }
     };
 
     return (

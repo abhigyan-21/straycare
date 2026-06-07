@@ -172,6 +172,21 @@ export const registerPartner = async (partnerData) => {
   return response.data;
 };
 
+export const getProfile = async () => {
+  const response = await apiClient.get('/users/profile');
+  return response.data;
+};
+
+export const getClinicPets = async () => {
+  const response = await apiClient.get('/adoptions/clinic-pets');
+  return response.data;
+};
+
+export const updatePet = async (id, data) => {
+  const response = await apiClient.patch(`/adoptions/pets/${id}`, data);
+  return response.data;
+};
+
 // Admin Endpoints
 export const getAdminStats = async () => {
   try {

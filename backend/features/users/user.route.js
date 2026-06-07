@@ -7,6 +7,7 @@ const { verifyToken, allowRoles } = require('../auth/auth.middleware');
 router.use(verifyToken);
 router.use(allowRoles('VET', 'ADMIN', 'NGO'));
 
+router.get('/profile', userController.getProfile);
 router.get('/rescuers', userController.getClinicRescuers);
 router.post('/rescuers/add', userController.addRescuer);
 router.post('/rescuers/remove/:id', userController.removeRescuer);

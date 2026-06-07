@@ -8,7 +8,9 @@ router.get('/pets', adoptionController.listPets);
 router.get('/pets/:id', adoptionController.getPetDetails);
 
 // Protected routes
+router.get('/clinic-pets', verifyToken, allowRoles('VET', 'ADMIN', 'NGO'), adoptionController.getClinicPets);
 router.post('/pets', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN'), adoptionController.listPetForAdoption);
+router.patch('/pets/:id', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN'), adoptionController.updatePet);
 router.post('/requests', verifyToken, allowRoles('USER'), adoptionController.submitAdoptionRequest);
 router.get('/requests', verifyToken, adoptionController.getAdoptionRequests);
 router.patch('/requests/:id', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN'), adoptionController.updateRequestStatus);

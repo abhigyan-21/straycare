@@ -4,8 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetRescuers.css';
 import ActionLoader from '../../components/ActionLoader';
 import { MOCK_RESCUERS } from '../../data/mock_vet_data';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import apiClient from '../../services/api';
 
 const VetRescuers = () => {
     const { user: authUser } = useAuthStore();
@@ -23,14 +22,8 @@ const VetRescuers = () => {
             setIsLoading(true);
             const startTime = Date.now();
             try {
-                const response = await fetch(`${API_BASE_URL}/users/rescuers`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (!response.ok) throw new Error('Backend offline or error');
-                const data = await response.json();
-                setRescuers(data);
+                const response = await apiClient.get('/users/rescuers');
+                setRescuers(response.data);
             } catch (error) {
                 console.warn("Using mock rescuers as fallback:", error.message);
                 setRescuers(MOCK_RESCUERS);
@@ -56,26 +49,14 @@ const VetRescuers = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/users/rescuers/add`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setRescuers(prev => [data.rescuer, ...prev]);
-                setFormData({ email: '', contact: '' });
-                alert('Rescuer added successfully!');
-            } else {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to add');
-            }
+            const response = await apiClient.post('/users/rescuers/add', formData);
+            const data = response.data;
+            setRescuers(prev => [data.rescuer, ...prev]);
+            setFormData({ email: '', contact: '' });
+            alert('Rescuer added successfully!');
         } catch (error) {
             console.error('API failed, falling back to mock:', error);
+            const errorMsg = error.response?.data?.error || error.message;
             // Mock fallback
             const newRescuer = {
                 id: Math.random().toString(36).substr(2, 9),
@@ -86,7 +67,7 @@ const VetRescuers = () => {
             };
             setRescuers(prev => [newRescuer, ...prev]);
             setFormData({ email: '', contact: '' });
-            alert('Added (Mock Mode)');
+            alert(`Added (Mock Mode - API Error: ${errorMsg})`);
         } finally {
             setIsSubmitting(false);
         }
@@ -98,18 +79,8 @@ const VetRescuers = () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/users/rescuers/remove/${id}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            
-            if (response.ok) {
-                setRescuers(prev => prev.filter(r => r.id !== id));
-            } else {
-                throw new Error('Failed to remove');
-            }
+            await apiClient.post(`/users/rescuers/remove/${id}`);
+            setRescuers(prev => prev.filter(r => r.id !== id));
         } catch (error) {
             console.error('API failed, falling back to mock:', error);
             setRescuers(prev => prev.filter(r => r.id !== id));

@@ -129,7 +129,21 @@ const getReportById = async (req, res) => {
       return res.status(404).json({ error: 'Report not found' });
     }
 
-    res.json(report);
+    let rescuer = null;
+    if (report.assignedRescuerId) {
+      rescuer = await prisma.user.findUnique({
+        where: { id: report.assignedRescuerId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          contact: true,
+          avatarUrl: true,
+        }
+      });
+    }
+
+    res.json({ ...report, rescuer });
   } catch (error) {
     console.error('Error fetching report:', error);
     res.status(500).json({ error: 'Internal Server Error' });

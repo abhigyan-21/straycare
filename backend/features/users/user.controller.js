@@ -141,8 +141,89 @@ const removeRescuer = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get full profile details (including role-specific and clinic details)
+ * @route GET /api/users/profile
+ * @access Private
+ */
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Fetch user details
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        clinic: true,
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Exclude password and tokens
+    const { password: _, refreshToken: __, ...userProfile } = user;
+
+    // Fetch additional role-specific stats
+    let stats = {};
+    let registrationDetails = null;
+
+    if (user.role === 'VET' && user.clinicId) {
+      // Vet specific stats
+      const [totalRescues, successfulAdoptions, activeCampaigns, regDoc] = await Promise.all([
+        prisma.animalReport.count({ where: { assignedClinicId: user.clinicId } }),
+        prisma.pet.count({ where: { clinicId: user.clinicId, status: 'ADOPTED' } }),
+        prisma.campaign.count({ where: { clinicId: user.clinicId, status: 'APPROVED' } }),
+        prisma.petDocument.findFirst({
+          where: { userId: user.id, type: 'REGISTRATION' }
+        })
+      ]);
+
+      stats = { totalRescues, successfulAdoptions, activeCampaigns };
+
+      if (regDoc && regDoc.fileData) {
+        try {
+          registrationDetails = JSON.parse(regDoc.fileData);
+        } catch (e) {
+          registrationDetails = { registrationNumber: regDoc.fileData };
+        }
+      }
+    } else if (user.role === 'NGO') {
+      // NGO specific stats (e.g. campaigns created, reports created/assigned)
+      const [totalRescues, activeCampaigns, regDoc] = await Promise.all([
+        prisma.animalReport.count({ where: { reporterId: user.id } }), // reports created by them or assigned
+        prisma.campaign.count({ where: { createdBy: user.id, status: 'APPROVED' } }),
+        prisma.petDocument.findFirst({
+          where: { userId: user.id, type: 'REGISTRATION' }
+        })
+      ]);
+
+      stats = { totalRescues, activeCampaigns };
+
+      if (regDoc && regDoc.fileData) {
+        try {
+          registrationDetails = JSON.parse(regDoc.fileData);
+        } catch (e) {
+          registrationDetails = { registrationNumber: regDoc.fileData };
+        }
+      }
+    }
+
+    res.json({
+      user: userProfile,
+      stats,
+      registrationDetails
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getClinicRescuers,
   addRescuer,
-  removeRescuer
+  removeRescuer,
+  getProfile
 };

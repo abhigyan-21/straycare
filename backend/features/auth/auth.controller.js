@@ -337,7 +337,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email },
+      { id: user.id, role: user.role, email: user.email, clinicId: user.clinicId },
       process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
@@ -385,7 +385,7 @@ const refresh = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email },
+      { id: user.id, role: user.role, email: user.email, clinicId: user.clinicId },
       process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );

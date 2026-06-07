@@ -5,10 +5,9 @@ import LiveStatusView from '../../components/vet/LiveStatusView';
 import ActionLoader from '../../components/ActionLoader';
 import VetStatCard from '../../components/vet/VetStatCard';
 import { useAuthStore } from '../../store/authStore';
+import apiClient from '../../services/api';
 
 import { MOCK_DASHBOARD_DATA } from '../../data/mock_vet_data';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 function VetDashboard() {
     const [rescues, setRescues] = useState([]);
@@ -26,18 +25,16 @@ function VetDashboard() {
         const startTime = Date.now();
         try {
             const [reportsRes, petsRes, reqsRes, campsRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/reports/clinic`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                fetch(`${API_BASE_URL}/adoptions/pets`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                fetch(`${API_BASE_URL}/adoptions/requests`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                fetch(`${API_BASE_URL}/funding/campaigns`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+                apiClient.get('/reports/clinic'),
+                apiClient.get('/adoptions/pets'),
+                apiClient.get('/adoptions/requests'),
+                apiClient.get('/funding/campaigns')
             ]);
 
-            if (!reportsRes.ok || !petsRes.ok || !reqsRes.ok || !campsRes.ok) throw new Error('Backend offline');
-
-            const reports = await reportsRes.json();
-            const pets = await petsRes.json();
-            const reqs = await reqsRes.json();
-            const camps = await campsRes.json();
+            const reports = reportsRes.data;
+            const pets = petsRes.data;
+            const reqs = reqsRes.data;
+            const camps = campsRes.data;
 
             const latestCamp = camps.data?.[0];
 

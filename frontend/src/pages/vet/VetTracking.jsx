@@ -4,6 +4,8 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import { User, Phone, MapPin, Ambulance, Info, ArrowLeft, FileText } from 'lucide-react';
 import '../../styles/vet/VetTracking.css';
+import apiClient from '../../services/api';
+import ActionLoader from '../../components/ActionLoader';
 
 // Icons
 import ambulanceImg from '../../assets/images/ambulance.png';
@@ -14,31 +16,52 @@ const ambulanceIcon = new L.Icon({ iconUrl: ambulanceImg, iconSize: [60, 40], ic
 const hospitalIcon = new L.Icon({ iconUrl: hospitalImg, iconSize: [50, 50], iconAnchor: [25, 50] });
 const strayIcon = new L.Icon({ iconUrl: pickupImg, iconSize: [45, 45], iconAnchor: [22, 45] });
 
-const MOCK_REPORTS = {
-  'REP-7729': { id: 'REP-7729', type: 'Dog', description: 'Golden Retriever with a leg injury.', location: [30.7420, 76.8188], reporter: 'Rahul Singh', contact: '+91 91234 56789' },
-  'REP-8102': { id: 'REP-8102', type: 'Cat', description: 'Stray cat trapped in a drain.', location: [30.7333, 76.7794], reporter: 'Anjali Sharma', contact: '+91 99887 76655' },
-};
-
-const HOSPITAL_POS = [30.7500, 76.8000];
-
 function VetTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const report = MOCK_REPORTS[id] || MOCK_REPORTS['REP-7729'];
-
+  
+  const [report, setReport] = useState(null);
   const [rescuerPos, setRescuerPos] = useState([30.7200, 76.7600]);
+  const [hospitalPos, setHospitalPos] = useState([30.7500, 76.8000]);
   const [route, setRoute] = useState([]);
   const [eta, setEta] = useState(12);
-
-  // Mock driver details
-  const driver = {
-    name: "Sunil Kumar",
-    phone: "+91 88776 65544",
-    vehicle: "Ambulance UP-16-AX-1234",
-    status: "Heading to Stray"
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const response = await apiClient.get(`/reports/${id}`);
+        const data = response.data;
+        setReport({
+          id: data.id.substring(0, 8).toUpperCase(),
+          type: data.pet?.breed || 'Stray Animal',
+          description: data.description,
+          location: [data.locationLat, data.locationLng],
+          reporter: data.reporter?.name || 'Anonymous',
+          contact: data.reporter?.contact || 'N/A',
+          status: data.status,
+          rescuer: data.rescuer
+        });
+
+        if (data.rescuerLat && data.rescuerLng) {
+          setRescuerPos([data.rescuerLat, data.rescuerLng]);
+        }
+        
+        if (data.clinic && data.clinic.lat && data.clinic.lng) {
+          setHospitalPos([data.clinic.lat, data.clinic.lng]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live report tracking details:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchReport();
+  }, [id]);
+
+  useEffect(() => {
+    if (!report) return;
+    
     const fetchRoute = async () => {
       const start = rescuerPos;
       const end = report.location;
@@ -49,13 +72,38 @@ function VetTracking() {
         if (data.routes && data.routes[0]) {
           const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
           setRoute(coords);
+          setEta(Math.ceil(data.routes[0].duration / 60));
         }
       } catch (err) {
         console.error("Routing error:", err);
       }
     };
     fetchRoute();
-  }, [report.location, rescuerPos]);
+  }, [report, rescuerPos]);
+
+  if (isLoading) {
+    return <ActionLoader message="Syncing GPS tracking coordinates..." />;
+  }
+
+  if (!report) {
+    return (
+      <div className="vet-tracking-page" style={{ padding: '50px', textAlign: 'center' }}>
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          <ArrowLeft size={20} />
+          <span>Back to Dashboard</span>
+        </button>
+        <h2 style={{ marginTop: '20px' }}>Report not found or tracking not initialized.</h2>
+      </div>
+    );
+  }
+
+  // Driver details populated dynamically from the backend report.rescuer details
+  const driver = {
+    name: report.rescuer?.name || "Sunil Kumar",
+    phone: report.rescuer?.contact || report.rescuer?.email || "+91 88776 65544",
+    vehicle: "Ambulance Vehicle",
+    status: report.status === 'ASSIGNED' ? "Heading to Stray" : report.status.toLowerCase().replace('_', ' ')
+  };
 
   return (
     <div className="vet-tracking-page">
@@ -64,12 +112,11 @@ function VetTracking() {
           <ArrowLeft size={20} />
           <span>Back to Dashboard</span>
         </button>
-        <h1>Rescue Tracking: {id}</h1>
+        <h1>Rescue Tracking: {report.id}</h1>
       </div>
 
       <div className="tracking-container">
         {/* Sidebar Info */}
-        
         <div className="tracking-sidebar">
           <div className="eta-card">
             <span className="eta-label">Estimated Time to Arrival</span>
@@ -128,8 +175,6 @@ function VetTracking() {
               </div>
             </div>
           </div>
-
-          
         </div>
 
         {/* Map View */}
@@ -147,7 +192,7 @@ function VetTracking() {
             <Marker position={report.location} icon={strayIcon}>
                 <Popup>Stray Animal Location</Popup>
             </Marker>
-            <Marker position={HOSPITAL_POS} icon={hospitalIcon}>
+            <Marker position={hospitalPos} icon={hospitalIcon}>
                 <Popup>Your Clinic</Popup>
             </Marker>
             <Marker position={rescuerPos} icon={ambulanceIcon}>
@@ -166,7 +211,6 @@ function MapRecenter({ center }) {
   const map = useMap();
   
   useEffect(() => {
-    // Fix for map tiles not loading correctly in some containers
     setTimeout(() => {
       map.invalidateSize();
     }, 100);

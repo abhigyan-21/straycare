@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     User, 
     Building2, 
@@ -18,29 +18,62 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetProfile.css';
+import { getProfile } from '../../services/api';
+import ActionLoader from '../../components/ActionLoader';
 
 const VetProfile = () => {
     const { user: authUser, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState('clinic');
+    const [vetData, setVetData] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
 
-    // Mock data for vet profile
-    const [vetData] = useState({
-        name: authUser?.name || 'Dr. Arjun Mehta',
-        email: authUser?.email || 'contact@healthypaws.com',
-        phone: '+91 98765 43210',
-        role: authUser?.role || 'clinic',
-        avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop',
-        clinicName: 'Healthy Paws Veterinary Clinic',
-        licenseNo: 'VET-MH-2026-8842',
-        joined: 'October 2025',
-        location: 'Sector 45, Gurgaon, Haryana - 122003',
-        specialization: 'Small Animal Surgery, Preventive Medicine',
-        experience: '12 Years',
-        experienceFull: 'Over a decade of experience in domestic animal care and surgical procedures.',
-        totalRescues: 142,
-        activeCampaigns: 2,
-        successfulAdoptions: 89
-    });
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const data = await getProfile();
+                setVetData({
+                    name: data.user.name,
+                    email: data.user.email,
+                    phone: data.user.contact || data.user.phone || 'N/A',
+                    role: data.user.role,
+                    avatar: data.user.avatarUrl || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop',
+                    clinicName: data.user.clinic?.name || 'StrayCare Partner',
+                    licenseNo: data.registrationDetails?.registrationNumber || 'N/A',
+                    joined: new Date(data.user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
+                    location: data.user.clinic?.address || 'N/A',
+                    specialization: 'General Veterinary Care',
+                    experience: 'N/A',
+                    experienceFull: 'Board certified veterinary clinic staff.',
+                    totalRescues: data.stats?.totalRescues || 0,
+                    activeCampaigns: data.stats?.activeCampaigns || 0,
+                    successfulAdoptions: data.stats?.successfulAdoptions || 0
+                });
+            } catch (err) {
+                console.error('Failed to load live profile, using mock:', err);
+                setVetData({
+                    name: authUser?.name || 'Dr. Arjun Mehta',
+                    email: authUser?.email || 'contact@healthypaws.com',
+                    phone: '+91 98765 43210',
+                    role: authUser?.role || 'clinic',
+                    avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop',
+                    clinicName: 'Healthy Paws Veterinary Clinic',
+                    licenseNo: 'VET-MH-2026-8842',
+                    joined: 'October 2025',
+                    location: 'Sector 45, Gurgaon, Haryana - 122003',
+                    specialization: 'Small Animal Surgery, Preventive Medicine',
+                    experience: '12 Years',
+                    experienceFull: 'Over a decade of experience in domestic animal care and surgical procedures.',
+                    totalRescues: 142,
+                    activeCampaigns: 2,
+                    successfulAdoptions: 89
+                });
+            } finally {
+                setLoadingProfile(false);
+            }
+        };
+
+        fetchProfile();
+    }, [authUser]);
 
     const operatingHours = [
         { day: 'Monday - Friday', time: '09:00 AM - 08:00 PM' },
@@ -171,6 +204,10 @@ const VetProfile = () => {
                 return null;
         }
     };
+
+    if (loadingProfile || !vetData) {
+        return <ActionLoader message="Loading profile..." />;
+    }
 
     return (
         <div className="vet-profile-page">

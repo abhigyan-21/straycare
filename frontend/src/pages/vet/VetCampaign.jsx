@@ -8,10 +8,9 @@ import CampaignListItem from '../../components/vet/CampaignListItem';
 import VetTabs from '../../components/vet/VetTabs';
 import CampaignDetailModal from '../../components/vet/CampaignDetailModal';
 import ActionLoader from '../../components/ActionLoader';
+import apiClient from '../../services/api';
 
 import { MOCK_CAMPAIGNS } from '../../data/mock_vet_data';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 function VetCampaign() {
     const [activeTab, setActiveTab] = useState('manage');
@@ -34,14 +33,8 @@ function VetCampaign() {
         setIsLoading(true);
         const startTime = Date.now();
         try {
-            const response = await fetch(`${API_BASE_URL}/funding/campaigns`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (!response.ok) throw new Error('Backend offline');
-            const result = await response.json();
-            setCampaigns(result.data || []);
+            const response = await apiClient.get('/funding/campaigns');
+            setCampaigns(response.data.data || []);
         } catch (error) {
             console.warn("Using mock campaigns fallback:", error);
             setCampaigns(MOCK_CAMPAIGNS);
@@ -86,24 +79,12 @@ function VetCampaign() {
     const handleCreateCampaign = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${API_BASE_URL}/funding/campaigns`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(newCampaign)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                setCampaigns([result.data, ...campaigns]);
-                setActiveTab('manage');
-                setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
-                alert('Campaign launched successfully!');
-            } else {
-                throw new Error('Failed to launch');
-            }
+            const response = await apiClient.post('/funding/campaigns', newCampaign);
+            const result = response.data;
+            setCampaigns([result.data, ...campaigns]);
+            setActiveTab('manage');
+            setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
+            alert('Campaign launched successfully!');
         } catch (error) {
             console.error('API failed, mock creation:', error);
             const themes = ['blue', 'green', 'yellow'];

@@ -264,6 +264,64 @@ const updateRequestStatus = async (req, res) => {
   }
 };
 
+const getClinicPets = async (req, res) => {
+  try {
+    const clinicId = req.user.clinicId;
+    if (!clinicId) {
+      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    }
+    const pets = await prisma.pet.findMany({
+      where: { clinicId },
+      include: {
+        report: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ status: 'success', data: pets });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
+const updatePet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, breed, age, gender, size, description, status } = req.body;
+
+    const pet = await prisma.pet.findUnique({
+      where: { id },
+    });
+
+    if (!pet) {
+      return res.status(404).json({ status: 'error', message: 'Pet not found' });
+    }
+
+    const isOwner = pet.ownerId === req.user.id;
+    const isInClinic = req.user.clinicId && pet.clinicId === req.user.clinicId;
+
+    if (req.user.role !== 'ADMIN' && !isOwner && !isInClinic) {
+      return res.status(403).json({ status: 'error', message: 'Unauthorized to update this pet' });
+    }
+
+    const updatedPet = await prisma.pet.update({
+      where: { id },
+      data: {
+        name,
+        breed,
+        age: age ? parseInt(age) : undefined,
+        gender,
+        size,
+        description,
+        status,
+      },
+    });
+
+    res.json({ status: 'success', data: updatedPet });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
 module.exports = {
   listPets,
   getPetDetails,
@@ -271,4 +329,6 @@ module.exports = {
   submitAdoptionRequest,
   getAdoptionRequests,
   updateRequestStatus,
+  getClinicPets,
+  updatePet,
 };
