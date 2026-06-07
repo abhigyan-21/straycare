@@ -306,7 +306,7 @@
     color: #333;
 }
 
-.close-btn {
+.filter-modal .close-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -314,7 +314,7 @@
     color: #888;
 }
 
-.close-btn:hover {
+.filter-modal .close-btn:hover {
     color: #333;
 }
 

@@ -67,13 +67,26 @@ const listPetForAdoption = async (req, res) => {
     const { reportId, name, breed, age, gender, size, description } = req.body;
     const ownerId = req.user.id;
     
-    let clinicId = req.user.clinicId || null;
+    // Fetch the most up-to-date user info directly from the database to avoid stale JWT token claims
+    const dbUser = await prisma.user.findUnique({
+      where: { id: ownerId },
+      select: { clinicId: true, role: true }
+    });
+    
+    const userRole = dbUser?.role || req.user.role;
+    let clinicId = dbUser?.clinicId || null;
+
+    console.log('[Adoption Debug] Input Body:', req.body);
+    console.log('[Adoption Debug] JWT User:', req.user);
+    console.log('[Adoption Debug] Database User Info:', dbUser);
+    console.log('[Adoption Debug] initial clinicId:', clinicId);
 
     // Validation: Must be associated with a clinic OR be a registered Rescuer
-    if (!clinicId && req.user.role !== 'RESCUER' && req.user.role !== 'ADMIN') {
+    if (!clinicId && userRole !== 'RESCUER' && userRole !== 'ADMIN' && userRole !== 'NGO') {
+      console.log('[Adoption Debug] Failed general association check');
       return res.status(403).json({ 
         status: 'error', 
-        message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer.' 
+        message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer/NGO.' 
       });
     }
 
@@ -83,17 +96,21 @@ const listPetForAdoption = async (req, res) => {
         where: { id: reportId },
       });
 
+      console.log('[Adoption Debug] Loaded report:', report);
+
       if (!report) {
         return res.status(404).json({ status: 'error', message: 'Animal report not found' });
       }
 
       // If report has a clinic, use it, unless the user is an admin or the rescuer assigned to it
       clinicId = report.assignedClinicId || clinicId;
+      console.log('[Adoption Debug] updated clinicId:', clinicId);
 
       // Check authorization for report-linked pets
-      if (req.user.role !== 'ADMIN' && 
-          clinicId !== req.user.clinicId && 
+      if (userRole !== 'ADMIN' && 
+          clinicId !== dbUser?.clinicId && 
           report.assignedRescuerId !== ownerId) {
+        console.log('[Adoption Debug] Authorization failed: user is not admin, clinicId mismatch, and user is not the assigned rescuer');
         return res.status(403).json({ 
           status: 'error', 
           message: 'You are not authorized to list this specific reported stray for adoption.' 
@@ -116,8 +133,10 @@ const listPetForAdoption = async (req, res) => {
       },
     });
 
+    console.log('[Adoption Debug] Pet created successfully:', pet);
     res.status(201).json({ status: 'success', data: pet });
   } catch (error) {
+    console.error('[Adoption Debug] Error creating pet:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 };

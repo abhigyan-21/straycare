@@ -106,6 +106,7 @@
     text-align: center;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     animation: slideUp 0.3s ease-out;
+    padding: 30px;
 }
 
 @keyframes slideUp {
@@ -278,7 +279,7 @@
     color: #FF5C00;
 }
 
-.close-btn {
+.create-adoption-modal .close-btn {
     background: #f5f5f5;
     border: none;
     color: #666;
@@ -292,7 +293,7 @@
     transition: all 0.2s;
 }
 
-.close-btn:hover {
+.create-adoption-modal .close-btn:hover {
     background: #e0e0e0;
     color: #000;
 }
@@ -315,11 +316,11 @@
     flex: 1;
 }
 
-.input-group {
+.create-adoption-modal .input-group {
     margin: 0 35px 24px 0;
 }
 
-.input-group label {
+.create-adoption-modal .input-group label {
     display: block;
     font-weight: 600;
     margin-bottom: 10px;

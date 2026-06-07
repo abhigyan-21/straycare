@@ -337,7 +337,7 @@
     margin-top: 20px;
 }
 
-.close-btn {
+.close-btn-container .close-btn {
     background-color: #f2f2f2;
     border: none;
     padding: 10px 20px;
@@ -347,7 +347,7 @@
     color: #333;
 }
 
-.close-btn:hover {
+.close-btn-container .close-btn:hover {
     background-color: #e0e0e0;
 }
 

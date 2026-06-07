@@ -20,10 +20,46 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const validExtensions = ['jpeg', 'jpg', 'png'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const validMimeTypes = ['image/jpeg', 'image/png'];
+            const fileMime = file.type;
+
+            if (!validExtensions.includes(fileExtension) || (fileMime && !validMimeTypes.includes(fileMime))) {
+                alert('Only JPEG, JPG, and PNG images are accepted.');
+                e.target.value = ''; // Reset file input
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({ ...prev, image: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleClose = () => {
+        setFormData({
+            name: '',
+            species: 'Dog',
+            breed: '',
+            age: '',
+            gender: 'Male',
+            description: '',
+            healthStatus: '',
+            image: null
+        });
+        onClose();
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onPublish(formData);
-        onClose();
+        handleClose();
     };
 
     return (
@@ -34,7 +70,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                         <Heart className="header-icon" size={24} />
                         <h2>Create Adoption Post</h2>
                     </div>
-                    <button className="close-btn" onClick={onClose}>
+                    <button className="close-btn" onClick={handleClose}>
                         <X size={24} />
                     </button>
                 </div>
@@ -99,12 +135,27 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                         </div>
 
                         <div className="form-section media-info">
-                            <div className="image-upload-container">
+                            <div className="image-upload-container" style={{ height: '100%' }}>
                                 <label>Pet Photo</label>
-                                <div className="upload-box">
-                                    <Upload size={32} />
-                                    <span>Click to upload photo</span>
-                                    <input type="file" className="file-input" accept="image/*" />
+                                <div className="upload-box" style={{ height: 'calc(100% - 35px)', minHeight: '220px' }}>
+                                    {formData.image ? (
+                                        <img 
+                                            src={formData.image} 
+                                            alt="Preview" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '18px' }} 
+                                        />
+                                    ) : (
+                                        <>
+                                            <Upload size={32} />
+                                            <span>Click to upload photo</span>
+                                        </>
+                                    )}
+                                    <input 
+                                        type="file" 
+                                        className="file-input" 
+                                        accept=".jpeg,.jpg,.png,image/jpeg,image/png" 
+                                        onChange={handleFileChange}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -149,7 +200,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                     </div>
                     <div className="modal-actions">
                         <button type="submit" className="confirm-btn">Publish Adoption</button>
-                        <button type="button" className="cancel-btn" onClick={onClose}>Discard</button>
+                        <button type="button" className="cancel-btn" onClick={handleClose}>Discard</button>
                     </div>
                 </form>
             </div>
