@@ -25,7 +25,7 @@ const SECTIONS = [
 ];
 
 function FAQ() {
-    const [activeSection, setActiveSection] = useState('introduction');
+    const [activeSection, setActiveSection] = useState('FAQ1');
     const observerRef = useRef(null);
 
     useEffect(() => {
@@ -89,7 +89,7 @@ function FAQ() {
                     <p className="policy-last-updated">Last Updated: June 2026</p>
                 </div>
 
-                <section id="faq1" className="policy-section">
+                <section id="FAQ1" className="policy-section">
                     <h2>1. What is Furzo?</h2>
                     <p>
                         Furzo (Furzo) is a platform that helps people report injured, sick,
@@ -99,7 +99,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq2" className="policy-section">
+                <section id="FAQ2" className="policy-section">
                     <h2>2. Who can use Furzo?</h2>
                     <p>
                         Anyone can use Furzo, including animal lovers, pet owners, volunteers,
@@ -107,7 +107,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq3" className="policy-section">
+                <section id="FAQ3" className="policy-section">
                     <h2>3. How do I report a stray animal?</h2>
                     <p>
                         Users can create a report by uploading photos, providing the animal's
@@ -116,7 +116,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq4" className="policy-section">
+                <section id="FAQ4" className="policy-section">
                     <h2>4. How does Furzo help injured animals?</h2>
                     <p>
                         Once a report is submitted, nearby veterinarians, NGOs, and volunteers can
@@ -125,7 +125,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq5" className="policy-section">
+                <section id="FAQ5" className="policy-section">
                     <h2>5. Can I track the status of a reported animal?</h2>
                     <p>
                         Yes. Users can monitor rescue progress through different stages such as
@@ -133,7 +133,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq6" className="policy-section">
+                <section id="FAQ6" className="policy-section">
                     <h2>6. Does Furzo support pet adoption?</h2>
                     <p>
                         Yes. Users, shelters, and NGOs can list animals available for adoption,
@@ -142,7 +142,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq7" className="policy-section">
+                <section id="FAQ7" className="policy-section">
                     <h2>7. What is the AI Pet Assistant?</h2>
                     <p>
                         The AI Pet Assistant provides guidance on pet care, nutrition, basic
@@ -151,7 +151,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq8" className="policy-section">
+                <section id="FAQ8" className="policy-section">
                     <h2>8. Can veterinarians join the platform?</h2>
                     <p>
                         Yes. Veterinarians and clinics can register on the platform, receive rescue
@@ -160,7 +160,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq9" className="policy-section">
+                <section id="FAQ9" className="policy-section">
                     <h2>9. What is the Vet Portal?</h2>
                     <p>
                         The Vet Portal is a dedicated dashboard that allows veterinarians and
@@ -169,7 +169,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq10" className="policy-section">
+                <section id="FAQ10" className="policy-section">
                     <h2>10. Can NGOs use Furzo?</h2>
                     <p>
                         Yes. NGOs and shelters can manage rescue operations, receive reports,
@@ -178,7 +178,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq11" className="policy-section">
+                <section id="FAQ11" className="policy-section">
                     <h2>11. Is location information required?</h2>
                     <p>
                         Accurate location information helps rescuers and veterinarians quickly find
@@ -186,7 +186,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq12" className="policy-section">
+                <section id="FAQ12" className="policy-section">
                     <h2>12. Can users upload photos and updates?</h2>
                     <p>
                         Yes. Users can upload images, rescue updates, treatment progress, recovery
@@ -194,7 +194,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq13" className="policy-section">
+                <section id="FAQ13" className="policy-section">
                     <h2>13. Does Furzo work like social media?</h2>
                     <p>
                         Partially. Users can share pet-related content, rescue stories, awareness
@@ -202,7 +202,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq14" className="policy-section">
+                <section id="FAQ14" className="policy-section">
                     <h2>14. Is Furzo free to use?</h2>
                     <p>
                         The core features of Furzo, including animal reporting, rescue
@@ -211,7 +211,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq15" className="policy-section">
+                <section id="FAQ15" className="policy-section">
                     <h2>15. How does Furzo ensure genuine reports?</h2>
                     <p>
                         The platform encourages photo evidence, location verification, status
@@ -219,7 +219,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq16" className="policy-section">
+                <section id="FAQ16" className="policy-section">
                     <h2>16. Can I volunteer for animal rescue?</h2>
                     <p>
                         Yes. Interested users can register as volunteers and receive notifications
@@ -227,7 +227,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq17" className="policy-section">
+                <section id="FAQ17" className="policy-section">
                     <h2>17. What types of animals can be reported?</h2>
                     <p>
                         Users can report dogs, cats, birds, cattle, and other stray, abandoned,
@@ -235,7 +235,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq18" className="policy-section">
+                <section id="FAQ18" className="policy-section">
                     <h2>18. Is my personal information secure?</h2>
                     <p>
                         Yes. Furzo follows standard security practices to protect user data and
@@ -243,7 +243,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq19" className="policy-section">
+                <section id="FAQ19" className="policy-section">
                     <h2>19. Can I contact veterinarians directly?</h2>
                     <p>
                         Depending on platform permissions and availability, users may request
@@ -252,7 +252,7 @@ function FAQ() {
                     </p>
                 </section>
 
-                <section id="faq20" className="policy-section">
+                <section id="FAQ20" className="policy-section">
                     <h2>20. What problem does Furzo solve?</h2>
                     <p>
                         Furzo bridges the gap between people who find animals in need and the
