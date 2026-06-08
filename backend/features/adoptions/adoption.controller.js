@@ -135,21 +135,21 @@ const listPetForAdoption = async (req, res) => {
   try {
     const { reportId, name, breed, age, gender, size, description } = req.body;
     const ownerId = req.user.id;
-    
+
     // Fetch the most up-to-date user info directly from the database to avoid stale JWT token claims
     const dbUser = await prisma.user.findUnique({
       where: { id: ownerId },
       select: { clinicId: true, role: true }
     });
-    
+
     const userRole = dbUser?.role || req.user.role;
     let clinicId = dbUser?.clinicId || null;
 
     // Validation: Must be associated with a clinic OR be a registered Rescuer
     if (!clinicId && userRole !== 'RESCUER' && userRole !== 'ADMIN' && userRole !== 'NGO') {
-      return res.status(403).json({ 
-        status: 'error', 
-        message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer/NGO.' 
+      return res.status(403).json({
+        status: 'error',
+        message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer/NGO.'
       });
     }
 
@@ -167,12 +167,12 @@ const listPetForAdoption = async (req, res) => {
       clinicId = report.assignedClinicId || clinicId;
 
       // Check authorization for report-linked pets
-      if (userRole !== 'ADMIN' && 
-          clinicId !== dbUser?.clinicId && 
-          report.assignedRescuerId !== ownerId) {
-        return res.status(403).json({ 
-          status: 'error', 
-          message: 'You are not authorized to list this specific reported stray for adoption.' 
+      if (userRole !== 'ADMIN' &&
+        clinicId !== dbUser?.clinicId &&
+        report.assignedRescuerId !== ownerId) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'You are not authorized to list this specific reported stray for adoption.'
         });
       }
 
@@ -353,7 +353,7 @@ const updateRequestStatus = async (req, res) => {
     // Check authorization: Owner of pet, or member of assigned clinic, or ADMIN
     const isOwner = request.pet.ownerId === req.user.id;
     const isInClinic = req.user.clinicId && request.pet.clinicId === req.user.clinicId;
-    
+
     if (req.user.role !== 'ADMIN' && !isOwner && !isInClinic) {
       return res.status(403).json({ status: 'error', message: 'Unauthorized to update this request' });
     }
@@ -435,13 +435,13 @@ const updateRequestStatus = async (req, res) => {
 
     if (status === 'INTERVIEW_SCHEDULED') {
       const centerName = request.pet.clinic?.name || request.interviewLocation || 'StrayCare Partner Center';
-      const centerAddress = request.pet.clinic?.address 
-        ? `${request.pet.clinic.address}${request.pet.clinic.city ? ', ' + request.pet.clinic.city : ''}` 
+      const centerAddress = request.pet.clinic?.address
+        ? `${request.pet.clinic.address}${request.pet.clinic.city ? ', ' + request.pet.clinic.city : ''}`
         : 'Will be shared by the coordinator';
-        
+
       const dateObj = interviewDate ? new Date(interviewDate) : null;
-      const formattedDate = dateObj && !isNaN(dateObj) 
-        ? dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) 
+      const formattedDate = dateObj && !isNaN(dateObj)
+        ? dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
         : (interviewDate || 'To be determined');
 
       // Email 1: To the Adopter (Applicant)
@@ -491,7 +491,7 @@ const updateRequestStatus = async (req, res) => {
             </div>
 
             <p style="color: #718096; font-size: 0.9em; margin-top: 30px;">If you have any questions or need to reschedule, please contact the center/rescuer directly.</p>
-            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The Furzo Team</p>
           </div>
         `
       }).then(result => {
@@ -570,7 +570,7 @@ const updateRequestStatus = async (req, res) => {
                 </table>
               </div>
 
-              <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+              <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The Furzo Team</p>
             </div>
           `
         }).then(result => {
