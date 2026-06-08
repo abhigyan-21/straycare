@@ -2,26 +2,26 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../styles/privacy_terms.css';
 
 const SECTIONS = [
-    { id: 'FAQ1', label: '1. What is StrayCare?' },
-    { id: 'FAQ2', label: '2. Who can use StrayCare?' },
+    { id: 'FAQ1', label: '1. What is Furzo?' },
+    { id: 'FAQ2', label: '2. Who can use Furzo?' },
     { id: 'FAQ3', label: '3. How do I report a stray animal?' },
-    { id: 'FAQ4', label: '4. How does StrayCare help injured animals?' },
+    { id: 'FAQ4', label: '4. How does Furzo help injured animals?' },
     { id: 'FAQ5', label: '5. Can I track the status of a reported animal?' },
-    { id: 'FAQ6', label: '6. Does StrayCare support pet adoption?' },
+    { id: 'FAQ6', label: '6. Does Furzo support pet adoption?' },
     { id: 'FAQ7', label: '7. What is the AI Pet Assistant?' },
     { id: 'FAQ8', label: '8. Can veterinarians join the platform?' },
     { id: 'FAQ9', label: '9. What is the Vet Portal?' },
-    { id: 'FAQ10', label: '10. Can NGOs use StrayCare?' },
+    { id: 'FAQ10', label: '10. Can NGOs use Furzo?' },
     { id: 'FAQ11', label: '11. Is location information required?' },
     { id: 'FAQ12', label: '12. Can users upload photos and updates?' },
-    { id: 'FAQ13', label: '13. Does StrayCare work like social media?' },
-    { id: 'FAQ14', label: '14. Is StrayCare free to use?' },
-    { id: 'FAQ15', label: '15. How does StrayCare ensure genuine reports?' },
+    { id: 'FAQ13', label: '13. Does Furzo work like social media?' },
+    { id: 'FAQ14', label: '14. Is Furzo free to use?' },
+    { id: 'FAQ15', label: '15. How does Furzo ensure genuine reports?' },
     { id: 'FAQ16', label: '16. Can I volunteer for animal rescue?' },
     { id: 'FAQ17', label: '17. What types of animals can be reported?' },
     { id: 'FAQ18', label: '18. Is my personal information secure?' },
     { id: 'FAQ19', label: '19. Can I contact veterinarians directly?' },
-    { id: 'FAQ20', label: '20. What problem does StrayCare solve?' },
+    { id: 'FAQ20', label: '20. What problem does Furzo solve?' },
 ];
 
 function FAQ() {
@@ -90,9 +90,9 @@ function FAQ() {
                 </div>
 
                 <section id="faq1" className="policy-section">
-                    <h2>1. What is StrayCare?</h2>
+                    <h2>1. What is Furzo?</h2>
                     <p>
-                        StrayCare (Furzo) is a platform that helps people report injured, sick,
+                        Furzo (Furzo) is a platform that helps people report injured, sick,
                         abandoned, or distressed animals and connect them with nearby veterinarians,
                         NGOs, rescue organizations, and volunteers. It also supports pet adoption,
                         rescue tracking, community engagement, and AI-powered pet guidance.
@@ -100,9 +100,9 @@ function FAQ() {
                 </section>
 
                 <section id="faq2" className="policy-section">
-                    <h2>2. Who can use StrayCare?</h2>
+                    <h2>2. Who can use Furzo?</h2>
                     <p>
-                        Anyone can use StrayCare, including animal lovers, pet owners, volunteers,
+                        Anyone can use Furzo, including animal lovers, pet owners, volunteers,
                         veterinarians, clinics, NGOs, shelters, and rescue organizations.
                     </p>
                 </section>
@@ -117,7 +117,7 @@ function FAQ() {
                 </section>
 
                 <section id="faq4" className="policy-section">
-                    <h2>4. How does StrayCare help injured animals?</h2>
+                    <h2>4. How does Furzo help injured animals?</h2>
                     <p>
                         Once a report is submitted, nearby veterinarians, NGOs, and volunteers can
                         view the case, coordinate rescue efforts, provide treatment, and update the
@@ -134,7 +134,7 @@ function FAQ() {
                 </section>
 
                 <section id="faq6" className="policy-section">
-                    <h2>6. Does StrayCare support pet adoption?</h2>
+                    <h2>6. Does Furzo support pet adoption?</h2>
                     <p>
                         Yes. Users, shelters, and NGOs can list animals available for adoption,
                         while potential adopters can browse listings and connect with the
@@ -170,7 +170,7 @@ function FAQ() {
                 </section>
 
                 <section id="faq10" className="policy-section">
-                    <h2>10. Can NGOs use StrayCare?</h2>
+                    <h2>10. Can NGOs use Furzo?</h2>
                     <p>
                         Yes. NGOs and shelters can manage rescue operations, receive reports,
                         coordinate volunteers, track animal recovery, and publish adoption
@@ -195,7 +195,7 @@ function FAQ() {
                 </section>
 
                 <section id="faq13" className="policy-section">
-                    <h2>13. Does StrayCare work like social media?</h2>
+                    <h2>13. Does Furzo work like social media?</h2>
                     <p>
                         Partially. Users can share pet-related content, rescue stories, awareness
                         posts, and interact with the animal welfare community.
@@ -203,16 +203,16 @@ function FAQ() {
                 </section>
 
                 <section id="faq14" className="policy-section">
-                    <h2>14. Is StrayCare free to use?</h2>
+                    <h2>14. Is Furzo free to use?</h2>
                     <p>
-                        The core features of StrayCare, including animal reporting, rescue
+                        The core features of Furzo, including animal reporting, rescue
                         coordination, community participation, and adoption support, are intended
                         to be free for users.
                     </p>
                 </section>
 
                 <section id="faq15" className="policy-section">
-                    <h2>15. How does StrayCare ensure genuine reports?</h2>
+                    <h2>15. How does Furzo ensure genuine reports?</h2>
                     <p>
                         The platform encourages photo evidence, location verification, status
                         updates, and community moderation to help maintain report authenticity.
@@ -238,7 +238,7 @@ function FAQ() {
                 <section id="faq18" className="policy-section">
                     <h2>18. Is my personal information secure?</h2>
                     <p>
-                        Yes. StrayCare follows standard security practices to protect user data and
+                        Yes. Furzo follows standard security practices to protect user data and
                         ensure that personal information is handled responsibly.
                     </p>
                 </section>
@@ -253,9 +253,9 @@ function FAQ() {
                 </section>
 
                 <section id="faq20" className="policy-section">
-                    <h2>20. What problem does StrayCare solve?</h2>
+                    <h2>20. What problem does Furzo solve?</h2>
                     <p>
-                        StrayCare bridges the gap between people who find animals in need and the
+                        Furzo bridges the gap between people who find animals in need and the
                         organizations or professionals capable of helping them. It streamlines
                         rescue, treatment, recovery tracking, and adoption through a single
                         connected platform.
