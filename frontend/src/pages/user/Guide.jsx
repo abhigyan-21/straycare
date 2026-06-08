@@ -139,6 +139,15 @@ function Guide() {
     <Helmet>
       <title>Furzo - AI Pet Guide</title>
       <meta name="description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+      <meta property="og:title" content="Furzo - AI Pet Guide" />
+      <meta property="og:description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+      <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+      <meta property="og:url" content="https://furzo.vercel.app/guide" />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Furzo - AI Pet Guide" />
+      <meta name="twitter:description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+      <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
     </Helmet>
     <div className="guide-page">
       <div className="guide-container">

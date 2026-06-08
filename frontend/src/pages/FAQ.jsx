@@ -68,9 +68,18 @@ function FAQ() {
 
     return (
         <>
-        <Helmet>
+         <Helmet>
             <title>Furzo - Frequently Asked Questions</title>
             <meta name="description" content="Find answers to common questions about Furzo - animal rescue reporting, pet adoption, vet portal, and more." />
+            <meta property="og:title" content="Furzo - Frequently Asked Questions" />
+            <meta property="og:description" content="Find answers to common questions about Furzo - animal rescue reporting, pet adoption, vet portal, and more." />
+            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta property="og:url" content="https://furzo.vercel.app/faq" />
+            <meta property="og:type" content="website" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Furzo - Frequently Asked Questions" />
+            <meta name="twitter:description" content="Find answers to common questions about Furzo - animal rescue reporting, pet adoption, vet portal, and more." />
+            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
             <script type="application/ld+json">
                 {JSON.stringify({
                     "@context": "https://schema.org",

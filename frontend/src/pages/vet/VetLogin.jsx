@@ -31,6 +31,15 @@ const VetLogin = () => {
         <Helmet>
             <title>Furzo Vet Portal - Login</title>
             <meta name="description" content="Login to the Furzo Vet Portal for veterinary clinics and NGOs managing rescued animal care." />
+            <meta property="og:title" content="Furzo Vet Portal - Login" />
+            <meta property="og:description" content="Login to the Furzo Vet Portal for veterinary clinics and NGOs managing rescued animal care." />
+            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta property="og:url" content="https://furzo.vercel.app/vet/login" />
+            <meta property="og:type" content="website" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Furzo Vet Portal - Login" />
+            <meta name="twitter:description" content="Login to the Furzo Vet Portal for veterinary clinics and NGOs managing rescued animal care." />
+            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
         </Helmet>
         <div className="vet-login-page" style={{ 
             minHeight: '100vh', 

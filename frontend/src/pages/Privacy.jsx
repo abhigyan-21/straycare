@@ -62,6 +62,15 @@ function Privacy() {
     <Helmet>
       <title>Furzo - Privacy Policy</title>
       <meta name="description" content="Read Furzo's Privacy Policy to understand how we collect, use, and protect your personal information on our animal rescue platform." />
+      <meta property="og:title" content="Furzo - Privacy Policy" />
+      <meta property="og:description" content="Read Furzo's Privacy Policy to understand how we collect, use, and protect your personal information on our animal rescue platform." />
+      <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+      <meta property="og:url" content="https://furzo.vercel.app/privacy" />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Furzo - Privacy Policy" />
+      <meta name="twitter:description" content="Read Furzo's Privacy Policy to understand how we collect, use, and protect your personal information on our animal rescue platform." />
+      <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
     </Helmet>
     <div className="policy-container">
       <aside className="policy-sidebar">

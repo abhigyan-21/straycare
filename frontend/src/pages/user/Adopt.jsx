@@ -89,6 +89,15 @@ function Adopt() {
         <Helmet>
             <title>Furzo - Adopt a Pet</title>
             <meta name="description" content="Browse rescued animals available for adoption. Find your perfect furry companion through Furzo's pet adoption platform." />
+            <meta property="og:title" content="Furzo - Adopt a Pet" />
+            <meta property="og:description" content="Browse rescued animals available for adoption. Find your perfect furry companion through Furzo's pet adoption platform." />
+            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta property="og:url" content="https://furzo.vercel.app/adopt" />
+            <meta property="og:type" content="website" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Furzo - Adopt a Pet" />
+            <meta name="twitter:description" content="Browse rescued animals available for adoption. Find your perfect furry companion through Furzo's pet adoption platform." />
+            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
         </Helmet>
         <div className="adopt-page">
             <div className="adopt-toolbar">

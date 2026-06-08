@@ -252,6 +252,15 @@ const Register = () => {
         <Helmet>
             <title>Furzo - Partner Registration</title>
             <meta name="description" content="Register your veterinary clinic, hospital, or NGO as a Furzo partner to help rescue and care for stray animals." />
+            <meta property="og:title" content="Furzo - Partner Registration" />
+            <meta property="og:description" content="Register your veterinary clinic, hospital, or NGO as a Furzo partner to help rescue and care for stray animals." />
+            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta property="og:url" content="https://furzo.vercel.app/register" />
+            <meta property="og:type" content="website" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Furzo - Partner Registration" />
+            <meta name="twitter:description" content="Register your veterinary clinic, hospital, or NGO as a Furzo partner to help rescue and care for stray animals." />
+            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
         </Helmet>
         <div className="register-page">
             <div className="register-container">
