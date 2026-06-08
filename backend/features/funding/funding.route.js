@@ -8,6 +8,7 @@ const {
   getCampaigns,
   updateCampaign,
   deleteCampaign,
+  getFundingHighlights,
   volunteerCampaign,
   cancelVolunteerCampaign,
   checkVolunteerStatus,
@@ -25,6 +26,7 @@ router.post('/subscriptions/:id/cancel', verifyToken, cancelSubscription);
 
 // ── Campaign routes ───────────────────────────────
 router.post('/campaigns', verifyToken, createCampaign);
+router.get('/campaigns/highlights', optionalVerifyToken, getFundingHighlights);
 router.get('/campaigns', optionalVerifyToken, getCampaigns);
 router.patch('/campaigns/:id', verifyToken, updateCampaign);
 router.delete('/campaigns/:id', verifyToken, deleteCampaign);

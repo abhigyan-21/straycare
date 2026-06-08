@@ -306,6 +306,117 @@ const deleteCampaign = async (req, res) => {
   }
 };
 
+const getFundingHighlights = async (req, res) => {
+  try {
+    // 1. Find the top contributor for the current calendar month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    let topContributor = null;
+    let maxContribution = 0;
+
+    try {
+      const donations = await prisma.donation.findMany({
+        where: {
+          status: 'SUCCESS',
+          createdAt: {
+            gte: startOfMonth
+          }
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      const contributionMap = {};
+      donations.forEach(d => {
+        if (!contributionMap[d.userId]) {
+          contributionMap[d.userId] = {
+            name: d.user?.name || 'Anonymous User',
+            avatar: d.user?.avatar,
+            totalAmount: 0
+          };
+        }
+        contributionMap[d.userId].totalAmount += d.amount;
+      });
+
+      for (const userId in contributionMap) {
+        if (contributionMap[userId].totalAmount > maxContribution) {
+          maxContribution = contributionMap[userId].totalAmount;
+          topContributor = contributionMap[userId];
+        }
+      }
+    } catch (dbErr) {
+      console.warn("DB offline or error fetching donations highlights:", dbErr);
+    }
+
+    // 2. Find campaigns
+    let featuredCampaign = null;
+    let badgeText = "LATEST CAMPAIGN";
+
+    try {
+      const activeCampaigns = await prisma.campaign.findMany({
+        where: {
+          status: 'APPROVED'
+        },
+        include: {
+          creator: {
+            select: {
+              name: true
+            }
+          }
+        }
+      });
+
+      if (activeCampaigns.length > 0) {
+        // Find highest target campaign
+        const highestTargetCampaign = [...activeCampaigns].sort((a, b) => b.goalAmount - a.goalAmount)[0];
+
+        // Find least duration campaign (ending in the future)
+        const leastDurationCampaign = [...activeCampaigns]
+          .filter(c => c.endDate && new Date(c.endDate) > new Date())
+          .sort((a, b) => new Date(a.endDate) - new Date(b.endDate))[0];
+
+        // Preference: least duration first, else highest target
+        if (leastDurationCampaign) {
+          featuredCampaign = leastDurationCampaign;
+          badgeText = "URGENT / ENDING SOON";
+        } else if (highestTargetCampaign) {
+          featuredCampaign = highestTargetCampaign;
+          badgeText = "LARGEST GOAL";
+        } else {
+          featuredCampaign = activeCampaigns[0];
+          badgeText = "LATEST CAMPAIGN";
+        }
+      }
+    } catch (dbErr) {
+      console.warn("DB offline or error fetching campaigns highlights:", dbErr);
+    }
+
+    res.json({
+      status: 'success',
+      data: {
+        featuredCampaign,
+        badgeText,
+        topContributor: topContributor ? {
+          name: topContributor.name,
+          avatar: topContributor.avatar,
+          totalAmount: maxContribution
+        } : null
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching highlights:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 /**
  * @desc Register/schedule user as a general volunteer with a 2-minute cooldown
  * @route POST /api/funding/campaigns/volunteer
@@ -806,6 +917,7 @@ module.exports = {
   getCampaigns,
   updateCampaign,
   deleteCampaign,
+  getFundingHighlights,
   volunteerCampaign,
   cancelVolunteerCampaign,
   checkVolunteerStatus,

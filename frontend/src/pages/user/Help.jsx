@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import '../../styles/user/Help.css';
 import { mockPets } from '../../data/mockPets';
-import { highlightsData } from '../../data/highlightsData';
 import SupportCarousel from '../../components/user/SupportCarousel';
 import HighlightCard from '../../components/user/HighlightCard';
 import SupportModal from '../../components/user/SupportModal';
@@ -24,6 +23,12 @@ function Help({ openAuthModal }) {
 
     // Campaigns list state
     const [campaigns, setCampaigns] = useState([]);
+    const [highlights, setHighlights] = useState({
+        featuredCampaign: null,
+        badgeText: "LATEST CAMPAIGN",
+        topContributor: null
+    });
+    const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
     const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
 
     // Search & filter states
@@ -83,6 +88,21 @@ function Help({ openAuthModal }) {
             setCampaigns([]);
         } finally {
             setIsLoadingCampaigns(false);
+        }
+    };
+
+    // Fetch highlights from backend
+    const fetchHighlights = async () => {
+        setIsLoadingHighlights(true);
+        try {
+            const response = await apiClient.get('/funding/campaigns/highlights');
+            if (response.data && response.data.status === 'success') {
+                setHighlights(response.data.data);
+            }
+        } catch (err) {
+            console.warn("Failed to fetch highlights:", err);
+        } finally {
+            setIsLoadingHighlights(false);
         }
     };
 
@@ -236,8 +256,9 @@ function Help({ openAuthModal }) {
     const handleCampaignDonation = async (campaignId, amount) => {
         try {
             await apiClient.post(`/funding/campaigns/${campaignId}/donate-mock`, { amount });
-            // Refresh campaigns to update raisedAmount
+            // Refresh campaigns and highlights to update stats
             await fetchCampaigns();
+            await fetchHighlights();
             return true;
         } catch (err) {
             // Simulate donation on frontend
@@ -250,12 +271,25 @@ function Help({ openAuthModal }) {
                 }
                 return c;
             }));
+            setHighlights(prev => {
+                if (prev.featuredCampaign && prev.featuredCampaign.id === campaignId) {
+                    return {
+                        ...prev,
+                        featuredCampaign: {
+                            ...prev.featuredCampaign,
+                            raisedAmount: (prev.featuredCampaign.raisedAmount || 0) + Number(amount)
+                        }
+                    };
+                }
+                return prev;
+            });
             return true;
         }
     };
 
     useEffect(() => {
         fetchCampaigns();
+        fetchHighlights();
     }, []);
 
     useEffect(() => {
@@ -465,17 +499,40 @@ function Help({ openAuthModal }) {
                 </div>
             </div>
 
-            <section className="highlights-section">
-                <div className="highlights-header">
-                    <h2>Community Highlights</h2>
-                    <p>Celebrating our latest efforts and the heroes who make them possible.</p>
-                </div>
+            {(highlights.featuredCampaign || highlights.topContributor) && (
+                <section className="highlights-section">
+                    <div className="highlights-header">
+                        <h2>Community Highlights</h2>
+                        <p>Celebrating our latest efforts and the heroes who make them possible.</p>
+                    </div>
 
-                <div className="highlights-container">
-                    <HighlightCard type="campaign" data={highlightsData.latestCampaign} />
-                    <HighlightCard type="supporter" data={highlightsData.topSupporter} />
-                </div>
-            </section>
+                    <div 
+                        className="highlights-container"
+                        style={{ gridTemplateColumns: highlights.featuredCampaign ? '2fr 1fr' : '1fr' }}
+                    >
+                        {highlights.featuredCampaign && (
+                            <HighlightCard 
+                                type="campaign" 
+                                campaign={highlights.featuredCampaign} 
+                                badgeText={highlights.badgeText}
+                                onDonate={(selected) => {
+                                    setSelectedDirectCampaign(selected);
+                                    setExpandedCard(4);
+                                }}
+                                onDetails={(selected) => {
+                                    setShowDetailCampaign(selected);
+                                }}
+                            />
+                        )}
+                        {highlights.topContributor && (
+                            <HighlightCard 
+                                type="supporter" 
+                                contributor={highlights.topContributor} 
+                            />
+                        )}
+                    </div>
+                </section>
+            )}
 
             <SupportModal 
                 key={expandedCard ? `modal-${expandedCard}-${selectedDirectCampaign?.id || 'none'}` : 'modal-closed'}
