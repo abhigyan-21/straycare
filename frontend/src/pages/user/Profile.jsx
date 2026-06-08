@@ -1,5 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+    User as UserIcon, 
+    FileText, 
+    ClipboardList, 
+    CreditCard, 
+    Folder, 
+    PawPrint, 
+    LifeBuoy, 
+    LogOut,
+    Edit2,
+    Trash2,
+    Download
+} from 'lucide-react';
 import '../../styles/user/Profile.css';
 import '../../styles/user/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../../components/user/CreatePostModal';
@@ -9,6 +22,40 @@ import apiClient from '../../services/api';
 
 const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'><rect width='100%25' height='100%25' fill='%23f1f5f9'/><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 
+// Sub-component to reverse geocode lat/lng to readable address
+const ReportAddress = ({ lat, lng }) => {
+    const [address, setAddress] = useState('Fetching address...');
+
+    useEffect(() => {
+        if (!lat || !lng) {
+            setAddress('No location coordinates');
+            return;
+        }
+        
+        let active = true;
+        const fetchAddress = async () => {
+            try {
+                const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+                const data = await response.json();
+                if (active) {
+                    const formatted = `${data.locality || data.city || 'Unknown Location'}, ${data.principalSubdivision || data.countryName}`;
+                    setAddress(formatted);
+                }
+            } catch (err) {
+                if (active) {
+                    setAddress(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
+                }
+            }
+        };
+        fetchAddress();
+        return () => {
+            active = false;
+        };
+    }, [lat, lng]);
+
+    return <>{address}</>;
+};
+
 const Profile = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -17,6 +64,7 @@ const Profile = () => {
     const { user: authUser, logout, updateProfileAction } = useAuthStore();
     const [activeTab, setActiveTab] = useState('personal');
     const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
+    const [rescueSubTab, setRescueSubTab] = useState('active'); // 'active' or 'completed'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -73,18 +121,26 @@ const Profile = () => {
     const [subscriptions, setSubscriptions] = useState([]);
     const [documents, setDocuments] = useState([]);
     const [adoptions, setAdoptions] = useState([]);
+    const [rescues, setRescues] = useState([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
     const fetchProfileData = async () => {
         setIsLoadingData(true);
         try {
-            const [postsRes, reportsRes, donationsRes, docsRes, adoptionsRes] = await Promise.all([
+            const promises = [
                 apiClient.get('/feed/my-posts').catch(() => ({ data: null })),
                 apiClient.get('/reports/my-reports').catch(() => ({ data: null })),
                 apiClient.get('/funding/my-donations').catch(() => ({ data: null })),
                 apiClient.get('/medical/documents').catch(() => ({ data: null })),
                 apiClient.get('/adoptions/requests').catch(() => ({ data: null }))
-            ]);
+            ];
+
+            if (authUser?.role === 'RESCUER') {
+                promises.push(apiClient.get('/reports/my-rescues').catch(() => ({ data: null })));
+            }
+
+            const results = await Promise.all(promises);
+            const [postsRes, reportsRes, donationsRes, docsRes, adoptionsRes, rescuesRes] = results;
 
             if (postsRes && postsRes.data) {
                 const mappedPosts = postsRes.data.map(p => ({
@@ -180,6 +236,23 @@ const Profile = () => {
             } else {
                 setAdoptions([]);
             }
+
+            if (authUser?.role === 'RESCUER' && rescuesRes && rescuesRes.data) {
+                const mappedRescues = rescuesRes.data.map(r => ({
+                    id: r.id,
+                    image: r.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
+                    description: r.description,
+                    status: r.status,
+                    reporterName: r.reporter?.name || 'Anonymous',
+                    reporterPhone: r.reporter?.phone || 'N/A',
+                    date: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    lat: r.locationLat,
+                    lng: r.locationLng
+                }));
+                setRescues(mappedRescues);
+            } else {
+                setRescues([]);
+            }
         } catch (error) {
             console.error('Error fetching profile data:', error);
             setPosts([]);
@@ -188,6 +261,7 @@ const Profile = () => {
             setSubscriptions([]);
             setDocuments([]);
             setAdoptions([]);
+            setRescues([]);
         } finally {
             setIsLoadingData(false);
         }
@@ -480,8 +554,12 @@ const Profile = () => {
                                     <div key={post.id} className="post-grid-item">
                                         <img src={post.image} alt="Post" />
                                         <div className="post-overlay">
-                                            <button className="icon-btn edit" onClick={() => alert('Edit Post (Mock)')}>✎</button>
-                                            <button className="icon-btn delete" onClick={() => handleDeletePost(post.id)}>🗑</button>
+                                            <button className="icon-btn edit" onClick={() => alert('Edit Post (Mock)')}>
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button className="icon-btn delete" onClick={() => handleDeletePost(post.id)}>
+                                                <Trash2 size={16} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))
@@ -532,14 +610,20 @@ const Profile = () => {
                             {documents.length > 0 ? (
                                 documents.map((doc) => (
                                     <div key={doc.id} className="document-card">
-                                        <div className="doc-icon">📄</div>
+                                        <div className="doc-icon">
+                                            <FileText size={24} />
+                                        </div>
                                         <div className="doc-info">
                                             <h4>{doc.name}</h4>
                                             <span className="doc-meta">{doc.type} • {doc.dateAdded}</span>
                                         </div>
                                         <div className="doc-actions">
-                                            <button className="icon-btn download" onClick={() => handleDownloadDocument(doc.name, doc.fileData)}>⬇</button>
-                                            <button className="icon-btn delete" onClick={() => handleDeleteDocument(doc.id)}>🗑</button>
+                                            <button className="icon-btn download" onClick={() => handleDownloadDocument(doc.name, doc.fileData)}>
+                                                <Download size={16} />
+                                            </button>
+                                            <button className="icon-btn delete" onClick={() => handleDeleteDocument(doc.id)}>
+                                                <Trash2 size={16} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))
@@ -615,6 +699,69 @@ const Profile = () => {
                         </div>
                     </div>
                 );
+            case 'rescues':
+                const filteredRescues = rescues.filter(r =>
+                    rescueSubTab === 'active'
+                        ? (r.status === 'ASSIGNED' || r.status === 'RESCUED')
+                        : (r.status === 'TREATED' || r.status === 'ADOPTED')
+                );
+
+                return (
+                    <div className="profile-section fade-in">
+                        <div className="profile-section-header">
+                            <h2>My Rescues</h2>
+                            <div className="sub-tab-toggle">
+                                <button
+                                    className={`sub-tab-btn ${rescueSubTab === 'active' ? 'active' : ''}`}
+                                    onClick={() => setRescueSubTab('active')}
+                                >
+                                    Active Rescues
+                                </button>
+                                <button
+                                    className={`sub-tab-btn ${rescueSubTab === 'completed' ? 'active' : ''}`}
+                                    onClick={() => setRescueSubTab('completed')}
+                                >
+                                    Completed Rescues
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="adoption-list">
+                            {filteredRescues.length > 0 ? (
+                                filteredRescues.map((item) => (
+                                    <div key={item.id} className="adoption-card">
+                                        <div className="adoption-pet-img">
+                                            <img src={item.image} alt="Rescued Stray" />
+                                        </div>
+                                        <div className="adoption-card-info">
+                                            <div className="adoption-card-main">
+                                                <h3>{item.description}</h3>
+                                                <p className="pet-breed" style={{ margin: '4px 0 8px 0' }}>
+                                                    <strong>Reporter:</strong> {item.reporterName} ({item.reporterPhone})
+                                                </p>
+                                                <p className="clinic-info">
+                                                    <strong>Location:</strong> <ReportAddress lat={item.lat} lng={item.lng} />
+                                                </p>
+                                            </div>
+                                            <div className="adoption-card-status">
+                                                <span className={`status-badge ${item.status.toLowerCase()}`}>
+                                                    {item.status}
+                                                </span>
+                                                <span className="adoption-date">Reported: {item.date}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="empty-state">
+                                    {rescueSubTab === 'active' 
+                                        ? "No active rescues assigned to you." 
+                                        : "No completed rescues found."}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                );
             default:
                 return null;
         }
@@ -649,42 +796,52 @@ const Profile = () => {
                             className={`nav-btn ${activeTab === 'personal' ? 'active' : ''}`}
                             onClick={() => setActiveTab('personal')}
                         >
-                            <span className="icon">👤</span> Personal Details
+                            <UserIcon className="icon" size={18} /> Personal Details
                         </button>
                         <button
                             className={`nav-btn ${activeTab === 'posts' ? 'active' : ''}`}
                             onClick={() => setActiveTab('posts')}
                         >
-                            <span className="icon">📝</span> Manage Posts
+                            <FileText className="icon" size={18} /> Manage Posts
                         </button>
                         <button
                             className={`nav-btn ${activeTab === 'reports' ? 'active' : ''}`}
                             onClick={() => setActiveTab('reports')}
                         >
-                            <span className="icon">📋</span> My Reports
+                            <ClipboardList className="icon" size={18} /> My Reports
                         </button>
                         <button
                             className={`nav-btn ${activeTab === 'donations' ? 'active' : ''}`}
                             onClick={() => setActiveTab('donations')}
                         >
-                            <span className="icon">💳</span> Donations & Autopays
+                            <CreditCard className="icon" size={18} /> Donations & Autopays
                         </button>
                         <button
                             className={`nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
                             onClick={() => setActiveTab('documents')}
                         >
-                            <span className="icon">📁</span> Pet Documents
+                            <Folder className="icon" size={18} /> Pet Documents
                         </button>
                         <button
                             className={`nav-btn ${activeTab === 'adoptions' ? 'active' : ''}`}
                             onClick={() => setActiveTab('adoptions')}
                         >
-                            <span className="icon">🐾</span> Adoptions
+                            <PawPrint className="icon" size={18} /> Adoptions
                         </button>
+                        {authUser?.role === 'RESCUER' && (
+                            <button
+                                className={`nav-btn ${activeTab === 'rescues' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('rescues')}
+                            >
+                                <LifeBuoy className="icon" size={18} /> Rescues
+                            </button>
+                        )}
                     </nav>
 
                     <div className="sidebar-footer">
-                        <button className="logout-btn" onClick={logout}>Sign Out</button>
+                        <button className="logout-btn" onClick={logout}>
+                            <LogOut className="icon" size={18} /> Sign Out
+                        </button>
                     </div>
                 </div>
 

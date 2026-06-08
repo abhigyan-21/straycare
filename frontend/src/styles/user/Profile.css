@@ -874,6 +874,21 @@
     color: #059669;
 }
 
+.status-badge.assigned {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-badge.rescued {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.status-badge.treated {
+    background: #d1fae5;
+    color: #059669;
+}
+
 .adoption-date {
     font-size: 0.8rem;
     color: #9ca3af;

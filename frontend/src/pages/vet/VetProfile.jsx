@@ -27,10 +27,11 @@ import { getProfile, getUserDocuments, uploadUserDocument, deleteUserDocument } 
 import ActionLoader from '../../components/ActionLoader';
 import hospitalImg from '../../assets/images/Hospital.png';
 
-const hospitalIcon = new L.Icon({ 
-    iconUrl: hospitalImg, 
-    iconSize: [45, 45], 
-    iconAnchor: [22, 45] 
+const circularLocationIcon = new L.DivIcon({ 
+    className: 'custom-circular-marker',
+    html: `<div style="width: 16px; height: 16px; background-color: #346c02; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.45); position: relative;"><div class="marker-pulse-ring"></div></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
 });
 
 function MapEventsHandler({ onMapClick, center }) {
@@ -509,23 +510,23 @@ const VetProfile = () => {
                             </div>
                         </div>
 
-                        {vetData.role === 'VET' && (
-                            <div style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '30px' }}>
-                                <h3 style={{ marginBottom: '10px', fontSize: '1.2rem', color: '#1a1a1a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <MapPin size={22} style={{ color: '#346c02' }} /> Clinic Location Coordinates
+                        {(vetData.role === 'VET' || vetData.role === 'NGO') && (
+                            <div className="center-coordinates-section">
+                                <h3>
+                                    <MapPin size={22} color="#346c02" /> Center Location Coordinates
                                 </h3>
-                                <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '20px' }}>
-                                    Pin the exact location of your clinic so that rescuers can navigate to it for emergency pick-ups and transfers.
+                                <p>
+                                    Pin the exact location of your center so that rescuers can navigate to it for emergency pick-ups and transfers.
                                 </p>
                                 
-                                <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '30px' }}>
+                                <div className="coordinates-grid">
                                     {/* Map Container */}
-                                    <div className="profile-map-wrapper" style={{ height: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #ddd', position: 'relative', zIndex: 10 }}>
+                                    <div className="profile-map-wrapper">
                                         <MapContainer 
                                             center={profileMapCenter} 
                                             zoom={14} 
                                             scrollWheelZoom={false}
-                                            style={{ height: '100%', width: '100%' }}
+                                            className="leaflet-container-element"
                                         >
                                             <TileLayer
                                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -534,7 +535,7 @@ const VetProfile = () => {
                                             {clinicLatVal && clinicLngVal && (
                                                 <Marker 
                                                     position={[clinicLatVal, clinicLngVal]} 
-                                                    icon={hospitalIcon}
+                                                    icon={circularLocationIcon}
                                                     draggable={true}
                                                     eventHandlers={{
                                                         dragend: (e) => {
@@ -557,23 +558,23 @@ const VetProfile = () => {
                                     </div>
                                     
                                     {/* Coordinates & Actions */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: '#fcfdfa', padding: '20px', borderRadius: '12px', border: '1px solid #e8f0e0' }}>
+                                    <div className="coordinates-actions-card">
                                         <div>
-                                            <div style={{ marginBottom: '15px' }}>
-                                                <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Latitude</span>
-                                                <div style={{ padding: '10px 12px', background: '#fff', border: '1px solid #ccc', borderRadius: '6px', fontSize: '0.95rem', fontWeight: '500', color: '#333' }}>
+                                            <div className="coordinate-field-group">
+                                                <label>Latitude</label>
+                                                <div className="coordinate-value-box">
                                                     {clinicLatVal ? clinicLatVal.toFixed(6) : 'Not Set'}
                                                 </div>
                                             </div>
-                                            <div style={{ marginBottom: '20px' }}>
-                                                <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Longitude</span>
-                                                <div style={{ padding: '10px 12px', background: '#fff', border: '1px solid #ccc', borderRadius: '6px', fontSize: '0.95rem', fontWeight: '500', color: '#333' }}>
+                                            <div className="coordinate-field-group last">
+                                                <label>Longitude</label>
+                                                <div className="coordinate-value-box">
                                                     {clinicLngVal ? clinicLngVal.toFixed(6) : 'Not Set'}
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <div className="coordinates-buttons">
                                             <button 
                                                 type="button" 
                                                 onClick={() => {
@@ -593,9 +594,16 @@ const VetProfile = () => {
                                                         }
                                                     );
                                                 }}
-                                                style={{ padding: '10px', background: '#fff', color: '#346c02', border: '1px solid #346c02', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                className="btn-detect-coords"
                                             >
-                                                📍 Detect My Current Location
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="7"></circle>
+                                                    <line x1="12" x2="12" y1="1" y2="5"></line>
+                                                    <line x1="12" x2="12" y1="19" y2="23"></line>
+                                                    <line x1="1" x2="5" y1="12" y2="12"></line>
+                                                    <line x1="19" x2="23" y1="12" y2="12"></line>
+                                                </svg>
+                                                Detect My Current Location
                                             </button>
                                             
                                             <button 
@@ -616,16 +624,16 @@ const VetProfile = () => {
                                                                 lat: clinicLatVal,
                                                                 lng: clinicLngVal
                                                             }));
-                                                            setSettingsSuccess('Clinic location coordinates saved successfully!');
+                                                            setSettingsSuccess('Center location coordinates saved successfully!');
                                                         }
                                                     } catch (err) {
-                                                        setSettingsError(err.message || 'Failed to update clinic location.');
+                                                        setSettingsError(err.message || 'Failed to update center location.');
                                                     } finally {
                                                         setIsSavingLocation(false);
                                                     }
                                                 }}
                                                 disabled={isSavingLocation}
-                                                style={{ padding: '12px', background: '#346c02', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+                                                className="btn-save-coords"
                                             >
                                                 {isSavingLocation ? 'Saving Location...' : 'Save Location Details'}
                                             </button>
