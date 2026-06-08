@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Search } from 'lucide-react';
 import '../../styles/user/Help.css';
 import { mockPets } from '../../data/mockPets';
@@ -392,6 +393,11 @@ function Help({ openAuthModal }) {
     });
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Support & Campaigns</title>
+            <meta name="description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
+        </Helmet>
         <div className="help-page">
             <div className="help-content-wrapper">
                 <SupportCarousel 
@@ -565,6 +571,7 @@ function Help({ openAuthModal }) {
                 />
             )}
         </div>
+        </>
     );
 }
 

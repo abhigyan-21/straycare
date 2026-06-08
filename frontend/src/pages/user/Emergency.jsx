@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Plus, Mic, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/Emergency.css';
@@ -111,6 +112,11 @@ function Emergency({ openAuthModal }) {
     }
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Report an Emergency</title>
+            <meta name="description" content="Report an injured or distressed stray animal in your area. Upload photos, share location, and connect with nearby rescuers instantly." />
+        </Helmet>
         <div className="emergency-page">
             <div className={`emergency-left ${imagePreview ? 'has-image' : ''}`}>
                 {imagePreview ? (
@@ -185,6 +191,7 @@ function Emergency({ openAuthModal }) {
                 </form>
             </div>
         </div>
+        </>
     );
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { 
     User, 
     Building2, 
@@ -655,6 +656,11 @@ const VetProfile = () => {
     }
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Profile</title>
+            <meta name="description" content="Manage your clinic's profile, certifications, settings, and center coordinates on the Furzo Vet Portal." />
+        </Helmet>
         <div className="vet-profile-page">
             <div className="profile-container">
                 {/* Sidebar */}
@@ -767,6 +773,7 @@ const VetProfile = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

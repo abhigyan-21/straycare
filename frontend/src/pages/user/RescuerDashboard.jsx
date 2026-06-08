@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/RescuerPages.css';
 import ActionLoader from '../../components/ActionLoader';
@@ -191,6 +192,11 @@ function RescuerDashboard() {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Furzo - Rescuer Dashboard</title>
+      <meta name="description" content="View and accept nearby animal rescue requests. Coordinate rescues efficiently as a registered Furzo rescuer." />
+    </Helmet>
     <div className="rescuer-page">
       <div className="rescuer-header">
         <h1>RESCUER DASHBOARD</h1>
@@ -258,6 +264,7 @@ function RescuerDashboard() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

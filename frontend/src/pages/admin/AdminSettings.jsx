@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useAuthStore } from '../../store/authStore';
 import { Lock, Eye, EyeOff, Save, ShieldAlert, CheckCircle, Info } from 'lucide-react';
 
@@ -68,6 +69,11 @@ const AdminSettings = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Settings</title>
+            <meta name="description" content="Manage Furzo admin security settings and update administrative credentials." />
+        </Helmet>
         <div className="admin-settings-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
             <div className="admin-page-header">
                 <div>
@@ -315,6 +321,7 @@ const AdminSettings = () => {
                 </form>
             </div>
         </div>
+        </>
     );
 };
 

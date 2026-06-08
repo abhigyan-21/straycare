@@ -1,0 +1,10 @@
+User-agent: *
+
+Allow: /
+
+Disallow: /admin/
+Disallow: /vet/
+Disallow: /profile/
+Disallow: /rescuer/
+
+Sitemap: https://furzo.vercel.app/sitemap.xml

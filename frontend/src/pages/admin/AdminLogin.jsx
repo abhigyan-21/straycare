@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/AuthModal.css';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +37,11 @@ const AdminLogin = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Login</title>
+            <meta name="description" content="Restricted access portal for Furzo system administrators." />
+        </Helmet>
         <div className="admin-login-page" style={{
             minHeight: '100vh',
             display: 'flex',
@@ -161,6 +167,7 @@ const AdminLogin = () => {
                 </form>
             </div>
         </div>
+        </>
     );
 };
 

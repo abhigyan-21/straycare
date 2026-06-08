@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRescueStore } from '../../store/rescueStore';
 import { useAuthStore } from '../../store/authStore';
@@ -219,6 +220,11 @@ function RescuerNavigation() {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>Furzo - Rescuer Navigation</title>
+      <meta name="description" content="Navigate to the animal's location and transport it safely to the clinic with Furzo's real-time rescuer navigation." />
+    </Helmet>
     <div className="rescuer-nav-page">
       <div className="patient-panel">
         <h2>Patient Details</h2>
@@ -293,6 +299,7 @@ function RescuerNavigation() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import Loader from '../../components/Loader';
 import '../../styles/vet/VetDashboard.css';
 import LiveStatusView from '../../components/vet/LiveStatusView';
@@ -81,6 +82,11 @@ function VetDashboard() {
     if (isLoading) return <ActionLoader message="Updating Dashboard..." />;
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Dashboard</title>
+            <meta name="description" content="Overview of rescue operations, adoption stats, and campaign activity for your clinic on the Furzo Vet Portal." />
+        </Helmet>
         <div className="vet-dashboard">
             <LiveStatusView rescues={rescues} />
 
@@ -95,6 +101,7 @@ function VetDashboard() {
                 />
             </div>
         </div>
+        </>
     );
 }
 

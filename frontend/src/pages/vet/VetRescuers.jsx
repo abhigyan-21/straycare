@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetRescuers.css';
@@ -88,6 +89,11 @@ const VetRescuers = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Rescuers</title>
+            <meta name="description" content="Manage your clinic's rescue staff, assign rescuer privileges, and coordinate field operations on the Furzo Vet Portal." />
+        </Helmet>
         <div className="vet-rescuers-page">
             <div className="rescuers-header">
                 <h1>Rescuer Management</h1>
@@ -168,6 +174,7 @@ const VetRescuers = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Helmet } from 'react-helmet-async';
 import doctorClosed from "../../assets/images/doctor-closed.png";
 import doctorOpen from "../../assets/images/doctor-open.png";
 import "../../styles/user/Guide.css";
@@ -134,6 +135,11 @@ function Guide() {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Furzo - AI Pet Guide</title>
+      <meta name="description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+    </Helmet>
     <div className="guide-page">
       <div className="guide-container">
 
@@ -185,6 +191,7 @@ function Guide() {
 
       </div>
     </div>
+    </>
   );
 }
 

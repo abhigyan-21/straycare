@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/vet/VetDashboard.css';
 import '../../styles/vet/VetAdopt.css';
 import '../../styles/vet/VetStatus.css';
@@ -153,6 +154,11 @@ function VetStatus() {
     if (isLoading) return <ActionLoader message="Loading treatment records..." />;
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Status</title>
+            <meta name="description" content="Track and update treatment statuses of rescued animals at your clinic on the Furzo Vet Portal." />
+        </Helmet>
         <div className="vet-dashboard vet-status-page">
             <LiveStatusView rescues={currentRescues} />
 
@@ -197,6 +203,7 @@ function VetStatus() {
                 onPublish={handlePublishAdoption}
             />
         </div>
+        </>
     );
 }
 

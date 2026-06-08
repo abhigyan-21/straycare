@@ -1,4 +1,5 @@
 import { Shield, UserX, CheckCircle, Clock, Search, Filter } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
@@ -72,6 +73,11 @@ const AdminUsers = () => {
     ];
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Users</title>
+            <meta name="description" content="Manage Furzo users, NGOs, and partner clinics. Approve, suspend, or remove accounts." />
+        </Helmet>
         <div>
             <AdminPageHeader 
                 title="Manage Users & Partners" 
@@ -167,6 +173,7 @@ const AdminUsers = () => {
                 )}
             </AdminTable>
         </div>
+        </>
     );
 };
 

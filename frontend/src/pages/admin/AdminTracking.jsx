@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Edit2, Search } from 'lucide-react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
@@ -45,6 +46,11 @@ const AdminTracking = () => {
     ];
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Pet Tracking</title>
+            <meta name="description" content="Monitor and manage all active pet rescue tracking entries in the Furzo admin panel." />
+        </Helmet>
         <div>
             <div className="admin-page-header">
                 <h2 className="admin-page-title">Pet Tracking Management</h2>
@@ -89,6 +95,7 @@ const AdminTracking = () => {
                 )}
             </AdminTable>
         </div>
+        </>
     );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/user/Adopt.css';
 import { getPets, submitAdoptionRequest } from '../../services/api';
 import PetCarousel from '../../components/user/PetCarousel';
@@ -84,6 +85,11 @@ function Adopt() {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Adopt a Pet</title>
+            <meta name="description" content="Browse rescued animals available for adoption. Find your perfect furry companion through Furzo's pet adoption platform." />
+        </Helmet>
         <div className="adopt-page">
             <div className="adopt-toolbar">
                 <button
@@ -120,6 +126,7 @@ function Adopt() {
                 currentFilters={filters}
             />
         </div>
+        </>
     );
 }
 

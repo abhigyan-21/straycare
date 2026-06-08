@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import '../../styles/user/Track.css';
 import apiClient from '../../services/api';
@@ -158,6 +159,11 @@ function Track() {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Track a Rescue</title>
+            <meta name="description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
+        </Helmet>
         <div className="track-page">
             <div className="search-section">
                 <input
@@ -288,6 +294,7 @@ function Track() {
                 </div>
             )}
         </div>
+        </>
     );
 }
 

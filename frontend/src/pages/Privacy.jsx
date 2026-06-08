@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../styles/privacy_terms.css';
 
 const SECTIONS = [
@@ -57,6 +58,11 @@ function Privacy() {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Furzo - Privacy Policy</title>
+      <meta name="description" content="Read Furzo's Privacy Policy to understand how we collect, use, and protect your personal information on our animal rescue platform." />
+    </Helmet>
     <div className="policy-container">
       <aside className="policy-sidebar">
         <h3>Privacy Policy</h3>
@@ -299,6 +305,7 @@ function Privacy() {
         </section>
       </main>
     </div>
+    </>
   );
 }
 

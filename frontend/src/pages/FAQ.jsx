@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../styles/privacy_terms.css';
 
 const SECTIONS = [
@@ -66,6 +67,119 @@ function FAQ() {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Frequently Asked Questions</title>
+            <meta name="description" content="Find answers to common questions about Furzo - animal rescue reporting, pet adoption, vet portal, and more." />
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "FAQPage",
+                    "mainEntity": [
+                        {
+                            "@type": "Question",
+                            "name": "What is Furzo?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Furzo is a platform that helps people report injured, sick, abandoned, or distressed animals and connect them with nearby veterinarians, NGOs, rescue organizations, and volunteers. It also supports pet adoption, rescue tracking, community engagement, and AI-powered pet guidance." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Who can use Furzo?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Anyone can use Furzo, including animal lovers, pet owners, volunteers, veterinarians, clinics, NGOs, shelters, and rescue organizations." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "How do I report a stray animal?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Users can create a report by uploading photos, providing the animal's location, describing its condition, and submitting the report through the platform." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "How does Furzo help injured animals?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Once a report is submitted, nearby veterinarians, NGOs, and volunteers can view the case, coordinate rescue efforts, provide treatment, and update the rescue status." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Can I track the status of a reported animal?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Users can monitor rescue progress through different stages such as Reported, Assigned, Under Treatment, Recovered, and Adopted." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Does Furzo support pet adoption?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Users, shelters, and NGOs can list animals available for adoption, while potential adopters can browse listings and connect with the responsible organization." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "What is the AI Pet Assistant?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "The AI Pet Assistant provides guidance on pet care, nutrition, basic first-aid, common health concerns, and general pet-related questions. It is not a substitute for professional veterinary care." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Can veterinarians join the platform?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Veterinarians and clinics can register on the platform, receive rescue requests, manage cases, update treatment information, and communicate with users." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "What is the Vet Portal?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "The Vet Portal is a dedicated dashboard that allows veterinarians and clinics to manage rescue cases, track treatment progress, update records, and coordinate with rescuers and NGOs." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Can NGOs use Furzo?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. NGOs and shelters can manage rescue operations, receive reports, coordinate volunteers, track animal recovery, and publish adoption listings." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Is location information required?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Accurate location information helps rescuers and veterinarians quickly find animals in need and provide timely assistance." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Can users upload photos and updates?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Users can upload images, rescue updates, treatment progress, recovery stories, and adoption success stories." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Does Furzo work like social media?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Partially. Users can share pet-related content, rescue stories, awareness posts, and interact with the animal welfare community." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Is Furzo free to use?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "The core features of Furzo, including animal reporting, rescue coordination, community participation, and adoption support, are intended to be free for users." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "How does Furzo ensure genuine reports?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "The platform encourages photo evidence, location verification, status updates, and community moderation to help maintain report authenticity." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Can I volunteer for animal rescue?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Interested users can register as volunteers and receive notifications about rescue opportunities and animal welfare activities nearby." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "What types of animals can be reported?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Users can report dogs, cats, birds, cattle, and other stray, abandoned, injured, or distressed animals that require assistance." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Is my personal information secure?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Furzo follows standard security practices to protect user data and ensure that personal information is handled responsibly." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Can I contact veterinarians directly?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Depending on platform permissions and availability, users may request consultations or connect with registered veterinarians through the platform." }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "What problem does Furzo solve?",
+                            "acceptedAnswer": { "@type": "Answer", "text": "Furzo bridges the gap between people who find animals in need and the organizations or professionals capable of helping them. It streamlines rescue, treatment, recovery tracking, and adoption through a single connected platform." }
+                        }
+                    ]
+                })}
+            </script>
+        </Helmet>
         <div className="policy-container">
             <aside className="policy-sidebar">
                 <h3>Frequently Asked Questions</h3>
@@ -269,6 +383,7 @@ function FAQ() {
                 </section>
             </main>
         </div>
+        </>
     );
 }
 

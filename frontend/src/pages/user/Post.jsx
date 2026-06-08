@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/user/Post.css';
 import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuthStore } from '../../store/authStore';
@@ -164,6 +165,11 @@ function Post({ openAuthModal }) {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Community Feed</title>
+            <meta name="description" content="Share animal rescue stories, adoption successes, and connect with the Furzo animal welfare community." />
+        </Helmet>
         <div className="posts-container">
             <div className="create-post-header">
                 <button 
@@ -208,6 +214,7 @@ function Post({ openAuthModal }) {
                 onSubmit={handleCreatePostSubmit}
             />
         </div>
+        </>
     );
 }
 

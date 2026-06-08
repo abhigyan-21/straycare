@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/AuthModal.css';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -26,6 +27,11 @@ const VetLogin = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Login</title>
+            <meta name="description" content="Login to the Furzo Vet Portal for veterinary clinics and NGOs managing rescued animal care." />
+        </Helmet>
         <div className="vet-login-page" style={{ 
             minHeight: '100vh', 
             display: 'flex', 
@@ -149,6 +155,7 @@ const VetLogin = () => {
                 </form>
             </div>
         </div>
+        </>
     );
 };
 

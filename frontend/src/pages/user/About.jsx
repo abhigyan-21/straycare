@@ -1,8 +1,14 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/user/About.css';
 
 function About() {
     return (
+        <>
+        <Helmet>
+            <title>Furzo - About Us</title>
+            <meta name="description" content="Learn about Furzo's mission to rescue stray animals, connect communities, and promote animal welfare through technology." />
+        </Helmet>
         <div className="about-container">
             <div className="about-content-wrapper">
                 <div className="about-card">
@@ -45,6 +51,7 @@ function About() {
                 </div>
             </div>
         </div>
+        </>
     );
 }
 

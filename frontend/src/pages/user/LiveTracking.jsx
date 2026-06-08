@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRescueStore } from '../../store/rescueStore';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
@@ -454,6 +455,11 @@ function LiveTracking() {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>Furzo - Live Tracking</title>
+      <meta name="description" content="Follow your rescue in real-time. Track the rescuer's live location as they reach the animal and transport it to a care center." />
+    </Helmet>
     <div className="live-tracking-page">
       <div className="tracking-header">
         <div className="hospital-track">
@@ -551,6 +557,7 @@ function LiveTracking() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

@@ -1,4 +1,5 @@
 import { Target, HeartHandshake, AlertCircle, Calendar, PlusCircle, UserPlus, FileDown, ShieldAlert } from "lucide-react";
+import { Helmet } from 'react-helmet-async';
 import StatCard from "../../components/admin/StatCard";
 import { useState, useEffect } from "react";
 import { getAdminStats } from "../../services/api";
@@ -19,6 +20,11 @@ const AdminDashboard = () => {
     if (loading) return <div className="admin-loading">Loading Analytics...</div>;
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Dashboard</title>
+            <meta name="description" content="Furzo Admin Dashboard - Real-time performance metrics, rescue analytics, and platform operations." />
+        </Helmet>
         <div>
             <div className="admin-page-header">
                 <div>
@@ -111,6 +117,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

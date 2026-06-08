@@ -1,4 +1,5 @@
 import { BarChart2, Calendar, Download, TrendingUp, Heart, Target, IndianRupee } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import StatCard from '../../components/admin/StatCard';
@@ -30,6 +31,11 @@ const AdminReports = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Reports</title>
+            <meta name="description" content="Analyze platform growth, adoption rates, rescue stats, and campaign performance with Furzo Admin reports." />
+        </Helmet>
         <div>
             <div className="admin-page-header">
                 <div>
@@ -151,6 +157,7 @@ const AdminReports = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

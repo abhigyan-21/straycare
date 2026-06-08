@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/vet/VetDashboard.css';
 import '../../styles/vet/VetAdopt.css';
 import '../../styles/vet/VetStatus.css';
@@ -185,6 +186,11 @@ function VetAdopt() {
     ];
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Adoptions</title>
+            <meta name="description" content="Manage live adoption listings, review adoption requests, and schedule interviews from your Furzo clinic portal." />
+        </Helmet>
         <div className="vet-dashboard vet-adopt-page">
             <div className="main-rescue-section adopt-interview-section">
                 <div className="section-header">
@@ -305,6 +311,7 @@ function VetAdopt() {
                 onPublish={handlePublishAdoption}
             />
         </div>
+        </>
     );
 }
 

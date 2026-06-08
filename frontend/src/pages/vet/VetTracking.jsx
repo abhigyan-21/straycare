@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -106,6 +107,11 @@ function VetTracking() {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Furzo Vet Portal - Live Tracking</title>
+      <meta name="description" content="Monitor the live GPS location of rescuers transporting animals to your clinic on the Furzo Vet Portal." />
+    </Helmet>
     <div className="vet-tracking-page">
       <div className="tracking-header">
         <button className="back-btn" onClick={() => navigate(-1)}>
@@ -204,6 +210,7 @@ function VetTracking() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

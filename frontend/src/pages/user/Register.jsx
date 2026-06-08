@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -247,6 +248,11 @@ const Register = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - Partner Registration</title>
+            <meta name="description" content="Register your veterinary clinic, hospital, or NGO as a Furzo partner to help rescue and care for stray animals." />
+        </Helmet>
         <div className="register-page">
             <div className="register-container">
                 <div className="register-header">
@@ -616,6 +622,7 @@ const Register = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

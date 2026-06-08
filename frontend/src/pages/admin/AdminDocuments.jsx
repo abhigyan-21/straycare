@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { FileText, Download, Upload, Check, X, FileCheck, Building2, UserX } from 'lucide-react';
 import { getAdminDocs, getPartnerApplications, updateAdminUserStatus } from '../../services/api';
 
@@ -67,6 +68,11 @@ const AdminDocuments = () => {
     const standardDocs = docs.filter(doc => doc.type !== 'REGISTRATION');
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Verification & Documents</title>
+            <meta name="description" content="Review partner applications and manage verification documents submitted to the Furzo platform." />
+        </Helmet>
         <div className="verification-page">
             <div className="admin-page-header">
                 <h2 className="admin-page-title">Verification & Enrollments</h2>
@@ -275,6 +281,7 @@ const AdminDocuments = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 

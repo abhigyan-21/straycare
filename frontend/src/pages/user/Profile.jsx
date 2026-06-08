@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { 
     User as UserIcon, 
@@ -768,6 +769,11 @@ const Profile = () => {
     };
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo - My Profile</title>
+            <meta name="description" content="Manage your Furzo profile, view your rescue reports, adoption history, posts, donations, and pet documents." />
+        </Helmet>
         <div className="profile-page">
             <div className="profile-container">
 
@@ -858,6 +864,7 @@ const Profile = () => {
                 onSubmit={handleCreatePostSubmit}
             />
         </div>
+        </>
     );
 };
 

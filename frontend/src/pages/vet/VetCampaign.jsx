@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import '../../styles/vet/VetDashboard.css';
 import '../../styles/vet/VetCampaign.css';
 import '../../styles/vet/VetAdopt.css';
@@ -155,6 +156,11 @@ function VetCampaign() {
     if (isLoading) return <ActionLoader message="Loading campaigns..." />;
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Vet Portal - Campaigns</title>
+            <meta name="description" content="Create, manage, and monitor animal welfare fundraising campaigns for your clinic on the Furzo Vet Portal." />
+        </Helmet>
         <div className="vet-dashboard vet-campaign-page">
             <div className="campaign-hero-section">        
                 <div className="campaigns-scroll-container">
@@ -385,6 +391,7 @@ function VetCampaign() {
                 />
             )}
         </div>
+        </>
     );
 }
 

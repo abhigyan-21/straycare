@@ -1,4 +1,5 @@
 import { ShieldAlert, Trash2, CheckCircle, AlertTriangle, MessageSquare, Flag } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminBadge from '../../components/admin/AdminBadge';
@@ -55,6 +56,11 @@ const AdminContent = () => {
     if (loading) return <div className="admin-loading">Loading Posts...</div>;
 
     return (
+        <>
+        <Helmet>
+            <title>Furzo Admin - Content Moderation</title>
+            <meta name="description" content="Review, approve, flag, and delete community posts to maintain platform safety." />
+        </Helmet>
         <div className="fade-in">
             <AdminPageHeader 
                 title="Content Moderation" 
@@ -123,6 +129,7 @@ const AdminContent = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 
