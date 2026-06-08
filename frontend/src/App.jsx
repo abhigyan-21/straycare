@@ -19,13 +19,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/user/Register";
 import RescuerDashboard from "./pages/user/RescuerDashboard";
 import RescuerNavigation from "./pages/user/RescuerNavigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import doctorClosed from "./assets/images/doctor-closed.png";
 import doctorOpen from "./assets/images/doctor-open.png";
 import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
-import AdminApp from "./AdminApp";
-import VetApp from "./VetApp";
+const AdminApp = lazy(() => import("./AdminApp"));
+const VetApp = lazy(() => import("./VetApp"));
 import { useAuthStore } from "./store/authStore";
 
 import { Analytics } from "@vercel/analytics/react"
@@ -139,8 +139,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Portals - These have their own internal Layouts and Navbars */}
-          <Route path="/admin/*" element={<AdminApp />} />
-          <Route path="/vet/*" element={<VetApp />} />
+          <Route path="/admin/*" element={<Suspense fallback={<Loader />}><AdminApp /></Suspense>} />
+          <Route path="/vet/*" element={<Suspense fallback={<Loader />}><VetApp /></Suspense>} />
 
           {/* Main User App Routes */}
           <Route element={<UserLayout openAuthModal={openAuthModal} />}>
