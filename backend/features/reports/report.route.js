@@ -9,6 +9,9 @@ router.post('/', verifyToken, reportController.createReport);
 // Get my reports
 router.get('/my-reports', verifyToken, reportController.getMyReports);
 
+// Get rescues (reports assigned to this rescuer)
+router.get('/my-rescues', verifyToken, allowRoles('RESCUER', 'ADMIN'), reportController.getMyRescues);
+
 // Get clinic reports
 router.get('/clinic', verifyToken, allowRoles('VET', 'ADMIN', 'NGO'), reportController.getClinicReports);
 

@@ -65,6 +65,44 @@ const getMyReports = async (req, res) => {
 };
 
 /**
+ * @desc Get all animal reports assigned to the logged-in rescuer
+ * @route GET /api/reports/my-rescues
+ * @access Private (Rescuer/Admin)
+ */
+const getMyRescues = async (req, res) => {
+  try {
+    const rescuerId = req.user.id;
+    const reports = await prisma.animalReport.findMany({
+      where: { assignedRescuerId: rescuerId },
+      include: {
+        reporter: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            avatarUrl: true,
+          },
+        },
+        clinic: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        pet: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    res.json(reports);
+  } catch (error) {
+    console.error('Error fetching my rescues:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
  * @desc Get all animal reports (for feed/general view)
  * @route GET /api/reports
  * @access Public
@@ -318,4 +356,5 @@ module.exports = {
   assignReport,
   updateRescuerLocation,
   getClinicReports,
+  getMyRescues,
 };

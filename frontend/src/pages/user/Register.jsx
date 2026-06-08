@@ -6,10 +6,11 @@ import { registerPartner, sendRegistrationOtp, verifyRegistrationOtp } from '../
 import '../../styles/user/Register.css';
 import hospitalImg from '../../assets/images/Hospital.png';
 
-const hospitalIcon = new L.Icon({ 
-    iconUrl: hospitalImg, 
-    iconSize: [45, 45], 
-    iconAnchor: [22, 45] 
+const circularLocationIcon = new L.DivIcon({ 
+    className: 'custom-circular-marker',
+    html: `<div style="width: 16px; height: 16px; background-color: #346c02; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.45); position: relative;"><div class="marker-pulse-ring"></div></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
 });
 
 function MapEventsHandler({ onMapClick, center }) {
@@ -46,6 +47,7 @@ const Register = () => {
     });
 
     const [mapCenter, setMapCenter] = useState([30.7333, 76.7794]);
+    const [showMap, setShowMap] = useState(false);
 
     const detectGpsLocation = () => {
         if (!("geolocation" in navigator)) {
@@ -61,6 +63,7 @@ const Register = () => {
                     lng: longitude
                 }));
                 setMapCenter([latitude, longitude]);
+                setShowMap(true);
             },
             (error) => {
                 console.error("GPS detection error:", error);
@@ -101,6 +104,11 @@ const Register = () => {
             value = value.replace(/\D/g, '').slice(0, 10);
         }
         setFormData({ ...formData, [name]: value });
+        if (name === 'organizationType') {
+            if (value === 'vet' || value === 'hospital') {
+                setShowMap(true);
+            }
+        }
     };
 
     // First Step: Request OTP when form is submitted
@@ -312,7 +320,23 @@ const Register = () => {
                     </div>
                     
                     <div className="form-group">
-                        <label>Address</label>
+                        <div className="address-label-container">
+                            <label className="address-label">Address</label>
+                            <button
+                                type="button"
+                                onClick={() => setShowMap(!showMap)}
+                                className={`map-toggle-btn ${showMap ? 'active' : ''}`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={showMap ? "#346c02" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="7"></circle>
+                                    <line x1="12" x2="12" y1="1" y2="5"></line>
+                                    <line x1="12" x2="12" y1="19" y2="23"></line>
+                                    <line x1="1" x2="5" y1="12" y2="12"></line>
+                                    <line x1="19" x2="23" y1="12" y2="12"></line>
+                                </svg>
+                                {showMap ? 'Hide Map Pin' : 'Select location on map'}
+                            </button>
+                        </div>
                         <textarea 
                             name="address" 
                             value={formData.address} 
@@ -323,42 +347,35 @@ const Register = () => {
                         ></textarea>
                     </div>
 
-                    {(formData.organizationType === 'vet' || formData.organizationType === 'hospital') && (
-                        <div className="form-group registration-map-group">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <label style={{ fontWeight: '600', color: '#444' }}>Pin Clinic Location (Optional)</label>
+                    {showMap && (
+                        <div className="form-group registration-map-group map-fade-in">
+                            <div className="map-header-container">
+                                <label>Pin Center Location (Optional)</label>
                                 <button
                                     type="button"
                                     onClick={detectGpsLocation}
                                     className="btn-gps-detect"
-                                    style={{
-                                        background: '#346c02',
-                                        color: '#fff',
-                                        border: 'none',
-                                        padding: '6px 12px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.85rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        transition: 'background-color 0.2s'
-                                    }}
                                 >
-                                    📍 Get Current Location
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="7"></circle>
+                                        <line x1="12" x2="12" y1="1" y2="5"></line>
+                                        <line x1="12" x2="12" y1="19" y2="23"></line>
+                                        <line x1="1" x2="5" y1="12" y2="12"></line>
+                                        <line x1="19" x2="23" y1="12" y2="12"></line>
+                                    </svg>
+                                    Get Current Location
                                 </button>
                             </div>
-                            <span style={{ fontSize: '0.8rem', color: '#666' }}>
-                                Helps rescuers locate your clinic in emergency pickups. Click on the map to pin.
+                            <span className="map-subtitle">
+                                Helps rescuers locate your center in emergency pickups. Click on the map to pin.
                             </span>
                             
-                            <div className="register-map-wrapper" style={{ height: '220px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc', marginTop: '8px', position: 'relative', zIndex: 10 }}>
+                            <div className="register-map-wrapper">
                                 <MapContainer 
                                     center={mapCenter} 
                                     zoom={13} 
                                     scrollWheelZoom={false}
-                                    style={{ height: '100%', width: '100%' }}
+                                    className="leaflet-container-element"
                                 >
                                     <TileLayer
                                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -367,7 +384,7 @@ const Register = () => {
                                     {formData.lat && formData.lng && (
                                         <Marker 
                                             position={[formData.lat, formData.lng]} 
-                                            icon={hospitalIcon}
+                                            icon={circularLocationIcon}
                                             draggable={true}
                                             eventHandlers={{
                                                 dragend: (e) => {
@@ -391,7 +408,14 @@ const Register = () => {
                                 </MapContainer>
                             </div>
                             {formData.lat && formData.lng && (
-                                <div style={{ fontSize: '0.85rem', color: '#346c02', marginTop: '6px', fontWeight: '600' }}>
+                                <div className="pinned-coordinates">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="coordinates-icon">
+                                        <circle cx="12" cy="12" r="7"></circle>
+                                        <line x1="12" x2="12" y1="1" y2="5"></line>
+                                        <line x1="12" x2="12" y1="19" y2="23"></line>
+                                        <line x1="1" x2="5" y1="12" y2="12"></line>
+                                        <line x1="19" x2="23" y1="12" y2="12"></line>
+                                    </svg>
                                     Pinned Coordinates: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
                                 </div>
                             )}

@@ -251,9 +251,9 @@ const registerPartner = async (req, res) => {
     // Determine role: NGO or VET
     const dbRole = organizationType === 'ngo' ? 'NGO' : 'VET';
 
-    // If role is VET, we also create a Clinic record
+    // If role is VET or NGO, we also create a Clinic record
     let clinicId = null;
-    if (dbRole === 'VET') {
+    if (dbRole === 'VET' || dbRole === 'NGO') {
       const clinic = await prisma.clinic.create({
         data: {
           name: organizationName,
@@ -536,13 +536,13 @@ const updateProfile = async (req, res) => {
       }
     }
 
-    // Update clinic coordinates if user is VET
+    // Update clinic/center coordinates if user is VET or NGO
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true, clinicId: true }
     });
 
-    if (currentUser && currentUser.role === 'VET' && currentUser.clinicId) {
+    if (currentUser && (currentUser.role === 'VET' || currentUser.role === 'NGO') && currentUser.clinicId) {
       if (clinicLat !== undefined || clinicLng !== undefined) {
         await prisma.clinic.update({
           where: { id: currentUser.clinicId },
