@@ -20,7 +20,19 @@
     top: 50px;
     color: #5fcf63;
     display: flex;
-    gap: 2px;
+    align-items: center;
+    gap: 4px;
+}
+
+.loader-logo-o {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-paw-svg {
+    width: 4.8rem;
+    height: 4.8rem;
 }
 
 .loader-content {

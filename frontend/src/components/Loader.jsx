@@ -39,7 +39,22 @@ const Loader = () => {
 
     return (
         <div className="loader-overlay">
-            <div className="loader-title">Furzo</div>
+            <div className="loader-title">
+                <span>F</span>
+                <span>U</span>
+                <span>R</span>
+                <span>Z</span>
+                <span className="loader-logo-o">
+                    <svg viewBox="0 0 100 100" className="loader-paw-svg">
+                        <circle cx="50" cy="50" r="46" fill="currentColor" />
+                        <path d="M50 54c-8 0-14.5 5.5-14.5 11 0 4.5 6.5 8.5 14.5 8.5s14.5-4 14.5-8.5c0-5.5-6.5-11-14.5-11z" fill="#fff" />
+                        <ellipse cx="40" cy="42" rx="5" ry="7" transform="rotate(-15 40 42)" fill="#fff" />
+                        <ellipse cx="60" cy="42" rx="5" ry="7" transform="rotate(15 60 42)" fill="#fff" />
+                        <ellipse cx="28" cy="50" rx="4.5" ry="6.5" transform="rotate(-35 28 50)" fill="#fff" />
+                        <ellipse cx="72" cy="50" rx="4.5" ry="6.5" transform="rotate(35 72 50)" fill="#fff" />
+                    </svg>
+                </span>
+            </div>
             <div className="loader-content">
 
                 <div className="loader-image-container">
