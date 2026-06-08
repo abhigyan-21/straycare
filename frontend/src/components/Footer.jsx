@@ -15,6 +15,7 @@ function Footer() {
         <Link to="/about" className="footer-Link">About</Link>
         <Link to="/privacy" className="footer-Link">Privacy Policy</Link>
         <Link to="/terms" className="footer-Link">Terms of Service</Link>
+        <Link to="/faq" className="footer-Link">FAQ</Link>
       </div>
     </footer>
   );

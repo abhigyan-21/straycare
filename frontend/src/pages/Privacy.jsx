@@ -98,7 +98,7 @@ function Privacy() {
 
         <section id="collection" className="policy-section">
           <h2>2. Information We Collect</h2>
-          
+
           <h3>2.1 Information You Provide Directly</h3>
           <ul>
             <li>
@@ -169,7 +169,7 @@ function Privacy() {
 
         <section id="sharing" className="policy-section">
           <h2>4. Sharing and Disclosure of Information</h2>
-          
+
           <h3>4.1 Within the Platform</h3>
           <p>
             Animal report details (location, description, images) are shared with registered veterinarians, NGOs,
@@ -244,7 +244,7 @@ function Privacy() {
             <li><strong>Grievance Redressal</strong> — lodge a complaint with our Grievance Officer (see Section 11).</li>
           </ul>
           <p>
-            To exercise any of these rights, contact us at <a href="mailto:privacy@furzo.in">privacy@furzo.in</a>.
+            To exercise any of these rights, contact us at <a href="mailto:furzo.app@gmail.com">furzo.app@gmail.com</a>.
             We will respond within 30 days of receipt.
           </p>
         </section>
@@ -267,7 +267,7 @@ function Privacy() {
             The Platform is not directed at children under 18 years of age. We do not knowingly collect personal
             information from minors without verifiable parental consent. If we become aware that we have inadvertently
             collected personal information from a minor, we will delete it promptly. If you believe a minor has
-            provided us with personal information, please contact us at <a href="mailto:privacy@furzo.in">privacy@furzo.in</a>.
+            provided us with personal information, please contact us at <a href="mailto:furzo.app@gmail.com">furzo.app@gmail.com</a>.
           </p>
         </section>
 
@@ -294,7 +294,7 @@ function Privacy() {
           </div>
           <p>
             If you have any other questions about this Privacy Policy or how we handle your data, please contact
-            us at <a href="mailto:privacy@furzo.in">privacy@furzo.in</a>.
+            us at <a href="mailto:furzo.app@gmail.com">furzo.app@gmail.com</a>.
           </p>
         </section>
       </main>

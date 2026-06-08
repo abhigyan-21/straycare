@@ -1,0 +1,275 @@
+import React, { useState, useEffect, useRef } from 'react';
+import '../styles/privacy_terms.css';
+
+const SECTIONS = [
+    { id: 'FAQ1', label: '1. What is StrayCare?' },
+    { id: 'FAQ2', label: '2. Who can use StrayCare?' },
+    { id: 'FAQ3', label: '3. How do I report a stray animal?' },
+    { id: 'FAQ4', label: '4. How does StrayCare help injured animals?' },
+    { id: 'FAQ5', label: '5. Can I track the status of a reported animal?' },
+    { id: 'FAQ6', label: '6. Does StrayCare support pet adoption?' },
+    { id: 'FAQ7', label: '7. What is the AI Pet Assistant?' },
+    { id: 'FAQ8', label: '8. Can veterinarians join the platform?' },
+    { id: 'FAQ9', label: '9. What is the Vet Portal?' },
+    { id: 'FAQ10', label: '10. Can NGOs use StrayCare?' },
+    { id: 'FAQ11', label: '11. Is location information required?' },
+    { id: 'FAQ12', label: '12. Can users upload photos and updates?' },
+    { id: 'FAQ13', label: '13. Does StrayCare work like social media?' },
+    { id: 'FAQ14', label: '14. Is StrayCare free to use?' },
+    { id: 'FAQ15', label: '15. How does StrayCare ensure genuine reports?' },
+    { id: 'FAQ16', label: '16. Can I volunteer for animal rescue?' },
+    { id: 'FAQ17', label: '17. What types of animals can be reported?' },
+    { id: 'FAQ18', label: '18. Is my personal information secure?' },
+    { id: 'FAQ19', label: '19. Can I contact veterinarians directly?' },
+    { id: 'FAQ20', label: '20. What problem does StrayCare solve?' },
+];
+
+function FAQ() {
+    const [activeSection, setActiveSection] = useState('introduction');
+    const observerRef = useRef(null);
+
+    useEffect(() => {
+        const handleIntersect = (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
+            });
+        };
+
+        observerRef.current = new IntersectionObserver(handleIntersect, {
+            root: null,
+            rootMargin: '-20% 0px -60% 0px',
+            threshold: 0,
+        });
+
+        SECTIONS.forEach((section) => {
+            const element = document.getElementById(section.id);
+            if (element) {
+                observerRef.current.observe(element);
+            }
+        });
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, []);
+
+    const scrollToSection = (id) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            setActiveSection(id);
+        }
+    };
+
+    return (
+        <div className="policy-container">
+            <aside className="policy-sidebar">
+                <h3>Frequently Asked Questions</h3>
+                <ul className="policy-sidebar-list">
+                    {SECTIONS.map((section) => (
+                        <li
+                            key={section.id}
+                            className={`policy-sidebar-item ${activeSection === section.id ? 'active' : ''}`}
+                        >
+                            <button onClick={() => scrollToSection(section.id)}>
+                                {section.label}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </aside>
+
+            <main className="policy-content">
+                <div className="policy-header">
+                    <h1>Frequently Asked Questions</h1>
+                    <p className="policy-last-updated">Last Updated: June 2026</p>
+                </div>
+
+                <section id="faq1" className="policy-section">
+                    <h2>1. What is StrayCare?</h2>
+                    <p>
+                        StrayCare (Furzo) is a platform that helps people report injured, sick,
+                        abandoned, or distressed animals and connect them with nearby veterinarians,
+                        NGOs, rescue organizations, and volunteers. It also supports pet adoption,
+                        rescue tracking, community engagement, and AI-powered pet guidance.
+                    </p>
+                </section>
+
+                <section id="faq2" className="policy-section">
+                    <h2>2. Who can use StrayCare?</h2>
+                    <p>
+                        Anyone can use StrayCare, including animal lovers, pet owners, volunteers,
+                        veterinarians, clinics, NGOs, shelters, and rescue organizations.
+                    </p>
+                </section>
+
+                <section id="faq3" className="policy-section">
+                    <h2>3. How do I report a stray animal?</h2>
+                    <p>
+                        Users can create a report by uploading photos, providing the animal's
+                        location, describing its condition, and submitting the report through the
+                        platform.
+                    </p>
+                </section>
+
+                <section id="faq4" className="policy-section">
+                    <h2>4. How does StrayCare help injured animals?</h2>
+                    <p>
+                        Once a report is submitted, nearby veterinarians, NGOs, and volunteers can
+                        view the case, coordinate rescue efforts, provide treatment, and update the
+                        rescue status.
+                    </p>
+                </section>
+
+                <section id="faq5" className="policy-section">
+                    <h2>5. Can I track the status of a reported animal?</h2>
+                    <p>
+                        Yes. Users can monitor rescue progress through different stages such as
+                        Reported, Assigned, Under Treatment, Recovered, and Adopted.
+                    </p>
+                </section>
+
+                <section id="faq6" className="policy-section">
+                    <h2>6. Does StrayCare support pet adoption?</h2>
+                    <p>
+                        Yes. Users, shelters, and NGOs can list animals available for adoption,
+                        while potential adopters can browse listings and connect with the
+                        responsible organization.
+                    </p>
+                </section>
+
+                <section id="faq7" className="policy-section">
+                    <h2>7. What is the AI Pet Assistant?</h2>
+                    <p>
+                        The AI Pet Assistant provides guidance on pet care, nutrition, basic
+                        first-aid, common health concerns, and general pet-related questions. It is
+                        not a substitute for professional veterinary care.
+                    </p>
+                </section>
+
+                <section id="faq8" className="policy-section">
+                    <h2>8. Can veterinarians join the platform?</h2>
+                    <p>
+                        Yes. Veterinarians and clinics can register on the platform, receive rescue
+                        requests, manage cases, update treatment information, and communicate with
+                        users.
+                    </p>
+                </section>
+
+                <section id="faq9" className="policy-section">
+                    <h2>9. What is the Vet Portal?</h2>
+                    <p>
+                        The Vet Portal is a dedicated dashboard that allows veterinarians and
+                        clinics to manage rescue cases, track treatment progress, update records,
+                        and coordinate with rescuers and NGOs.
+                    </p>
+                </section>
+
+                <section id="faq10" className="policy-section">
+                    <h2>10. Can NGOs use StrayCare?</h2>
+                    <p>
+                        Yes. NGOs and shelters can manage rescue operations, receive reports,
+                        coordinate volunteers, track animal recovery, and publish adoption
+                        listings.
+                    </p>
+                </section>
+
+                <section id="faq11" className="policy-section">
+                    <h2>11. Is location information required?</h2>
+                    <p>
+                        Accurate location information helps rescuers and veterinarians quickly find
+                        animals in need and provide timely assistance.
+                    </p>
+                </section>
+
+                <section id="faq12" className="policy-section">
+                    <h2>12. Can users upload photos and updates?</h2>
+                    <p>
+                        Yes. Users can upload images, rescue updates, treatment progress, recovery
+                        stories, and adoption success stories.
+                    </p>
+                </section>
+
+                <section id="faq13" className="policy-section">
+                    <h2>13. Does StrayCare work like social media?</h2>
+                    <p>
+                        Partially. Users can share pet-related content, rescue stories, awareness
+                        posts, and interact with the animal welfare community.
+                    </p>
+                </section>
+
+                <section id="faq14" className="policy-section">
+                    <h2>14. Is StrayCare free to use?</h2>
+                    <p>
+                        The core features of StrayCare, including animal reporting, rescue
+                        coordination, community participation, and adoption support, are intended
+                        to be free for users.
+                    </p>
+                </section>
+
+                <section id="faq15" className="policy-section">
+                    <h2>15. How does StrayCare ensure genuine reports?</h2>
+                    <p>
+                        The platform encourages photo evidence, location verification, status
+                        updates, and community moderation to help maintain report authenticity.
+                    </p>
+                </section>
+
+                <section id="faq16" className="policy-section">
+                    <h2>16. Can I volunteer for animal rescue?</h2>
+                    <p>
+                        Yes. Interested users can register as volunteers and receive notifications
+                        about rescue opportunities and animal welfare activities nearby.
+                    </p>
+                </section>
+
+                <section id="faq17" className="policy-section">
+                    <h2>17. What types of animals can be reported?</h2>
+                    <p>
+                        Users can report dogs, cats, birds, cattle, and other stray, abandoned,
+                        injured, or distressed animals that require assistance.
+                    </p>
+                </section>
+
+                <section id="faq18" className="policy-section">
+                    <h2>18. Is my personal information secure?</h2>
+                    <p>
+                        Yes. StrayCare follows standard security practices to protect user data and
+                        ensure that personal information is handled responsibly.
+                    </p>
+                </section>
+
+                <section id="faq19" className="policy-section">
+                    <h2>19. Can I contact veterinarians directly?</h2>
+                    <p>
+                        Depending on platform permissions and availability, users may request
+                        consultations or connect with registered veterinarians through the
+                        platform.
+                    </p>
+                </section>
+
+                <section id="faq20" className="policy-section">
+                    <h2>20. What problem does StrayCare solve?</h2>
+                    <p>
+                        StrayCare bridges the gap between people who find animals in need and the
+                        organizations or professionals capable of helping them. It streamlines
+                        rescue, treatment, recovery tracking, and adoption through a single
+                        connected platform.
+                    </p>
+
+                    <div className="policy-highlight-box">
+                        <p><strong>Still have questions?</strong></p>
+                        <p>Email: furzo.app@gmail.com</p>
+                        <p>We will respond as soon as possible.</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+    );
+}
+
+export default FAQ;

@@ -10,6 +10,7 @@ import Guide from "./pages/user/Guide";
 import Post from "./pages/user/Post";
 import Help from "./pages/user/Help";
 import Terms from './pages/Terms';
+import FAQ from './pages/FAQ';
 import Privacy from "./pages/Privacy"
 import Profile from "./pages/user/Profile";
 import LiveTracking from "./pages/user/LiveTracking";
@@ -50,12 +51,12 @@ const UserLayout = ({ openAuthModal }) => (
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
-  
+
   const [appLoading, setAppLoading] = useState(() => {
     const isPortalRoute = window.location.pathname.startsWith('/vet') || window.location.pathname.startsWith('/admin');
     return !isPortalRoute;
   });
-  
+
   const { isFirstLogin, clearFirstLogin, isLoggedIn, user } = useAuthStore();
   const hasLoadedInitial = useRef(false);
 
@@ -115,7 +116,7 @@ function App() {
     Promise.all(criticalImages.map(preloadImage)).then(() => {
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
-      
+
       setTimeout(() => {
         setAppLoading(false);
         hasLoadedInitial.current = true;
@@ -161,9 +162,10 @@ function App() {
               <Route path="nav/:reportId" element={<RescuerNavigation />} />
             </Route>
 
-             {/*Footer routes*/}
-             <Route path ="/privacy" element = { <Privacy />}/>
-             <Route path ="/terms" element = {<Terms/>} />
+            {/*Footer routes*/}
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/faq" element={<FAQ />} />
           </Route>
         </Routes>
 
