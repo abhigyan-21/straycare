@@ -10,13 +10,13 @@ function About() {
             <meta name="description" content="Learn about Furzo's mission to rescue stray animals, connect communities, and promote animal welfare through technology." />
             <meta property="og:title" content="Furzo - About Us" />
             <meta property="og:description" content="Learn about Furzo's mission to rescue stray animals, connect communities, and promote animal welfare through technology." />
-            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
             <meta property="og:url" content="https://furzo.vercel.app/about" />
             <meta property="og:type" content="website" />
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content="Furzo - About Us" />
             <meta name="twitter:description" content="Learn about Furzo's mission to rescue stray animals, connect communities, and promote animal welfare through technology." />
-            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
         </Helmet>
         <div className="about-container">
             <div className="about-content-wrapper">

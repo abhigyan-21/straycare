@@ -399,13 +399,13 @@ function Help({ openAuthModal }) {
             <meta name="description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
             <meta property="og:title" content="Furzo - Support & Campaigns" />
             <meta property="og:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
-            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
             <meta property="og:url" content="https://furzo.vercel.app/help" />
             <meta property="og:type" content="website" />
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content="Furzo - Support & Campaigns" />
             <meta name="twitter:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
-            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
         </Helmet>
         <div className="help-page">
             <div className="help-content-wrapper">

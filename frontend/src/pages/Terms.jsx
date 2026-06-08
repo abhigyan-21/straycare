@@ -67,13 +67,13 @@ function Terms() {
       <meta name="description" content="Review Furzo's Terms of Service governing the use of our animal rescue, adoption, and veterinary assistance platform." />
       <meta property="og:title" content="Furzo - Terms of Service" />
       <meta property="og:description" content="Review Furzo's Terms of Service governing the use of our animal rescue, adoption, and veterinary assistance platform." />
-      <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+      <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
       <meta property="og:url" content="https://furzo.vercel.app/terms" />
       <meta property="og:type" content="website" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content="Furzo - Terms of Service" />
       <meta name="twitter:description" content="Review Furzo's Terms of Service governing the use of our animal rescue, adoption, and veterinary assistance platform." />
-      <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+      <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
     </Helmet>
     <div className="policy-container">
       <aside className="policy-sidebar">

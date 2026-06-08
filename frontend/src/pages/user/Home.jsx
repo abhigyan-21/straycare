@@ -25,7 +25,7 @@ function Home() {
           property="og:description"
           content="Report injured stray animals, connect with NGOs and veterinarians, track rescues, and adopt pets through Furzo."
         />
-        <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+        <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
         <meta property="og:url" content="https://furzo.vercel.app/" />
         <meta property="og:type" content="website" />
 
@@ -35,7 +35,7 @@ function Home() {
           name="twitter:description"
           content="Report injured stray animals, connect with NGOs and veterinarians, track rescues, and adopt pets through Furzo."
         />
-        <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.png" />
+        <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
       </Helmet>
 
       <div
