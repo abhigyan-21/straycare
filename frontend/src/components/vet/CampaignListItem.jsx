@@ -26,12 +26,12 @@ const CampaignListItem = ({ campaign, calculateDaysLeft, onDetails }) => {
             <div className="manage-progress-stat">
                 <div className="manage-stat-value">
                     <Target size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                    ${campaign.goalAmount.toLocaleString()}
+                    ₹{campaign.goalAmount.toLocaleString()}
                 </div>
                 <div className="manage-progress-bar">
                     <div className="progress-fill" style={{ width: `${progress}%` }}></div>
                 </div>
-                <span className="manage-stat-label">Fund Target (${campaign.raisedAmount.toLocaleString()} raised)</span>
+                <span className="manage-stat-label">Fund Target (₹{campaign.raisedAmount.toLocaleString()} raised)</span>
             </div>
 
             <div className="manage-stat">

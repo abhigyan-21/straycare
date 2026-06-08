@@ -2,6 +2,14 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 
 const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) => {
+    const theme = campaign.theme || 'blue';
+    const defaultImages = {
+        blue: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1200&auto=format&fit=crop',
+        green: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1200&auto=format&fit=crop',
+        yellow: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop'
+    };
+    const imageUrl = campaign.image || defaultImages[theme] || defaultImages.blue;
+
     return (
         <div className={`campaign-active-card ${isActive ? 'active-slide' : ''}`}>
             <div className="active-status-indicator">
@@ -10,12 +18,10 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
             </div>
 
             <div className="card-image-section">
-                {campaign.image && (
-                    <img src={campaign.image} alt={campaign.title} className="card-bg-image" />
-                )}
-                <div className={`card-overlay ${campaign.theme}`}></div>
+                <img src={imageUrl} alt={campaign.title} className="card-bg-image" />
+                <div className={`card-overlay ${theme}`}></div>
                 <h3 style={{ position: 'relative', zIndex: 2, color: 'white', fontWeight: 800, fontSize: '1.4rem', textShadow: '0 2px 10px rgba(0,0,0,0.3)', textAlign: 'center', padding: '20px' }}>
-                    {campaign.theme.toUpperCase()} DRIVE
+                    {theme.toUpperCase()} DRIVE
                 </h3>
             </div>
             
@@ -29,11 +35,11 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
                         </div>
                         <div className="card-mini-stat">
                             <label>Raised</label>
-                            <span>${campaign.raisedAmount.toLocaleString()}</span>
+                            <span>₹{campaign.raisedAmount.toLocaleString()}</span>
                         </div>
                         <div className="card-mini-stat">
                             <label>Goal</label>
-                            <span>${campaign.goalAmount.toLocaleString()}</span>
+                            <span>₹{campaign.goalAmount.toLocaleString()}</span>
                         </div>
                     </div>
 

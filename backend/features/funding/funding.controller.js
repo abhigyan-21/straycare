@@ -174,6 +174,11 @@ const createCampaign = async (req, res) => {
       return res.status(403).json({ error: 'You must be associated with a clinic to create a campaign' });
     }
 
+    // Strict validation enforcing all fields are compulsory
+    if (!title || !description || !purpose || !goalAmount || !startDate || !endDate || !startTime || !location || !theme || !image || !banner) {
+      return res.status(400).json({ error: 'All fields (title, description, purpose, goalAmount, startDate, endDate, startTime, location, theme, image, banner) are compulsory.' });
+    }
+
     const campaign = await prisma.campaign.create({
       data: {
         title,
@@ -207,20 +212,34 @@ const createCampaign = async (req, res) => {
  */
 const getCampaigns = async (req, res) => {
   try {
-    const clinicId = req.user.clinicId;
+    const { id, location, status } = req.query;
+    const clinicId = req.query.clinicId || req.user?.clinicId;
 
-    if (!clinicId) {
-      // If no clinicId, maybe return all approved campaigns (public view)
-      const campaigns = await prisma.campaign.findMany({
-        where: { status: 'APPROVED' },
-        include: { clinic: true },
-      });
-      return res.json({ status: 'success', data: campaigns });
+    const where = {};
+
+    if (clinicId) {
+      where.clinicId = clinicId;
+    }
+    if (id) {
+      where.id = id;
+    }
+    if (location) {
+      where.location = { contains: location, mode: 'insensitive' };
+    }
+    if (status) {
+      where.status = status;
+    } else if (!clinicId) {
+      // If no clinicId filter is requested, default to public view showing only APPROVED campaigns
+      where.status = 'APPROVED';
     }
 
     const campaigns = await prisma.campaign.findMany({
-      where: { clinicId },
+      where,
       include: {
+        clinic: true,
+        creator: {
+          select: { name: true }
+        },
         volunteers: {
           include: {
             user: {
@@ -238,24 +257,51 @@ const getCampaigns = async (req, res) => {
   }
 };
 
-/**
- * @desc Update campaign status
- * @route PATCH /api/funding/campaigns/:id
- * @access Private (Vet/Admin)
- */
-const updateCampaignStatus = async (req, res) => {
+const updateCampaign = async (req, res) => {
   try {
-    const { status } = req.body;
     const { id } = req.params;
+    const data = { ...req.body };
+
+    if (data.goalAmount !== undefined) {
+      data.goalAmount = parseFloat(data.goalAmount);
+    }
+    if (data.startDate) {
+      data.startDate = new Date(data.startDate);
+    }
+    if (data.endDate) {
+      data.endDate = new Date(data.endDate);
+    }
 
     const updatedCampaign = await prisma.campaign.update({
       where: { id },
-      data: { status },
+      data,
     });
 
     res.json({ status: 'success', data: updatedCampaign });
   } catch (error) {
-    console.error('Error updating campaign status:', error);
+    console.error('Error updating campaign:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const deleteCampaign = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    try {
+      await prisma.campaignVolunteer.deleteMany({ where: { campaignId: id } });
+      await prisma.donation.deleteMany({ where: { campaignId: id } });
+    } catch (err) {
+      console.warn('Non-fatal error cleaning up relations during campaign delete:', err);
+    }
+
+    const deletedCampaign = await prisma.campaign.delete({
+      where: { id },
+    });
+
+    res.json({ status: 'success', data: deletedCampaign });
+  } catch (error) {
+    console.error('Error deleting campaign:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -758,7 +804,8 @@ module.exports = {
   handleRazorpayWebhook,
   createCampaign,
   getCampaigns,
-  updateCampaignStatus,
+  updateCampaign,
+  deleteCampaign,
   volunteerCampaign,
   cancelVolunteerCampaign,
   checkVolunteerStatus,

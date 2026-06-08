@@ -15,7 +15,7 @@ export const highlightsData = {
         quote: "Seeing these animals find safety is the greatest reward. Every little bit counts!",
         avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
         statLabel: "Contributions",
-        statValue: "$1,250",
+        statValue: "₹1,250",
         badgeIcon: "🏆"
     }
 };

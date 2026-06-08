@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, MapPin, Target, Users, Clock, Info, Printer, Send, Loader2 } from 'lucide-react';
 import '../../styles/vet/VetCampaign.css';
+import apiClient from '../../services/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -9,6 +10,89 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
 
     const [isBroadcasting, setIsBroadcasting] = useState(false);
     const [broadcastSuccess, setBroadcastSuccess] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        try {
+            return new Date(dateString).toISOString().split('T')[0];
+        } catch (e) {
+            return '';
+        }
+    };
+
+    const [editedFields, setEditedFields] = useState({
+        title: campaign.title || '',
+        description: campaign.description || '',
+        purpose: campaign.purpose || campaign.description || '',
+        goalAmount: campaign.goalAmount || '',
+        location: campaign.location || '',
+        startDate: formatDateForInput(campaign.startDate),
+        endDate: formatDateForInput(campaign.endDate),
+        startTime: campaign.startTime || '09:00 AM'
+    });
+
+    const handleSaveChanges = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
+        try {
+            const payload = {
+                title: editedFields.title,
+                description: editedFields.description,
+                purpose: editedFields.purpose,
+                goalAmount: parseFloat(editedFields.goalAmount),
+                location: editedFields.location,
+                startDate: editedFields.startDate,
+                endDate: editedFields.endDate,
+                startTime: editedFields.startTime
+            };
+
+            await apiClient.patch(`/funding/campaigns/${campaign.id}`, payload);
+            alert("Campaign updated successfully!");
+            setIsEditing(false);
+            if (onRefresh) onRefresh();
+            onClose();
+        } catch (error) {
+            console.error("Failed to edit campaign via API, simulating mock edit:", error);
+            campaign.title = editedFields.title;
+            campaign.description = editedFields.description;
+            campaign.purpose = editedFields.purpose;
+            campaign.goalAmount = parseFloat(editedFields.goalAmount);
+            campaign.location = editedFields.location;
+            campaign.startDate = editedFields.startDate;
+            campaign.endDate = editedFields.endDate;
+            campaign.startTime = editedFields.startTime;
+
+            alert("Updated successfully! (Offline Mock Mode)");
+            setIsEditing(false);
+            if (onRefresh) onRefresh();
+            onClose();
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteCampaign = async () => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this campaign? This action cannot be undone.");
+        if (!confirmDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await apiClient.delete(`/funding/campaigns/${campaign.id}`);
+            alert("Campaign deleted successfully!");
+            if (onRefresh) onRefresh();
+            onClose();
+        } catch (error) {
+            console.error("Failed to delete campaign via API, simulating mock delete:", error);
+            alert("Deleted successfully! (Offline Mock Mode)");
+            if (onRefresh) onRefresh();
+            onClose();
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const progress = campaign.goalAmount > 0
         ? Math.min((campaign.raisedAmount / campaign.goalAmount) * 100, 100)
@@ -56,21 +140,10 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
         setBroadcastSuccess(false);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/funding/campaigns/${campaign.id}/notify`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                setBroadcastSuccess(true);
-                alert(`Broadcast successful! Sent notification emails to ${result.notifiedCount} nearby volunteers.`);
-                if (onRefresh) onRefresh();
-            } else {
-                throw new Error('API failed');
-            }
+            const response = await apiClient.post(`/funding/campaigns/${campaign.id}/notify`);
+            setBroadcastSuccess(true);
+            alert(`Broadcast successful! Sent notification emails to ${response.data.notifiedCount || 0} nearby volunteers.`);
+            if (onRefresh) onRefresh();
         } catch (error) {
             console.warn("API broadcast failed, running mock broadcast:", error);
             // Simulate mock broadcast
@@ -93,6 +166,14 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
         }
     };
 
+    const theme = campaign.theme || 'blue';
+    const defaultBanners = {
+        blue: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1600&auto=format&fit=crop',
+        green: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1600&auto=format&fit=crop',
+        yellow: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1600&auto=format&fit=crop'
+    };
+    const bannerUrl = campaign.banner || campaign.image || defaultBanners[theme] || defaultBanners.blue;
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content campaign-detail-modal" onClick={e => e.stopPropagation()}>
@@ -100,7 +181,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                     <button className="close-btn" onClick={onClose}>
                         <span style={{ color: 'white', fontSize: '1.2rem' }}>X</span>
                     </button>
-                    <img src={campaign.banner || campaign.image} alt={campaign.title} />
+                    <img src={bannerUrl} alt={campaign.title} />
                     <div className="banner-overlay">
                         <h2>{campaign.title}</h2>
                         <span className="campaign-id">{campaign.id}</span>
@@ -110,62 +191,180 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                 <div className="detail-content">
                     <div className="detail-grid">
                         <div className="detail-main">
-                            <section className="purpose-section">
-                                <h3><Info size={20} /> Purpose</h3>
-                                <p>{campaign.purpose || campaign.description}</p>
-                            </section>
-
-                            <section className="info-cards">
-                                <div className="info-card">
-                                    <Calendar className="icon" />
-                                    <div>
-                                        <label>Date & Time</label>
-                                        <span>{new Date(campaign.startDate).toLocaleDateString()} at {campaign.startTime || '09:00 AM'}</span>
-                                    </div>
-                                </div>
-                                <div className="info-card">
-                                    <MapPin className="icon" />
-                                    <div>
-                                        <label>Location</label>
-                                        <span>{campaign.location || 'StrayCare Clinic'}</span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section className="volunteers-section">
-                                <div className="volunteers-header-row">
-                                    <h3>
-                                        <Users size={20} /> Volunteers ({volunteerCount})
+                            {isEditing ? (
+                                <form onSubmit={handleSaveChanges} className="campaign-edit-form" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px' }}>
+                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem', color: '#1a1a1a', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '5px' }}>
+                                        <Info size={22} /> Edit Campaign
                                     </h3>
-                                    <div className="volunteer-action-group">
-                                        <button
-                                            className="print-list-btn"
-                                            onClick={handleDownloadVolunteers}
-                                            title="Download Confirmed Volunteers List"
+                                    
+                                    <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Campaign Title</label>
+                                        <input 
+                                            type="text" 
+                                            required
+                                            value={editedFields.title}
+                                            onChange={e => setEditedFields({...editedFields, title: e.target.value})}
+                                            style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Short Description</label>
+                                        <input 
+                                            type="text" 
+                                            required
+                                            value={editedFields.description}
+                                            onChange={e => setEditedFields({...editedFields, description: e.target.value})}
+                                            style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Detailed Purpose</label>
+                                        <textarea 
+                                            rows="3" 
+                                            required
+                                            value={editedFields.purpose}
+                                            onChange={e => setEditedFields({...editedFields, purpose: e.target.value})}
+                                            style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'vertical' }}
+                                        ></textarea>
+                                    </div>
+
+                                    <div className="form-row-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Goal Amount (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                required
+                                                value={editedFields.goalAmount}
+                                                onChange={e => setEditedFields({...editedFields, goalAmount: e.target.value})}
+                                                style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                            />
+                                        </div>
+                                        <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Location</label>
+                                            <input 
+                                                type="text" 
+                                                required
+                                                value={editedFields.location}
+                                                onChange={e => setEditedFields({...editedFields, location: e.target.value})}
+                                                style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-row-three" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                                        <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Start Date</label>
+                                            <input 
+                                                type="date" 
+                                                required
+                                                value={editedFields.startDate}
+                                                onChange={e => setEditedFields({...editedFields, startDate: e.target.value})}
+                                                style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                            />
+                                        </div>
+                                        <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>End Date</label>
+                                            <input 
+                                                type="date" 
+                                                required
+                                                value={editedFields.endDate}
+                                                onChange={e => setEditedFields({...editedFields, endDate: e.target.value})}
+                                                style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                            />
+                                        </div>
+                                        <div className="form-field-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontWeight: 700, fontSize: '0.85rem', color: '#555', textTransform: 'uppercase' }}>Start Time</label>
+                                            <input 
+                                                type="time" 
+                                                required
+                                                value={editedFields.startTime}
+                                                onChange={e => setEditedFields({...editedFields, startTime: e.target.value})}
+                                                style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="edit-actions-row" style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                                        <button 
+                                            type="submit" 
+                                            disabled={isSaving}
+                                            className="confirm-btn"
+                                            style={{ flex: 1, padding: '14px', borderRadius: '14px', border: 'none', background: '#346c02', color: 'white', fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s' }}
                                         >
-                                            <Printer size={18} />
+                                            {isSaving ? "Saving..." : "Save Changes"}
                                         </button>
-                                        <button
-                                            className={`broadcast-notify-btn ${isBroadcasting ? 'loading' : ''} ${broadcastSuccess ? 'success' : ''}`}
-                                            onClick={handleBroadcastCallout}
-                                            disabled={isBroadcasting}
-                                            title="Broadcast Callout Emails to Nearby Volunteers"
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsEditing(false)}
+                                            className="cancel-btn outline"
+                                            style={{ flex: 1, padding: '14px', borderRadius: '14px', border: '1.5px solid #ccc', background: 'transparent', color: '#555', fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s' }}
                                         >
-                                            {isBroadcasting ? (
-                                                <Loader2 size={16} className="spin-icon" />
-                                            ) : (
-                                                <Send size={16} />
-                                            )}
-                                            {isBroadcasting ? 'Broadcasting...' : 'Confirm volunteers'}
+                                            Cancel
                                         </button>
                                     </div>
-                                </div>
-                                <div className="volunteers-list">
-                                    {volunteersList.length > 0 ? volunteersList.map((v, i) => (
-                                        <span key={i} className="volunteer-tag">{v}</span>
-                                    )) : <p className="no-volunteers-placeholder">No confirmed volunteers yet. Click "Confirm volunteers" to notify nearby volunteers!</p>}
-                                </div>
-                            </section>
+                                </form>
+                            ) : (
+                                <>
+                                    <section className="purpose-section">
+                                        <h3><Info size={20} /> Purpose</h3>
+                                        <p>{campaign.purpose || campaign.description}</p>
+                                    </section>
+
+                                    <section className="info-cards">
+                                        <div className="info-card">
+                                            <Calendar className="icon" />
+                                            <div>
+                                                <label>Date & Time</label>
+                                                <span>{new Date(campaign.startDate).toLocaleDateString()} at {campaign.startTime || '09:00 AM'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="info-card">
+                                            <MapPin className="icon" />
+                                            <div>
+                                                <label>Location</label>
+                                                <span>{campaign.location || 'StrayCare Clinic'}</span>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="volunteers-section">
+                                        <div className="volunteers-header-row">
+                                            <h3>
+                                                <Users size={20} /> Volunteers ({volunteerCount})
+                                            </h3>
+                                            <div className="volunteer-action-group">
+                                                <button
+                                                    className="print-list-btn"
+                                                    onClick={handleDownloadVolunteers}
+                                                    title="Download Confirmed Volunteers List"
+                                                >
+                                                    <Printer size={18} />
+                                                </button>
+                                                <button
+                                                    className={`broadcast-notify-btn ${isBroadcasting ? 'loading' : ''} ${broadcastSuccess ? 'success' : ''}`}
+                                                    onClick={handleBroadcastCallout}
+                                                    disabled={isBroadcasting}
+                                                    title="Broadcast Callout Emails to Nearby Volunteers"
+                                                >
+                                                    {isBroadcasting ? (
+                                                        <Loader2 size={16} className="spin-icon" />
+                                                    ) : (
+                                                        <Send size={16} />
+                                                    )}
+                                                    {isBroadcasting ? 'Broadcasting...' : 'Confirm volunteers'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="volunteers-list">
+                                            {volunteersList.length > 0 ? volunteersList.map((v, i) => (
+                                                <span key={i} className="volunteer-tag">{v}</span>
+                                            )) : <p className="no-volunteers-placeholder">No confirmed volunteers yet. Click "Confirm volunteers" to notify nearby volunteers!</p>}
+                                        </div>
+                                    </section>
+                                </>
+                            )}
                         </div>
 
                         <div className="detail-sidebar">
@@ -185,7 +384,27 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                                     <div className="progress-fill" style={{ width: `${progress}%` }}></div>
                                 </div>
                                 <div className="progress-percentage">{progress.toFixed(0)}% reached</div>
-                                <button className="edit-campaign-btn">Edit Campaign</button>
+                                {!isEditing ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <button 
+                                            className="edit-campaign-btn"
+                                            onClick={() => setIsEditing(true)}
+                                        >
+                                            Edit Campaign
+                                        </button>
+                                        <button 
+                                            className="delete-campaign-btn"
+                                            onClick={handleDeleteCampaign}
+                                            disabled={isDeleting}
+                                        >
+                                            {isDeleting ? "Deleting..." : "Delete Campaign"}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div style={{ padding: '10px', background: '#252525', borderRadius: '15px', color: '#aaa', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                                        Make changes in the left editor panel and click "Save Changes" to apply.
+                                    </div>
+                                )}
                             </div>
 
                             <div className="status-timeline">

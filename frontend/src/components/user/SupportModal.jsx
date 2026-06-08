@@ -14,14 +14,16 @@ const SupportModal = ({
     isLoadingCampaigns,
     onDonate,
     getBackgroundImage,
-    openAuthModal
+    openAuthModal,
+    initialViewMode,
+    initialSelectedCampaign
 }) => {
     if (!card) return null;
 
     // View mode: 'main', 'donations', 'payment', 'success'
-    const [viewMode, setViewMode] = useState('main');
+    const [viewMode, setViewMode] = useState(initialViewMode || 'main');
     const [confirmingVolunteer, setConfirmingVolunteer] = useState(false);
-    const [selectedCampaign, setSelectedCampaign] = useState(null);
+    const [selectedCampaign, setSelectedCampaign] = useState(initialSelectedCampaign || null);
     const [donationAmount, setDonationAmount] = useState('1000');
     const [customAmount, setCustomAmount] = useState('');
     const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);

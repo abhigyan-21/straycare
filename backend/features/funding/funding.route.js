@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../auth/auth.middleware');
+const { verifyToken, optionalVerifyToken } = require('../auth/auth.middleware');
 const {
   createDonationOrder,
   handleRazorpayWebhook,
   createCampaign,
   getCampaigns,
-  updateCampaignStatus,
+  updateCampaign,
+  deleteCampaign,
   volunteerCampaign,
   cancelVolunteerCampaign,
   checkVolunteerStatus,
@@ -24,8 +25,9 @@ router.post('/subscriptions/:id/cancel', verifyToken, cancelSubscription);
 
 // ── Campaign routes ───────────────────────────────
 router.post('/campaigns', verifyToken, createCampaign);
-router.get('/campaigns', verifyToken, getCampaigns);
-router.patch('/campaigns/:id', verifyToken, updateCampaignStatus);
+router.get('/campaigns', optionalVerifyToken, getCampaigns);
+router.patch('/campaigns/:id', verifyToken, updateCampaign);
+router.delete('/campaigns/:id', verifyToken, deleteCampaign);
 
 // ── Volunteering routes (General) ───────────────────────────────
 router.post('/campaigns/volunteer', verifyToken, volunteerCampaign);

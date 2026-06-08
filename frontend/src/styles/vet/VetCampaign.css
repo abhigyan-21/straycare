@@ -58,6 +58,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
 .card-bg-image {
@@ -68,6 +72,10 @@
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
 .card-overlay {
@@ -78,6 +86,10 @@
   height: 100%;
   z-index: 1;
   backdrop-filter: blur(6px) brightness(0.9);
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
 /* Right Side: Details Section */
@@ -642,6 +654,23 @@
 }
 
 .edit-campaign-btn:hover {
+  transform: translateY(-3px);
+}
+
+.delete-campaign-btn {
+  width: 100%;
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.delete-campaign-btn:hover {
+  background: #ff1a1a;
   transform: translateY(-3px);
 }
 

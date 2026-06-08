@@ -10,8 +10,6 @@ import CampaignDetailModal from '../../components/vet/CampaignDetailModal';
 import ActionLoader from '../../components/ActionLoader';
 import apiClient from '../../services/api';
 
-import { MOCK_CAMPAIGNS } from '../../data/mock_vet_data';
-
 function VetCampaign() {
     const [activeTab, setActiveTab] = useState('manage');
     const [campaigns, setCampaigns] = useState([]);
@@ -26,7 +24,12 @@ function VetCampaign() {
         startDate: '',
         endDate: '',
         location: '',
-        purpose: ''
+        purpose: '',
+        theme: 'blue',
+        startTime: '09:00 AM',
+        customTheme: '',
+        customImage: '',
+        customBanner: ''
     });
 
     const fetchCampaigns = async () => {
@@ -36,8 +39,8 @@ function VetCampaign() {
             const response = await apiClient.get('/funding/campaigns');
             setCampaigns(response.data.data || []);
         } catch (error) {
-            console.warn("Using mock campaigns fallback:", error);
-            setCampaigns(MOCK_CAMPAIGNS);
+            console.warn("Failed to fetch campaigns:", error);
+            setCampaigns([]);
         } finally {
             const elapsedTime = Date.now() - startTime;
             const remainingTime = Math.max(0, 800 - elapsedTime);
@@ -78,32 +81,63 @@ function VetCampaign() {
 
     const handleCreateCampaign = async (e) => {
         e.preventDefault();
+
+        let themeVal = newCampaign.theme;
+        let imageVal = '';
+        let bannerVal = '';
+
+        const presetImages = {
+            blue: {
+                image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1200&auto=format&fit=crop',
+                banner: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=1600&auto=format&fit=crop'
+            },
+            green: {
+                image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1200&auto=format&fit=crop',
+                banner: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1600&auto=format&fit=crop'
+            },
+            yellow: {
+                image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop',
+                banner: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1600&auto=format&fit=crop'
+            }
+        };
+
+        if (newCampaign.theme === 'custom') {
+            themeVal = newCampaign.customTheme || 'purple';
+            imageVal = newCampaign.customImage || presetImages.blue.image;
+            bannerVal = newCampaign.customBanner || presetImages.blue.banner;
+        } else {
+            const presets = presetImages[newCampaign.theme] || presetImages.blue;
+            imageVal = presets.image;
+            bannerVal = presets.banner;
+        }
+
+        const payload = {
+            title: newCampaign.title,
+            description: newCampaign.description,
+            goalAmount: newCampaign.goalAmount,
+            startDate: newCampaign.startDate,
+            endDate: newCampaign.endDate,
+            location: newCampaign.location,
+            purpose: newCampaign.purpose,
+            startTime: newCampaign.startTime,
+            theme: themeVal,
+            image: imageVal,
+            banner: bannerVal
+        };
+
         try {
-            const response = await apiClient.post('/funding/campaigns', newCampaign);
+            const response = await apiClient.post('/funding/campaigns', payload);
             const result = response.data;
             setCampaigns([result.data, ...campaigns]);
             setActiveTab('manage');
-            setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
+            setNewCampaign({ 
+                title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '',
+                theme: 'blue', startTime: '09:00 AM', customTheme: '', customImage: '', customBanner: ''
+            });
             alert('Campaign launched successfully!');
         } catch (error) {
-            console.error('API failed, mock creation:', error);
-            const themes = ['blue', 'green', 'yellow'];
-            const campaign = {
-                ...newCampaign,
-                id: `CAMP-00${campaigns.length + 1}`,
-                raisedAmount: 0,
-                volunteers: 0,
-                volunteersList: [],
-                status: 'active',
-                theme: themes[campaigns.length % 3],
-                image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1200&auto=format&fit=crop',
-                banner: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1600&auto=format&fit=crop',
-                startTime: '09:00 AM'
-            };
-            setCampaigns([campaign, ...campaigns]);
-            setActiveTab('manage');
-            setNewCampaign({ title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '' });
-            alert('Launched (Mock Mode)');
+            console.error('Failed to launch campaign:', error);
+            alert(`Failed to launch campaign: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -115,7 +149,7 @@ function VetCampaign() {
 
     const tabs = [
         { id: 'manage', label: 'Manage Campaigns' },
-        { id: 'create', label: 'Launch New' }
+        { id: 'create', label: 'Launch New Campaign' }
     ];
 
     if (isLoading) return <ActionLoader message="Loading campaigns..." />;
@@ -225,7 +259,7 @@ function VetCampaign() {
                             </div>
 
                             <div className="form-group">
-                                <label><Target size={16} style={{ marginRight: '8px' }} />Goal Amount ($)</label>
+                                <label><Target size={16} style={{ marginRight: '8px' }} />Goal Amount (₹)</label>
                                 <input 
                                     type="number" 
                                     placeholder="5000" 
@@ -265,6 +299,73 @@ function VetCampaign() {
                                     onChange={e => setNewCampaign({...newCampaign, endDate: e.target.value})}
                                 />
                             </div>
+
+                            <div className="form-group">
+                                <label><Calendar size={16} style={{ marginRight: '8px' }} />Start Time</label>
+                                <input 
+                                    type="time" 
+                                    required 
+                                    value={newCampaign.startTime}
+                                    onChange={e => setNewCampaign({...newCampaign, startTime: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label><Plus size={16} style={{ marginRight: '8px' }} />Campaign Theme</label>
+                                <select 
+                                    required 
+                                    value={newCampaign.theme}
+                                    onChange={e => setNewCampaign({...newCampaign, theme: e.target.value})}
+                                    style={{
+                                        width: '100%',
+                                        padding: '14px 18px',
+                                        borderRadius: '14px',
+                                        border: '1.5px solid #eee',
+                                        fontFamily: "'Outfit', sans-serif",
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    <option value="blue">Feeding Drive (Blue theme)</option>
+                                    <option value="green">Treatment Drive (Green theme)</option>
+                                    <option value="yellow">Shelter Drive (Yellow theme)</option>
+                                    <option value="custom">Custom Theme</option>
+                                </select>
+                            </div>
+
+                            {newCampaign.theme === 'custom' && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Custom Theme Name</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g. purple, orange" 
+                                            required 
+                                            value={newCampaign.customTheme}
+                                            onChange={e => setNewCampaign({...newCampaign, customTheme: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Custom Image URL</label>
+                                        <input 
+                                            type="url" 
+                                            placeholder="https://images.unsplash.com/..." 
+                                            required 
+                                            value={newCampaign.customImage}
+                                            onChange={e => setNewCampaign({...newCampaign, customImage: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="form-group full-width">
+                                        <label>Custom Banner URL</label>
+                                        <input 
+                                            type="url" 
+                                            placeholder="https://images.unsplash.com/..." 
+                                            required 
+                                            value={newCampaign.customBanner}
+                                            onChange={e => setNewCampaign({...newCampaign, customBanner: e.target.value})}
+                                        />
+                                    </div>
+                                </>
+                            )}
 
                             <div className="form-group full-width">
                                 <button type="submit" className="submit-campaign-btn">

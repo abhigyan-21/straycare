@@ -1,41 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Search } from 'lucide-react';
 import '../../styles/user/Help.css';
 import { mockPets } from '../../data/mockPets';
 import { highlightsData } from '../../data/highlightsData';
 import SupportCarousel from '../../components/user/SupportCarousel';
 import HighlightCard from '../../components/user/HighlightCard';
 import SupportModal from '../../components/user/SupportModal';
+import UserCampaignDetailModal from '../../components/user/UserCampaignDetailModal';
+import UserCampaignCard from '../../components/user/UserCampaignCard';
 import { useAuthStore } from '../../store/authStore';
+import apiClient from '../../services/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
-// Fallback ongoing campaigns list
-const MOCK_ONGOING_CAMPAIGNS = [
-    {
-        id: "mock-camp-1",
-        title: "Winter Warmth Drive",
-        description: "Provide insulated jackets and blankets to strays facing the harsh winter.",
-        goalAmount: 50000,
-        raisedAmount: 32500,
-        image: "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&q=80&w=800",
-    },
-    {
-        id: "mock-camp-2",
-        title: "Medical Treatment Campaign",
-        description: "Emergency fund for treating injured stray dogs and cats.",
-        goalAmount: 80000,
-        raisedAmount: 45000,
-        image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=800",
-    },
-    {
-        id: "mock-camp-3",
-        title: "Shelter Expansion Project",
-        description: "Building safe sleeping spaces and feeding areas at our central facility.",
-        goalAmount: 120000,
-        raisedAmount: 90000,
-        image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=800",
-    }
-];
 
 function Help({ openAuthModal }) {
     const { isLoggedIn } = useAuthStore();
@@ -47,8 +23,15 @@ function Help({ openAuthModal }) {
     const resetTimeoutRef = useRef(null);
 
     // Campaigns list state
-    const [campaigns, setCampaigns] = useState(MOCK_ONGOING_CAMPAIGNS);
+    const [campaigns, setCampaigns] = useState([]);
     const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
+
+    // Search & filter states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedFilter, setSelectedFilter] = useState('all');
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [selectedDirectCampaign, setSelectedDirectCampaign] = useState(null);
+    const [showDetailCampaign, setShowDetailCampaign] = useState(null);
 
     // Volunteering states
     const [hasVolunteered, setHasVolunteered] = useState(false);
@@ -89,22 +72,15 @@ function Help({ openAuthModal }) {
     const fetchCampaigns = async () => {
         setIsLoadingCampaigns(true);
         try {
-            const token = localStorage.getItem('token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const res = await fetch(`${API_BASE_URL}/funding/campaigns`, { headers });
-            if (res.ok) {
-                const json = await res.json();
-                if (json.status === 'success' && json.data && json.data.length > 0) {
-                    setCampaigns(json.data);
-                } else {
-                    setCampaigns(MOCK_ONGOING_CAMPAIGNS);
-                }
+            const response = await apiClient.get('/funding/campaigns');
+            if (response.data && response.data.status === 'success' && response.data.data && response.data.data.length > 0) {
+                setCampaigns(response.data.data);
             } else {
-                setCampaigns(MOCK_ONGOING_CAMPAIGNS);
+                setCampaigns([]);
             }
         } catch (err) {
-            console.warn('Backend offline, using mock campaigns data:', err);
-            setCampaigns(MOCK_ONGOING_CAMPAIGNS);
+            console.warn('Backend offline, no campaigns loaded:', err);
+            setCampaigns([]);
         } finally {
             setIsLoadingCampaigns(false);
         }
@@ -120,27 +96,21 @@ function Help({ openAuthModal }) {
         }
 
         try {
-            const res = await fetch(`${API_BASE_URL}/funding/campaigns/volunteer/status`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            if (res.ok) {
-                const json = await res.json();
-                if (json.status === 'applied') {
-                    setHasVolunteered(true);
-                    setVolunteerPending(false);
-                    setCooldownRemaining(0);
-                } else if (json.status === 'pending') {
-                    setHasVolunteered(true);
-                    setVolunteerPending(true);
-                    setCooldownRemaining(json.remainingSeconds || 120);
-                    startCountdown(json.remainingSeconds || 120);
-                } else {
-                    setHasVolunteered(false);
-                    setVolunteerPending(false);
-                    setCooldownRemaining(0);
-                }
+            const response = await apiClient.get('/funding/campaigns/volunteer/status');
+            const json = response.data;
+            if (json.status === 'applied') {
+                setHasVolunteered(true);
+                setVolunteerPending(false);
+                setCooldownRemaining(0);
+            } else if (json.status === 'pending') {
+                setHasVolunteered(true);
+                setVolunteerPending(true);
+                setCooldownRemaining(json.remainingSeconds || 120);
+                startCountdown(json.remainingSeconds || 120);
             } else {
-                throw new Error('Status endpoint failed');
+                setHasVolunteered(false);
+                setVolunteerPending(false);
+                setCooldownRemaining(0);
             }
         } catch (err) {
             // Fallback to localStorage mock volunteering status
@@ -203,24 +173,13 @@ function Help({ openAuthModal }) {
         // Helper to register volunteering with coordinates
         const registerWithLocation = async (latitude = null, longitude = null) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/funding/campaigns/volunteer`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ lat: latitude, lng: longitude })
-                });
-                if (res.ok) {
-                    const json = await res.json();
-                    setHasVolunteered(true);
-                    setVolunteerPending(true);
-                    const secs = json.remainingSeconds || 120;
-                    setCooldownRemaining(secs);
-                    startCountdown(secs);
-                } else {
-                    throw new Error('Registration failed');
-                }
+                const response = await apiClient.post('/funding/campaigns/volunteer', { lat: latitude, lng: longitude });
+                const json = response.data;
+                setHasVolunteered(true);
+                setVolunteerPending(true);
+                const secs = json.remainingSeconds || 120;
+                setCooldownRemaining(secs);
+                startCountdown(secs);
             } catch (err) {
                 // Mock volunteer registration
                 localStorage.setItem('mock_volunteer_status', 'pending');
@@ -257,21 +216,11 @@ function Help({ openAuthModal }) {
     // Cancel Volunteer Action
     const handleVolunteerCancel = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/funding/campaigns/volunteer/cancel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (res.ok) {
-                if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-                setHasVolunteered(false);
-                setVolunteerPending(false);
-                setCooldownRemaining(0);
-            } else {
-                throw new Error('Cancellation failed');
-            }
+            await apiClient.post('/funding/campaigns/volunteer/cancel');
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+            setHasVolunteered(false);
+            setVolunteerPending(false);
+            setCooldownRemaining(0);
         } catch (err) {
             // Mock volunteer cancellation
             localStorage.setItem('mock_volunteer_status', 'none');
@@ -286,21 +235,10 @@ function Help({ openAuthModal }) {
     // Donation fulfillment logic (real API or mock simulation)
     const handleCampaignDonation = async (campaignId, amount) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/funding/campaigns/${campaignId}/donate-mock`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ amount })
-            });
-            if (res.ok) {
-                // Refresh campaigns to update raisedAmount
-                await fetchCampaigns();
-                return true;
-            } else {
-                throw new Error('Donation endpoint failed');
-            }
+            await apiClient.post(`/funding/campaigns/${campaignId}/donate-mock`, { amount });
+            // Refresh campaigns to update raisedAmount
+            await fetchCampaigns();
+            return true;
         } catch (err) {
             // Simulate donation on frontend
             setCampaigns(prev => prev.map(c => {
@@ -372,6 +310,7 @@ function Help({ openAuthModal }) {
 
     const closeExpanded = () => {
         setExpandedCard(null);
+        setSelectedDirectCampaign(null);
     };
 
     const getBackgroundImage = () => {
@@ -381,6 +320,42 @@ function Help({ openAuthModal }) {
         }
         return 'none';
     };
+
+    // Classify a campaign into food, treatment, shelter, or other
+    const getCampaignCategory = (camp) => {
+        const theme = (camp.theme || '').toLowerCase();
+        const title = (camp.title || '').toLowerCase();
+        const desc = (camp.description || '').toLowerCase();
+        const purpose = (camp.purpose || '').toLowerCase();
+
+        const match = (words) => words.some(w => title.includes(w) || desc.includes(w) || purpose.includes(w));
+
+        if (theme === 'blue' || theme === 'feeding' || theme === 'food' || match(['food', 'feed', 'meal', 'nutrition', 'eat'])) {
+            return 'food';
+        }
+        if (theme === 'green' || theme === 'treatment' || match(['treatment', 'medical', 'surgery', 'vaccin', 'vet', 'injur', 'heal', 'cure', 'care'])) {
+            return 'treatment';
+        }
+        if (theme === 'yellow' || theme === 'shelter' || match(['shelter', 'home', 'sleep', 'blanket', 'jacket', 'warmth', 'stay', 'bed', 'facility'])) {
+            return 'shelter';
+        }
+        return 'other';
+    };
+
+    // Filter campaigns based on search query and category
+    const activeCampaignsList = campaigns.filter(c => c.status === undefined || c.status === 'active' || c.status === 'APPROVED');
+    
+    const filteredCampaigns = activeCampaignsList.filter(camp => {
+        const matchesSearch = searchQuery.trim() === '' || 
+            (camp.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+            (camp.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (camp.location || '').toLowerCase().includes(searchQuery.toLowerCase());
+            
+        const category = getCampaignCategory(camp);
+        const matchesCategory = selectedFilter === 'all' || category === selectedFilter;
+        
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <div className="help-page">
@@ -402,6 +377,92 @@ function Help({ openAuthModal }) {
                         />
                     ))}
                 </div>
+
+                {/* Search, Filter, and Campaign List Widget */}
+                <div className="campaign-search-section">
+                    <div className="search-filter-container">
+                        <div className="search-bar-wrapper">
+                            <Search className="search-icon" size={20} />
+                            <input
+                                type="text"
+                                className="campaign-search-input"
+                                placeholder="search a campaign"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {searchQuery && (
+                                <button className="clear-search-btn" onClick={() => setSearchQuery('')}>×</button>
+                            )}
+                        </div>
+                        
+                        <div className="category-filters">
+                            {[
+                                { id: 'all', label: 'All Campaigns' },
+                                { id: 'food', label: 'Food & Nutrition' },
+                                { id: 'shelter', label: 'Safe Shelter' },
+                                { id: 'treatment', label: 'Medical Treatment' },
+                                { id: 'other', label: 'Other Support' }
+                            ].map((filterItem) => (
+                                <button
+                                    key={filterItem.id}
+                                    className={`filter-pill ${filterItem.id} ${selectedFilter === filterItem.id ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setSelectedFilter(filterItem.id);
+                                        setIsExpanded(false);
+                                    }}
+                                >
+                                    {filterItem.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="campaigns-grid-wrapper">
+                        {filteredCampaigns.length === 0 ? (
+                            <div className="no-campaigns-found">
+                                <p>No active campaigns match your search and filter criteria.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="campaigns-grid">
+                                    {filteredCampaigns.slice(0, isExpanded ? undefined : 5).map((camp) => {
+                                        const progress = camp.goalAmount > 0
+                                            ? Math.min(100, Math.round(((camp.raisedAmount || 0) / camp.goalAmount) * 100))
+                                            : 0;
+                                        const category = getCampaignCategory(camp);
+
+                                        return (
+                                            <UserCampaignCard
+                                                key={camp.id}
+                                                campaign={camp}
+                                                category={category}
+                                                progress={progress}
+                                                onDonate={(selected) => {
+                                                    setSelectedDirectCampaign(selected);
+                                                    setExpandedCard(4);
+                                                }}
+                                                onDetails={(selected) => {
+                                                    setShowDetailCampaign(selected);
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+
+                                {filteredCampaigns.length > 5 && (
+                                    <div className="view-more-container">
+                                        <button 
+                                            className="view-more-toggle-btn"
+                                            onClick={() => setIsExpanded(!isExpanded)}
+                                        >
+                                            {isExpanded ? 'Show Less' : 'View More'}
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <section className="highlights-section">
@@ -417,6 +478,7 @@ function Help({ openAuthModal }) {
             </section>
 
             <SupportModal 
+                key={expandedCard ? `modal-${expandedCard}-${selectedDirectCampaign?.id || 'none'}` : 'modal-closed'}
                 card={cards.find(c => c.id === expandedCard)}
                 onClose={closeExpanded}
                 isLoggedIn={isLoggedIn}
@@ -430,7 +492,21 @@ function Help({ openAuthModal }) {
                 onDonate={handleCampaignDonation}
                 getBackgroundImage={getBackgroundImage}
                 openAuthModal={openAuthModal}
+                initialViewMode={selectedDirectCampaign ? 'payment' : 'main'}
+                initialSelectedCampaign={selectedDirectCampaign}
             />
+
+            {showDetailCampaign && (
+                <UserCampaignDetailModal 
+                    campaign={showDetailCampaign}
+                    onClose={() => setShowDetailCampaign(null)}
+                    onDonate={(camp) => {
+                        setShowDetailCampaign(null);
+                        setSelectedDirectCampaign(camp);
+                        setExpandedCard(4);
+                    }}
+                />
+            )}
         </div>
     );
 }
