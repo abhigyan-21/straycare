@@ -60,9 +60,20 @@
     top: 0;
     left: 0;
     height: 100%;
-    background-color: #fce883;
-    transition: width 0.2s ease-out;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, #fce883, #f7d94e, #fce883, transparent);
+    border-radius: 25px;
     z-index: 1;
+    animation: progressSweep 1.5s ease-in-out infinite;
+}
+
+@keyframes progressSweep {
+    0% {
+        left: -40%;
+    }
+    100% {
+        left: 100%;
+    }
 }
 
 .button-progress-content {

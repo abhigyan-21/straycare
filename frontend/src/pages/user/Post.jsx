@@ -106,6 +106,7 @@ function Post({ openAuthModal }) {
                 >
                     {isUploading ? (
                         <div className="button-progress-wrapper">
+                            <div className="button-progress-fill"></div>
                             <div className="button-progress-content">
                                 <MiniLoader />
                                 <span>Posting...</span>

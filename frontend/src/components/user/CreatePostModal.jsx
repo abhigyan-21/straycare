@@ -3,8 +3,10 @@ import { MapPin } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import '../../styles/user/Post.css';
+import { useAuthStore } from '../../store/authStore';
 
 const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
+    const { user } = useAuthStore();
     const [newPostCaption, setNewPostCaption] = useState('');
     const [imgSrc, setImgSrc] = useState('');
     const [crop, setCrop] = useState();
@@ -215,9 +217,9 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
                         </div>
                         <div className="post-details-section">
                             <div className="post-header">
-                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User profile" className="post-user-img" />
+                                <img src={user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random`} alt="User profile" className="post-user-img" />
                                 <div className="post-user-info">
-                                    <span className="post-username">straycare_user</span>
+                                    <span className="post-username">{user?.name || 'User'}</span>
                                     <div className="location-toggle-row">
                                         <label className="switch">
                                             <input 
@@ -245,7 +247,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
                             </div>
                             <div className="post-content-scroll" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                                 <div className="post-caption-block" style={{ width: '100%', alignItems: 'flex-start' }}>
-                                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User profile" className="post-user-img-small" />
+                                    <img src={user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random`} alt="User profile" className="post-user-img-small" />
                                     <textarea
                                         className="caption-textarea mockup-textarea"
                                         placeholder="Write a caption (max 100 words)..."

@@ -118,3 +118,63 @@ exports.addComment = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getMyPosts = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const posts = await prisma.post.findMany({
+      where: { authorId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        likes: { select: { userId: true } },
+        comments: { select: { id: true } }
+      }
+    });
+
+    res.status(200).json({ status: 'success', data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deletePost = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const post = await prisma.post.findUnique({
+      where: { id }
+    });
+
+    if (!post) {
+      return res.status(404).json({ status: 'error', message: 'Post not found.' });
+    }
+
+    if (post.authorId !== userId) {
+      return res.status(403).json({ status: 'error', message: 'You can only delete your own posts.' });
+    }
+
+    // Delete related likes and comments first, then the post
+    await prisma.like.deleteMany({ where: { postId: id } });
+    await prisma.comment.deleteMany({ where: { postId: id } });
+    await prisma.post.delete({ where: { id } });
+
+    // Attempt to delete from Cloudinary if URL exists
+    if (post.postImage) {
+      try {
+        const { cloudinary } = require('../../utils/cloudinary');
+        const urlParts = post.postImage.split('/');
+        const publicIdWithExt = urlParts.slice(-2).join('/');
+        const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
+        await cloudinary.uploader.destroy(publicId);
+      } catch (cloudErr) {
+        console.warn('Failed to delete image from Cloudinary:', cloudErr.message);
+      }
+    }
+
+    res.status(200).json({ status: 'success', message: 'Post deleted successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
