@@ -116,25 +116,26 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
         setIsCropMode(false);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!newPostImagePreview || !newPostCaption.trim()) return;
 
-        const newPost = {
-            id: Date.now(),
-            username: 'straycare_user', // Mock user
-            userImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-            postImage: newPostImagePreview,
-            caption: newPostCaption,
-            likes: 0,
-            isLiked: false,
-            comments: [],
-            timestamp: 'Just now',
-            location: (shareLocation && location) ? location.name : null
-        };
+        try {
+            const base64Response = await fetch(newPostImagePreview);
+            const blob = await base64Response.blob();
+            
+            const formData = new FormData();
+            formData.append('image', blob, 'post-image.jpg');
+            formData.append('caption', newPostCaption);
+            if (shareLocation && location) {
+                formData.append('location', location.name);
+            }
 
-        onSubmit(newPost);
-        handleClose();
+            onSubmit(formData);
+            handleClose();
+        } catch (error) {
+            console.error('Failed to create FormData from image:', error);
+        }
     };
 
 

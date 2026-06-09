@@ -235,5 +235,26 @@ export const submitAdoptionRequest = async (petId, formDetails = {}) => {
   const response = await apiClient.post('/adoptions/requests', { petId, formDetails });
   return response.data;
 };
+export const fetchPosts = async () => {
+  const response = await apiClient.get('/posts');
+  return response.data;
+};
+
+export const createPost = async (formData) => {
+  const response = await apiClient.post('/posts', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+export const toggleLikePost = async (postId) => {
+  const response = await apiClient.post(`/posts/${postId}/like`);
+  return response.data;
+};
+
+export const addCommentToPost = async (postId, text) => {
+  const response = await apiClient.post(`/posts/${postId}/comment`, { text });
+  return response.data;
+};
 
 export default apiClient;
