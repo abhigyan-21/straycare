@@ -8,23 +8,34 @@
     min-height: 400px;
 }
 
-.action-loader-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #8bfb4f; /* Green color from design */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+.action-loader-image-container {
+    width: 150px;
+    height: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.action-loader-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: action-loader-bounce 0.3s ease-in-out infinite alternate;
 }
 
 .action-loader-message {
     color: #666;
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: 600;
     font-family: 'Outfit', sans-serif;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes action-loader-bounce {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-8px);
+    }
 }

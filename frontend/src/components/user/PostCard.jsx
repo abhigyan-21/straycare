@@ -21,7 +21,7 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
     const isLiked = post.likes?.some(like => like.userId === currentUserId);
     const likeCount = post.likes?.length || 0;
     const authorName = post.author?.name || 'Unknown User';
-    const authorImage = post.author?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80';
+    const authorImage = post.author?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
 
     return (
         <div className="post-card">
@@ -51,21 +51,26 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                 {/* Scrollable Content Area */}
                 <div className="post-content-scroll">
                     <div className="post-caption-block">
-                        <img src={authorImage} alt="User profile" className="post-user-img-small" />
-                        <div className="caption-text">
-                            <span className="post-username">{authorName}</span>
-                            {' '}
+                        <div className="caption-text" style={{ fontWeight: 'bold' }}>
                             {post.caption}
                         </div>
                     </div>
 
                     <div className="post-comments">
-                        {post.comments?.map(comment => (
-                            <div key={comment.id} className="comment">
-                                <span className="comment-username">{comment.user?.name || 'Unknown'}</span>
-                                <span className="comment-text">{comment.text}</span>
-                            </div>
-                        ))}
+                        {post.comments?.map(comment => {
+                            const commenterName = comment.user?.name || 'Unknown';
+                            const commenterImage = comment.user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenterName)}&background=random`;
+                            return (
+                                <div key={comment.id} className="comment">
+                                    <img src={commenterImage} alt="User profile" className="post-user-img-small" style={{ width: '24px', height: '24px', marginRight: '8px', display: 'inline-block', verticalAlign: 'middle' }} />
+                                    <div>
+                                        <span className="comment-username">{commenterName}</span>
+                                        {' '}
+                                        <span className="comment-text">{comment.text}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -77,10 +82,10 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                             onClick={() => onLike(post.id)}
                             title="Like"
                         >
-                            <Heart 
-                                size={22} 
-                                color={isLiked ? "#ed4956" : "#262626"} 
-                                fill={isLiked ? "#ed4956" : "none"} 
+                            <Heart
+                                size={22}
+                                color={isLiked ? "#ed4956" : "#262626"}
+                                fill={isLiked ? "#ed4956" : "none"}
                                 strokeWidth={2.5}
                             />
                         </button>

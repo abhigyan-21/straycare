@@ -470,24 +470,77 @@ const requestEmailOtp = async (req, res) => {
 
     console.log(`[OTP Info] Attempting to send new OTP verification email to ${user.email}...`);
     sendEmail({
-      to: user.email,
-      subject: 'Email Verification OTP',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: auto; margin: 0 auto; padding: 20px; border: 5px solid #bdf9aeff; border-radius: 8px;">
-          <h1 style="text-align: center;">Welcome to Furzo!</h1>
-          <h2 style="color: #346c02; text-align: center;">Email Verification Code</h2>
-          <p>Please use the following new OTP code to verify your email address:</p>
-          <div style="text-align: center; margin: 20px 0;">
-            <span style="font-size: 2rem; font-weight: bold; letter-spacing: 5px; color: #346c02;">${otp}</span>
+  to: user.email,
+  subject: 'Email Verification OTP',
+  html: 
+  `
+  <div style="margin:0; padding:20px; background-color:#f4f7f2; font-family:Arial, sans-serif;">
+    <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #d8eecf;">
+
+      <!-- Header -->
+      <div style="background:#346c02; padding:30px; text-align:center;">
+        <h1 style="margin:0; color:#ffffff; font-size:32px;">
+          Furzo
+        </h1>
+        <p style="margin:8px 0 0; color:#d9f8d0; font-size:14px;">
+          Verify Your Email Address
+        </p>
+      </div>
+
+      <!-- Content -->
+      <div style="padding:40px 30px; color:#333333;">
+        <h2 style="margin-top:0; color:#346c02;">
+          Email Verification Code
+        </h2>
+
+        <p style="font-size:16px; line-height:1.6;">
+          Thank you for joining Furzo. Use the OTP below to verify your email address and complete your account setup.
+        </p>
+
+        <div style="text-align:center; margin:35px 0;">
+          <div style="
+            display:inline-block;
+            background:#f2ffe9;
+            border:2px dashed #346c02;
+            border-radius:10px;
+            padding:18px 35px;
+            font-size:32px;
+            font-weight:bold;
+            letter-spacing:8px;
+            color:#346c02;">
+            ${otp}
           </div>
-          <p style="font-size: 0.9rem; color: #666;">Thank you for being a part of Furzo!</p>
-          <p style="font-size: 0.9rem; color: #666;">This code is valid for 5 minutes.</p>
-          <p style="font-size: 0.9rem; color: #666;">Disclaimer: This is an auto-generated email. Please do not reply to this email.</p>
-          <p style="font-size: 0.9rem; color: #666;">If you didn't request this code, please ignore this email.</p>
         </div>
-      `
-    })
-      .then(result => {
+
+        <p style="font-size:15px; line-height:1.6;">
+          This verification code is valid for <strong>5 minutes</strong>.
+        </p>
+
+        <p style="font-size:15px; line-height:1.6;">
+          If you did not request this code, please ignore this email. No further action is required.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#f8faf7; padding:20px 30px; border-top:1px solid #e5e5e5;">
+        <p style="margin:0; font-size:13px; color:#666666;">
+          This is an automated email from Furzo. Please do not reply to this message.
+        </p>
+
+        <p style="margin-top:10px; font-size:13px; color:#666666;">
+          Thank you for helping create a safer world for stray animals.
+        </p>
+
+        <p style="margin-top:10px; font-size:12px; color:#999999;">
+          © 2026 Furzo. All rights reserved.
+        </p>
+        </div>
+
+      </div>
+   </div>
+  `
+})
+.then(result => {
         if (result.success) {
           console.log(`✅ [OTP Success] Verification email successfully sent to ${user.email}`);
         } else {

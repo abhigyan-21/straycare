@@ -393,8 +393,25 @@ const updateRequestStatus = async (req, res) => {
             <div style="background-color: #f0fff4; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #38a169;">
               <p style="margin: 0; color: #276749; font-weight: bold;">Congratulations on welcoming your new furry family member!</p>
             </div>
-            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
+            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The Furzo Team</p>
           </div>
+          <!-- Footer -->
+      <div style="background:#f8faf7; padding:20px 30px; border-top:1px solid #e5e5e5;">
+        <p style="margin:0; font-size:13px; color:#666666;">
+          This is an automated email from Furzo. Please do not reply to this message.
+        </p>
+
+        <p style="margin-top:10px; font-size:13px; color:#666666;">
+          Thank you for helping create a safer world for stray animals.
+        </p>
+
+        <p style="margin-top:10px; font-size:12px; color:#999999;">
+          © 2026 Furzo. All rights reserved.
+        </p>
+        </div>
+
+      </div>
+
         `
       }).then(result => {
         if (result.success) {
@@ -413,28 +430,61 @@ const updateRequestStatus = async (req, res) => {
         to: request.user.email,
         subject: `Adoption Request Update - ${request.pet.name || 'Unnamed Pet'}`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-            <h2 style="color: #c53030; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adoption Request Update</h2>
-            <p>Dear ${request.user.name},</p>
-            <p>Thank you for your interest in adopting <strong>${request.pet.name || 'Unnamed'}</strong> (ID: <code>${request.pet.id}</code>).</p>
-            <p>After careful consideration, we regret to inform you that your adoption application has been <strong>Rejected</strong> at this time.</p>
-            <p>We appreciate your love for stray animals and encourage you to explore other pets listed on StrayCare in the future.</p>
-            <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The StrayCare Team</p>
-          </div>
-        `
-      }).then(result => {
-        if (result.success) {
-          console.log(`✅ [Email Success] Adoption rejected email sent to ${request.user.email}`);
-        } else {
-          console.error(`❌ [Email Error] Failed to send adoption rejected email:`, result.error);
-        }
-      }).catch(err => {
-        console.error(`❌ [Email Error] Unexpected exception sending rejection email:`, err);
-      });
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background:#ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow:hidden;">
+    
+    <!-- Header -->
+    <div style="background:#c53030; padding:20px; text-align:center;">
+        <h2 style="color:#ffffff; margin:0;"> Adoption Request Update </h2>
+    </div>
+    
+    <!-- Content -->
+    <div style="padding:30px;">
+        <p>Dear ${request.user.name},</p>
+        <p>Thank you for your interest in adopting <strong>${request.pet.name || 'Unnamed Pet'}</strong> (ID: <code>${request.pet.id}</code>). </p>
+        
+        <p>After careful consideration, we regret to inform you that your adoption application has not been approved at this time.</p>
+        
+        <div style=" background:#fff5f5; padding:15px; border-radius:6px; margin:20px 0; border-left:4px solid #c53030;">
+            <p style="margin:0; color:#9b2c2c;">We sincerely appreciate your willingness to provide a loving home to a stray animal.</p>
+        </div>
+        
+        <p>This decision may be based on a variety of factors related to the adoption process and does not reflect negatively on your interest or commitment.</p>
+        
+        <p>We encourage you to continue exploring other pets available on Furzo. Your future companion may be waiting for you.</p>
+        
+        <p style="margin-top:25px; color:#4a5568;">
+            Best regards,<br>
+            <strong>The Furzo Team</strong>
+        </p>
+    </div>
+    
+    <!-- Footer -->
+    <div style="background:#f8faf7; padding:20px 30px; border-top:1px solid #e5e5e5;">
+        <p style="margin:0; font-size:13px; color:#666666;">
+            This is an automated email from Furzo. Please do not reply to this message.
+        </p>
+        <p style="margin-top:10px; font-size:13px; color:#666666;">
+            Thank you for helping create a safer world for stray animals.
+        </p>
+        <p style="margin-top:10px; font-size:12px; color:#999999;">
+            © 2026 Furzo. All rights reserved.
+        </p>
+    </div>
+
+</div>
+ ` }).then(result => {
+          if (result.success) {
+            console.log(`✅ [Email Success] Adoption rejected email sent to ${request.user.email}`);
+          } else {
+            console.error(`❌ [Email Error] Failed to send adoption rejected email:`, result.error);
+          }
+        }).catch(err => {
+          console.error(`❌ [Email Error] Unexpected exception sending rejection email:`, err);
+        });
     }
 
     if (status === 'INTERVIEW_SCHEDULED') {
-      const centerName = request.pet.clinic?.name || request.interviewLocation || 'StrayCare Partner Center';
+      const centerName = request.pet.clinic?.name || request.interviewLocation || 'Furzo Partner Center';
       const centerAddress = request.pet.clinic?.address
         ? `${request.pet.clinic.address}${request.pet.clinic.city ? ', ' + request.pet.clinic.city : ''}`
         : 'Will be shared by the coordinator';

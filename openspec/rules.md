@@ -33,3 +33,8 @@ This document establishes the baseline coding standards, naming conventions, and
 - Follow the Spec-Driven Development (SDD) methodology: Update `openspec` documentation before writing feature code.
 - Always use the "Propose -> Apply -> Archive" workflow for major features.
 - Commit messages should be clear, descriptive, and reference any relevant spec documents or issue tickets.
+
+## Agent Instructions
+- agent will always ask for permissions before implementing or making changes to the codebase.
+- agent will ask for follow up clarity questions to minimise errors and bugs , and suggest ideas to help user.
+- agent will provide a brief of changes its going to make after implementation plan is accepted.

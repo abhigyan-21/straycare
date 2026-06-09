@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { usePostStore } from '../../store/postStore';
 import PostCard from '../../components/user/PostCard';
 import MiniLoader from '../../components/user/MiniLoader';
+import ActionLoader from '../../components/ActionLoader';
 
 function Post({ openAuthModal }) {
     const { isLoggedIn, user: authUser } = useAuthStore();
@@ -93,58 +94,57 @@ function Post({ openAuthModal }) {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo - Community Feed</title>
-            <meta name="description" content="Share animal rescue stories, adoption successes, and connect with the Furzo animal welfare community." />
-        </Helmet>
-        <div className="posts-container">
-            <div className="create-post-header">
-                <button 
-                    className={`create-post-btn ${isUploading ? 'uploading' : ''}`} 
-                    onClick={handleOpenCreateModal}
-                    disabled={isUploading || loading}
-                >
-                    {isUploading ? (
-                        <div className="button-progress-wrapper">
-                            <div className="button-progress-fill"></div>
-                            <div className="button-progress-content">
-                                <MiniLoader />
-                                <span>Posting...</span>
+            <Helmet>
+                <title>Furzo - Community Feed</title>
+                <meta name="description" content="Share animal rescue stories, adoption successes, and connect with the Furzo animal welfare community." />
+            </Helmet>
+            <div className="posts-container">
+                <div className="create-post-header">
+                    <button
+                        className={`create-post-btn ${isUploading ? 'uploading' : ''}`}
+                        onClick={handleOpenCreateModal}
+                        disabled={isUploading || loading}
+                    >
+                        {isUploading ? (
+                            <div className="button-progress-wrapper">
+                                <div className="button-progress-fill"></div>
+                                <div className="button-progress-content">
+                                    <MiniLoader />
+                                    <span>Posting...</span>
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <>
-                            <span className="plus-icon">+</span> Create a Post
-                        </>
-                    )}
-                </button>
-            </div>
-
-            {loading && posts.length === 0 ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-                    <MiniLoader />
+                        ) : (
+                            <>
+                                <span className="plus-icon">+</span> Create a Post
+                            </>
+                        )}
+                    </button>
                 </div>
-            ) : (
-                posts.map(post => (
-                    <PostCard 
-                        key={post.id} 
-                        post={post} 
-                        currentUserId={authUser?.id}
-                        onLike={handleLike}
-                        onShare={handleShare}
-                        onCommentChange={handleCommentChange}
-                        onSubmitComment={submitComment}
-                        newComment={newComment[post.id]}
-                    />
-                ))
-            )}
 
-            <CreatePostModal
-                isOpen={isCreateModalOpen}
-                onClose={handleCloseCreateModal}
-                onSubmit={handleCreatePostSubmit}
-            />
-        </div>
+                {loading && posts.length === 0 ? (
+                    <ActionLoader message="Loading posts..." />
+                ) : (
+                    posts.map(post => (
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            currentUser={authUser}
+                            currentUserId={authUser?.id}
+                            onLike={handleLike}
+                            onShare={handleShare}
+                            onCommentChange={handleCommentChange}
+                            onSubmitComment={submitComment}
+                            newComment={newComment[post.id]}
+                        />
+                    ))
+                )}
+
+                <CreatePostModal
+                    isOpen={isCreateModalOpen}
+                    onClose={handleCloseCreateModal}
+                    onSubmit={handleCreatePostSubmit}
+                />
+            </div>
         </>
     );
 }
