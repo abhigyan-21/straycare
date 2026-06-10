@@ -46,7 +46,7 @@ const getMyReports = async (req, res) => {
     const reports = await prisma.animalReport.findMany({
       where: { reporterId },
       include: {
-        clinic: {
+        partner: {
           select: {
             id: true,
             name: true,
@@ -83,7 +83,7 @@ const getMyRescues = async (req, res) => {
             avatarUrl: true,
           },
         },
-        clinic: {
+        partner: {
           select: {
             id: true,
             name: true,
@@ -250,19 +250,19 @@ const updateReportStatus = async (req, res) => {
 const assignReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rescuerId, clinicId } = req.body;
+    const { rescuerId, partnerId } = req.body;
 
     const data = {};
     if (rescuerId) data.assignedRescuerId = rescuerId;
-    if (clinicId) {
-      data.assignedClinicId = clinicId;
+    if (partnerId) {
+      data.assignedPartnerId = partnerId;
     } else if (rescuerId) {
       const rescuer = await prisma.user.findUnique({
         where: { id: rescuerId },
-        select: { clinicId: true }
+        select: { partnerId: true }
       });
-      if (rescuer?.clinicId) {
-        data.assignedClinicId = rescuer.clinicId;
+      if (rescuer?.partnerId) {
+        data.assignedPartnerId = rescuer.partnerId;
       }
     }
     
@@ -325,13 +325,13 @@ const updateRescuerLocation = async (req, res) => {
  */
 const getClinicReports = async (req, res) => {
   try {
-    const clinicId = req.user.clinicId;
-    if (!clinicId) {
-      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    const partnerId = req.user.partnerId;
+    if (!partnerId) {
+      return res.status(400).json({ error: 'You are not associated with any partner' });
     }
 
     const reports = await prisma.animalReport.findMany({
-      where: { assignedClinicId: clinicId },
+      where: { assignedPartnerId: partnerId },
       include: {
         reporter: {
           select: { name: true, avatarUrl: true, phone: true }

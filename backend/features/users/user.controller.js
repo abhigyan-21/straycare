@@ -1,7 +1,7 @@
 const prisma = require('../../db/prisma');
 
 /**
- * @desc Get all rescuers linked to the current vet's clinic
+ * @desc Get all rescuers linked to the current vet's partner
  * @route GET /api/users/rescuers
  * @access Private (Vet/Admin)
  */
@@ -9,19 +9,19 @@ const getClinicRescuers = async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Fetch the current user to get their clinicId
+    // Fetch the current user to get their partnerId
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { clinicId: true }
+      select: { partnerId: true }
     });
 
-    if (!currentUser || !currentUser.clinicId) {
-      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    if (!currentUser || !currentUser.partnerId) {
+      return res.status(400).json({ error: 'You are not associated with any partner' });
     }
 
     const rescuers = await prisma.user.findMany({
       where: {
-        clinicId: currentUser.clinicId,
+        partnerId: currentUser.partnerId,
         role: 'RESCUER'
       },
       select: {
@@ -54,14 +54,14 @@ const addRescuer = async (req, res) => {
       return res.status(400).json({ error: 'User email is required' });
     }
 
-    // Get Vet's clinicId
+    // Get Vet's partnerId
     const vetUser = await prisma.user.findUnique({
       where: { id: vetId },
-      select: { clinicId: true }
+      select: { partnerId: true }
     });
 
-    if (!vetUser || !vetUser.clinicId) {
-      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    if (!vetUser || !vetUser.partnerId) {
+      return res.status(400).json({ error: 'You are not associated with any partner' });
     }
 
     // Find the user to be promoted
@@ -78,7 +78,7 @@ const addRescuer = async (req, res) => {
       where: { id: userToPromote.id },
       data: {
         role: 'RESCUER',
-        clinicId: vetUser.clinicId,
+        partnerId: vetUser.partnerId,
         contact: contact || userToPromote.contact
       },
       select: {
@@ -106,14 +106,14 @@ const removeRescuer = async (req, res) => {
     const rescuerId = req.params.id;
     const vetId = req.user.id;
 
-    // Get Vet's clinicId
+    // Get Vet's partnerId
     const vetUser = await prisma.user.findUnique({
       where: { id: vetId },
-      select: { clinicId: true }
+      select: { partnerId: true }
     });
 
-    if (!vetUser || !vetUser.clinicId) {
-      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    if (!vetUser || !vetUser.partnerId) {
+      return res.status(400).json({ error: 'You are not associated with any partner' });
     }
 
     // Find the rescuer and ensure they belong to this clinic
@@ -121,8 +121,8 @@ const removeRescuer = async (req, res) => {
       where: { id: rescuerId }
     });
 
-    if (!rescuer || rescuer.clinicId !== vetUser.clinicId) {
-      return res.status(404).json({ error: 'Rescuer not found in your clinic' });
+    if (!rescuer || rescuer.partnerId !== vetUser.partnerId) {
+      return res.status(404).json({ error: 'Rescuer not found in your partner organization' });
     }
 
     // Demote the user
@@ -130,7 +130,7 @@ const removeRescuer = async (req, res) => {
       where: { id: rescuerId },
       data: {
         role: 'USER',
-        clinicId: null
+        partnerId: null
       }
     });
 
@@ -142,7 +142,7 @@ const removeRescuer = async (req, res) => {
 };
 
 /**
- * @desc Get full profile details (including role-specific and clinic details)
+ * @desc Get full profile details (including role-specific and partner details)
  * @route GET /api/users/profile
  * @access Private
  */
@@ -154,7 +154,7 @@ const getProfile = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        clinic: true,
+        partner: true,
       }
     });
 
@@ -169,12 +169,12 @@ const getProfile = async (req, res) => {
     let stats = {};
     let registrationDetails = null;
 
-    if (user.role === 'VET' && user.clinicId) {
+    if (user.role === 'VET' && user.partnerId) {
       // Vet specific stats
       const [totalRescues, successfulAdoptions, activeCampaigns, regDoc] = await Promise.all([
-        prisma.animalReport.count({ where: { assignedClinicId: user.clinicId } }),
-        prisma.pet.count({ where: { clinicId: user.clinicId, status: 'ADOPTED' } }),
-        prisma.campaign.count({ where: { clinicId: user.clinicId, status: 'APPROVED' } }),
+        prisma.animalReport.count({ where: { assignedPartnerId: user.partnerId } }),
+        prisma.pet.count({ where: { partnerId: user.partnerId, status: 'ADOPTED' } }),
+        prisma.campaign.count({ where: { partnerId: user.partnerId, status: 'ACTIVE' } }),
         prisma.petDocument.findFirst({
           where: { userId: user.id, type: 'REGISTRATION' }
         })
@@ -193,7 +193,7 @@ const getProfile = async (req, res) => {
       // NGO specific stats (e.g. campaigns created, reports created/assigned)
       const [totalRescues, activeCampaigns, regDoc] = await Promise.all([
         prisma.animalReport.count({ where: { reporterId: user.id } }), // reports created by them or assigned
-        prisma.campaign.count({ where: { createdBy: user.id, status: 'APPROVED' } }),
+        prisma.campaign.count({ where: { createdBy: user.id, status: 'ACTIVE' } }),
         prisma.petDocument.findFirst({
           where: { userId: user.id, type: 'REGISTRATION' }
         })

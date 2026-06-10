@@ -7,18 +7,18 @@ const prisma = require('../../db/prisma');
  */
 const createMedicalRecord = async (req, res) => {
   try {
-    const { reportId, clinicId, diagnosis, treatment } = req.body;
+    const { reportId, partnerId, diagnosis, treatment } = req.body;
     const vetId = req.user.id;
 
-    if (!reportId || !clinicId) {
-      return res.status(400).json({ error: 'Report ID and Clinic ID are required' });
+    if (!reportId || !partnerId) {
+      return res.status(400).json({ error: 'Report ID and Partner ID are required' });
     }
 
     const medicalRecord = await prisma.medicalRecord.create({
       data: {
         reportId,
         vetId,
-        clinicId,
+        partnerId,
         diagnosis,
         treatment,
       },
@@ -45,7 +45,7 @@ const getRecordsByReport = async (req, res) => {
         vet: {
           select: { name: true }
         },
-        clinic: {
+        partner: {
           select: { name: true }
         }
       },

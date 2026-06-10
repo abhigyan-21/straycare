@@ -15,7 +15,7 @@ model User {
   status             String              @default("Active")
   avatarUrl          String?
   refreshToken       String?
-  clinicId           String?
+
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   contact            String?
@@ -38,28 +38,102 @@ model User {
   medicalRecords     MedicalRecord[]
   ownedPets          Pet[]               @relation("PetOwner")
   subscriptions      Subscription[]
-  clinic             Clinic?             @relation(fields: [clinicId], references: [id])
+  partnerId String?
+  partner Partner? @relation(fields: [partnerId], references: [id])
   documents          PetDocument[]
 }
 
-model Clinic {
-  id             String          @id @default(uuid())
-  name           String
-  address        String?
-  city           String?
-  contact        String?
-  isVerified     Boolean         @default(false)
-  createdAt      DateTime        @default(now())
-  lat            Float?
-  lng            Float?
-  reports        AnimalReport[]
-  campaigns      Campaign[]
-  donations      Donation[]
-  medicalRecords MedicalRecord[]
-  pets           Pet[]
-  subscriptions  Subscription[]
-  users          User[]
+enum PartnerType {
+  NGO
+  SHELTER
+  VET
+  CLINIC
 }
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  SUSPENDED
+  REJECTED
+}
+
+enum RequestType {
+  CAMPAIGN
+  SUPPORT_REQUEST
+}
+
+enum Urgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum DonationStatus {
+  INITIATED
+  WEBHOOK_VERIFIED
+  REJECTED
+}
+
+enum CampaignCategory {
+  TREATMENT
+  FOOD
+  SHELTER
+  RESCUE
+  OTHER
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDING_SOON
+  EXPIRED
+  COMPLETED
+}
+
+
+model Partner {
+  id                     String   @id @default(uuid())
+
+  partnerType            PartnerType
+
+  name                   String
+
+  address                String?
+  city                   String?
+  state                  String?
+  pincode                String?
+
+  lat                    Float?
+  lng                    Float?
+
+  phone                  String?@unique
+  email                  String?@unique
+
+  verificationStatus     VerificationStatus @default(PENDING)
+
+  razorpayAccountId      String? @unique
+
+  commissionEligible     Boolean @default(false)
+  customCommissionRate   Decimal @default(0)
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  reports                AnimalReport[]
+  campaigns              Campaign[]      // Pending Campaign review
+  donations              Donation[]
+  medicalRecords         MedicalRecord[]
+  pets                   Pet[]
+  subscriptions          Subscription[]
+  users                  User[]
+
+  @@index([partnerType])
+  @@index([verificationStatus])
+  @@index([city])
+}
+
 
 model AnimalReport {
   id                String          @id @default(uuid())
@@ -71,13 +145,17 @@ model AnimalReport {
   mediaUrls         String[]
   assignedRescuerId String?
   assignedVetId     String?
-  assignedClinicId  String?
+  
+  assignedPartnerId String?
+
+partner Partner? @relation(fields: [assignedPartnerId], references: [id])
+
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   lastTracked       DateTime?
   rescuerLat        Float?
   rescuerLng        Float?
-  clinic            Clinic?         @relation(fields: [assignedClinicId], references: [id])
+
   reporter          User            @relation(fields: [reporterId], references: [id])
   campaigns         Campaign[]
   medicalRecords    MedicalRecord[]
@@ -88,11 +166,14 @@ model MedicalRecord {
   id        String       @id @default(uuid())
   reportId  String
   vetId     String
-  clinicId  String
+ 
+  partnerId String
+  partner Partner @relation(fields: [partnerId], references: [id])
+  
   diagnosis String?
   treatment String?
   createdAt DateTime     @default(now())
-  clinic    Clinic       @relation(fields: [clinicId], references: [id])
+
   report    AnimalReport @relation(fields: [reportId], references: [id])
   vet       User         @relation(fields: [vetId], references: [id])
 }
@@ -100,7 +181,10 @@ model MedicalRecord {
 model Pet {
   id               String            @id @default(uuid())
   reportId         String?           @unique
-  clinicId         String?
+
+  partnerId        String
+  partner Partner @relation(fields: [partnerId], references: [id])
+
   ownerId          String
   name             String?
   breed            String?
@@ -111,7 +195,7 @@ model Pet {
   status           String            @default("AVAILABLE")
   createdAt        DateTime          @default(now())
   adoptionRequests AdoptionRequest[]
-  clinic           Clinic?           @relation(fields: [clinicId], references: [id])
+ 
   owner            User              @relation("PetOwner", fields: [ownerId], references: [id])
   report           AnimalReport?     @relation(fields: [reportId], references: [id])
 }
@@ -132,59 +216,114 @@ model AdoptionRequest {
 }
 
 model Campaign {
-  id           String              @id @default(uuid())
-  title        String
-  description  String
-  goalAmount   Float
-  raisedAmount Float               @default(0)
-  clinicId     String
-  reportId     String?
-  createdBy    String
-  status       CampaignStatus      @default(PENDING)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  banner       String?
-  endDate      DateTime?
-  image        String?
-  location     String?
-  purpose      String?
-  startDate    DateTime?
-  startTime    String?
-  theme        String?
-  clinic       Clinic              @relation(fields: [clinicId], references: [id])
-  creator      User                @relation(fields: [createdBy], references: [id])
-  report       AnimalReport?       @relation(fields: [reportId], references: [id])
-  volunteers   CampaignVolunteer[]
-  donations    Donation[]
+  id               String @id @default(uuid())
+
+  title            String
+  description      String
+
+  goalAmount       Decimal
+  raisedAmount     Decimal @default(0)
+
+  requestType      RequestType @default(CAMPAIGN)
+
+  category         CampaignCategory?
+
+  urgency          Urgency?
+
+  animalsImpacted  Int?
+
+  deadline         DateTime?
+
+  partnerId        String
+
+  reportId         String?
+
+  createdBy        String
+
+  status           CampaignStatus @default(DRAFT)
+
+  banner           String?
+  image            String?
+  location         String?
+  purpose          String?
+
+  startDate        DateTime?
+  startTime        String?
+
+  theme            String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  partner          Partner @relation(fields: [partnerId], references: [id])
+
+  creator          User @relation(fields: [createdBy], references: [id])
+
+  report           AnimalReport? @relation(fields: [reportId], references: [id])
+
+  volunteers       CampaignVolunteer[]
+  donations        Donation[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([deadline])
+  @@index([category])
+  @@index([requestType])
+  @@index([urgency])
 }
 
 model Donation {
-  id              String       @id @default(uuid())
-  userId          String
-  amount          Float
-  type            DonationType
-  clinicId        String?
-  campaignId      String?
-  paymentIntentId String       @unique
-  status          String       @default("PENDING")
-  createdAt       DateTime     @default(now())
-  campaign        Campaign?    @relation(fields: [campaignId], references: [id])
-  clinic          Clinic?      @relation(fields: [clinicId], references: [id])
-  user            User         @relation(fields: [userId], references: [id])
+  id                        String @id @default(uuid())
+
+  userId                    String
+
+  partnerId                 String
+
+  campaignId                String
+
+  grossAmount               Decimal
+
+  razorpayPaymentLinkId     String @unique
+
+  razorpayPaymentId         String?
+
+  status                    DonationStatus @default(INITIATED)
+
+  platformFee              Decimal @default(0)
+
+  platformFeePercentage    Decimal @default(0)
+
+  netAmount                Decimal
+
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  user                     User @relation(fields: [userId], references: [id])
+
+  partner                  Partner @relation(fields: [partnerId], references: [id])
+
+  campaign                 Campaign @relation(fields: [campaignId], references: [id])
+
+  @@index([userId])
+  @@index([partnerId])
+  @@index([campaignId])
+  @@index([status])
 }
 
 model Subscription {
   id                   String           @id @default(uuid())
   userId               String
-  clinicId             String
+  partnerId            String
   type                 SubscriptionType
-  stripeSubscriptionId String           @unique
+  razorpaySubscriptionId String? @unique
+
   amount               Float
   status               String           @default("ACTIVE")
   nextCheckout         DateTime
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
-  clinic               Clinic           @relation(fields: [clinicId], references: [id])
+ 
+  partner Partner @relation(fields: [partnerId], references: [id])  
   user                 User             @relation(fields: [userId], references: [id])
 }
 
@@ -278,19 +417,6 @@ enum AdoptionStatus {
   INTERVIEW_SCHEDULED
   APPROVED
   REJECTED
-}
-
-enum CampaignStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum DonationType {
-  FOOD
-  TREATMENT
-  SHELTER
-  CAMPAIGN
 }
 
 enum SubscriptionType {

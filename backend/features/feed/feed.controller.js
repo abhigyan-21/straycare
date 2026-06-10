@@ -8,7 +8,7 @@ const prisma = require('../../db/prisma');
 const getMyPosts = async (req, res) => {
   try {
     const authorId = req.user.id;
-    const posts = await prisma.feedPost.findMany({
+    const posts = await prisma.post.findMany({
       where: { authorId },
       orderBy: {
         createdAt: 'desc',
@@ -35,11 +35,12 @@ const createPost = async (req, res) => {
       return res.status(400).json({ error: 'Content is required' });
     }
 
-    const post = await prisma.feedPost.create({
+    const post = await prisma.post.create({
       data: {
         authorId,
-        content,
-        mediaUrls: mediaUrls || [],
+        caption: content,
+        postImage: Array.isArray(mediaUrls) && mediaUrls.length > 0 ? mediaUrls[0] : '',
+        location: null,
       },
     });
 
@@ -60,7 +61,7 @@ const deletePost = async (req, res) => {
     const { id } = req.params;
     const authorId = req.user.id;
 
-    const post = await prisma.feedPost.findUnique({
+    const post = await prisma.post.findUnique({
       where: { id },
     });
 
@@ -72,7 +73,7 @@ const deletePost = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized to delete this post' });
     }
 
-    await prisma.feedPost.delete({
+    await prisma.post.delete({
       where: { id },
     });
 

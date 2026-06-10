@@ -23,12 +23,18 @@ const pendingVolunteers = new Map(); // key: `${userId}-general`, value: { timeo
  */
 const createDonationOrder = async (req, res) => {
   try {
-    const { amount, type, clinicId, campaignId } = req.body;
+    const { amount, type, partnerId, clinicId, campaignId } = req.body;
     const userId = req.user.id;
+    const resolvedPartnerId = partnerId || clinicId || req.user.partnerId || req.user.clinicId;
+    const resolvedCampaignId = campaignId || (await prisma.campaign.findFirst({ select: { id: true } }))?.id;
 
     // ── Validation ──────────────────────────────────────────────
     if (!amount || !type) {
       return res.status(400).json({ error: 'amount and type are required' });
+    }
+
+    if (!resolvedPartnerId) {
+      return res.status(400).json({ error: 'A partner is required for donations' });
     }
 
     const validTypes = ['FOOD', 'TREATMENT', 'SHELTER', 'CAMPAIGN'];
@@ -38,7 +44,7 @@ const createDonationOrder = async (req, res) => {
         .json({ error: `type must be one of: ${validTypes.join(', ')}` });
     }
 
-    if (type === 'CAMPAIGN' && !campaignId) {
+    if (type === 'CAMPAIGN' && !resolvedCampaignId) {
       return res
         .status(400)
         .json({ error: 'campaignId is required for CAMPAIGN donations' });
@@ -64,12 +70,15 @@ const createDonationOrder = async (req, res) => {
     const donation = await prisma.donation.create({
       data: {
         userId,
-        amount,
-        type,
-        clinicId: clinicId || null,
-        campaignId: campaignId || null,
-        paymentIntentId: order.id,
-        status: 'PENDING',
+        partnerId: resolvedPartnerId,
+        campaignId: resolvedCampaignId,
+        grossAmount: amount,
+        razorpayPaymentLinkId: order.id,
+        razorpayPaymentId: null,
+        status: 'INITIATED',
+        platformFee: 0,
+        platformFeePercentage: 0,
+        netAmount: amount,
       },
     });
 
@@ -112,7 +121,7 @@ const handleRazorpayWebhook = async (req, res) => {
     try {
       // Find the PENDING donation linked to this Razorpay order
       const donation = await prisma.donation.findUnique({
-        where: { paymentIntentId: orderId },
+        where: { razorpayPaymentLinkId: orderId },
       });
 
       if (!donation) {
@@ -125,8 +134,8 @@ const handleRazorpayWebhook = async (req, res) => {
       // Mark the donation as SUCCESS
       operations.push(
         prisma.donation.update({
-          where: { paymentIntentId: orderId },
-          data: { status: 'SUCCESS' },
+          where: { razorpayPaymentLinkId: orderId },
+          data: { status: 'WEBHOOK_VERIFIED', razorpayPaymentId: req.body?.payload?.payment?.entity?.id || null },
         })
       );
 
@@ -168,10 +177,10 @@ const createCampaign = async (req, res) => {
   try {
     const { title, description, purpose, goalAmount, startDate, endDate, startTime, location, theme, image, banner } = req.body;
     const userId = req.user.id;
-    const clinicId = req.user.clinicId;
+    const partnerId = req.user.partnerId || req.user.clinicId;
 
-    if (!clinicId) {
-      return res.status(403).json({ error: 'You must be associated with a clinic to create a campaign' });
+    if (!partnerId) {
+      return res.status(403).json({ error: 'You must be associated with a partner to create a campaign' });
     }
 
     // Strict validation enforcing all fields are compulsory
@@ -186,15 +195,16 @@ const createCampaign = async (req, res) => {
         purpose,
         goalAmount: parseFloat(goalAmount),
         startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
+        deadline: endDate ? new Date(endDate) : null,
         startTime,
         location,
         theme,
         image,
         banner,
-        clinicId,
+        partnerId,
         createdBy: userId,
-        status: 'APPROVED', // Default to approved for now as requested by vet flow
+        status: 'ACTIVE',
+        requestType: 'CAMPAIGN',
       },
     });
 
@@ -213,12 +223,12 @@ const createCampaign = async (req, res) => {
 const getCampaigns = async (req, res) => {
   try {
     const { id, location, status } = req.query;
-    const clinicId = req.query.clinicId || req.user?.clinicId;
+    const partnerId = req.query.partnerId || req.query.clinicId || req.user?.partnerId || req.user?.clinicId;
 
     const where = {};
 
-    if (clinicId) {
-      where.clinicId = clinicId;
+    if (partnerId) {
+      where.partnerId = partnerId;
     }
     if (id) {
       where.id = id;
@@ -228,15 +238,15 @@ const getCampaigns = async (req, res) => {
     }
     if (status) {
       where.status = status;
-    } else if (!clinicId) {
-      // If no clinicId filter is requested, default to public view showing only APPROVED campaigns
-      where.status = 'APPROVED';
+    } else if (!partnerId) {
+      // If no partner filter is requested, default to public view showing only ACTIVE campaigns
+      where.status = 'ACTIVE';
     }
 
     const campaigns = await prisma.campaign.findMany({
       where,
       include: {
-        clinic: true,
+        partner: true,
         creator: {
           select: { name: true }
         },
@@ -269,8 +279,16 @@ const updateCampaign = async (req, res) => {
       data.startDate = new Date(data.startDate);
     }
     if (data.endDate) {
-      data.endDate = new Date(data.endDate);
+      data.deadline = new Date(data.endDate);
+      delete data.endDate;
     }
+    if (data.clinicId) {
+      data.partnerId = data.clinicId;
+      delete data.clinicId;
+    }
+    if (data.status === 'APPROVED') data.status = 'ACTIVE';
+    if (data.status === 'PENDING') data.status = 'DRAFT';
+    if (data.status === 'REJECTED') data.status = 'PAUSED';
 
     const updatedCampaign = await prisma.campaign.update({
       where: { id },
@@ -319,7 +337,7 @@ const getFundingHighlights = async (req, res) => {
     try {
       const donations = await prisma.donation.findMany({
         where: {
-          status: 'SUCCESS',
+          status: 'WEBHOOK_VERIFIED',
           createdAt: {
             gte: startOfMonth
           }
@@ -343,7 +361,7 @@ const getFundingHighlights = async (req, res) => {
             totalAmount: 0
           };
         }
-        contributionMap[d.userId].totalAmount += d.amount;
+        contributionMap[d.userId].totalAmount += Number(d.grossAmount || 0);
       });
 
       for (const userId in contributionMap) {
@@ -363,7 +381,7 @@ const getFundingHighlights = async (req, res) => {
     try {
       const activeCampaigns = await prisma.campaign.findMany({
         where: {
-          status: 'APPROVED'
+          status: 'ACTIVE'
         },
         include: {
           creator: {
@@ -380,8 +398,8 @@ const getFundingHighlights = async (req, res) => {
 
         // Find least duration campaign (ending in the future)
         const leastDurationCampaign = [...activeCampaigns]
-          .filter(c => c.endDate && new Date(c.endDate) > new Date())
-          .sort((a, b) => new Date(a.endDate) - new Date(b.endDate))[0];
+          .filter(c => c.deadline && new Date(c.deadline) > new Date())
+          .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
 
         // Preference: least duration first, else highest target
         if (leastDurationCampaign) {
@@ -590,6 +608,8 @@ const mockDonateCampaign = async (req, res) => {
     // Update campaign raisedAmount
     let campaign = null;
     try {
+      const fallbackCampaign = await prisma.campaign.findFirst({ select: { id: true, partnerId: true } });
+
       if (id.startsWith('general-card-')) {
         // Map card IDs to types:
         // Card 1: Support feeding our pets -> FOOD
@@ -599,15 +619,22 @@ const mockDonateCampaign = async (req, res) => {
         if (id === 'general-card-2') type = 'TREATMENT';
         if (id === 'general-card-3') type = 'SHELTER';
 
-        await prisma.donation.create({
+        if (fallbackCampaign) {
+          await prisma.donation.create({
           data: {
             userId,
-            amount: Number(amount),
-            type: type,
-            paymentIntentId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            status: 'SUCCESS'
+            partnerId: fallbackCampaign.partnerId,
+            campaignId: fallbackCampaign.id,
+            grossAmount: Number(amount),
+            razorpayPaymentLinkId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            razorpayPaymentId: null,
+            status: 'WEBHOOK_VERIFIED',
+            platformFee: 0,
+            platformFeePercentage: 0,
+            netAmount: Number(amount)
           }
-        });
+          });
+        }
         console.log(`💵 Mock donation successful: user ${userId} donated ₹${amount} to general fund type ${type}`);
       } else {
         campaign = await prisma.campaign.update({
@@ -623,11 +650,15 @@ const mockDonateCampaign = async (req, res) => {
         await prisma.donation.create({
           data: {
             userId,
-            amount: Number(amount),
-            type: 'CAMPAIGN',
+            partnerId: campaign.partnerId,
             campaignId: id,
-            paymentIntentId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            status: 'SUCCESS'
+            grossAmount: Number(amount),
+            razorpayPaymentLinkId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            razorpayPaymentId: null,
+            status: 'WEBHOOK_VERIFIED',
+            platformFee: 0,
+            platformFeePercentage: 0,
+            netAmount: Number(amount)
           }
         });
 
@@ -664,7 +695,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 /**
- * @desc Find and email general volunteers within 20km of the campaign's clinic
+ * @desc Find and email general volunteers within 20km of the campaign's partner
  * @route POST /api/funding/campaigns/:id/notify
  * @access Private (Vet/Admin)
  */
@@ -672,11 +703,11 @@ const notifyNearbyVolunteers = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Fetch campaign and its clinic location coordinates
+    // 1. Fetch campaign and its partner location coordinates
     const campaign = await prisma.campaign.findUnique({
       where: { id },
       include: {
-        clinic: true
+        partner: true
       }
     });
 
@@ -684,8 +715,8 @@ const notifyNearbyVolunteers = async (req, res) => {
       return res.status(404).json({ error: 'Campaign not found' });
     }
 
-    const clinicLat = campaign.clinic?.lat;
-    const clinicLng = campaign.clinic?.lng;
+    const clinicLat = campaign.partner?.lat;
+    const clinicLng = campaign.partner?.lng;
 
     // 2. Fetch all general volunteers
     const generalVolunteers = await prisma.generalVolunteer.findMany({

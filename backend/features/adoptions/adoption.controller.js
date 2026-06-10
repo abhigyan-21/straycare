@@ -79,7 +79,7 @@ const listPets = async (req, res) => {
     const pets = await prisma.pet.findMany({
       where: { status: 'AVAILABLE' },
       include: {
-        clinic: true,
+        partner: true,
         report: true,
         owner: {
           select: {
@@ -106,7 +106,7 @@ const getPetDetails = async (req, res) => {
     const pet = await prisma.pet.findUnique({
       where: { id: req.params.id },
       include: {
-        clinic: true,
+        partner: true,
         report: true,
         owner: {
           select: {
@@ -139,17 +139,17 @@ const listPetForAdoption = async (req, res) => {
     // Fetch the most up-to-date user info directly from the database to avoid stale JWT token claims
     const dbUser = await prisma.user.findUnique({
       where: { id: ownerId },
-      select: { clinicId: true, role: true }
+      select: { partnerId: true, role: true }
     });
 
     const userRole = dbUser?.role || req.user.role;
-    let clinicId = dbUser?.clinicId || null;
+    let partnerId = dbUser?.partnerId || null;
 
-    // Validation: Must be associated with a clinic OR be a registered Rescuer
-    if (!clinicId && userRole !== 'RESCUER' && userRole !== 'ADMIN' && userRole !== 'NGO') {
+    // Validation: Must be associated with a partner OR be a registered Rescuer
+    if (!partnerId && userRole !== 'RESCUER' && userRole !== 'ADMIN' && userRole !== 'NGO') {
       return res.status(403).json({
         status: 'error',
-        message: 'To list a pet for adoption, you must either be associated with a clinic or be a registered rescuer/NGO.'
+        message: 'To list a pet for adoption, you must either be associated with a partner or be a registered rescuer/NGO.'
       });
     }
 
@@ -163,12 +163,12 @@ const listPetForAdoption = async (req, res) => {
         return res.status(404).json({ status: 'error', message: 'Animal report not found' });
       }
 
-      // If report has a clinic, use it, unless the user is an admin or the rescuer assigned to it
-      clinicId = report.assignedClinicId || clinicId;
+      // If report has a partner, use it, unless the user is an admin or the rescuer assigned to it
+      partnerId = report.assignedPartnerId || partnerId;
 
       // Check authorization for report-linked pets
       if (userRole !== 'ADMIN' &&
-        clinicId !== dbUser?.clinicId &&
+        partnerId !== dbUser?.partnerId &&
         report.assignedRescuerId !== ownerId) {
         return res.status(403).json({
           status: 'error',
@@ -202,7 +202,7 @@ const listPetForAdoption = async (req, res) => {
     const pet = await prisma.pet.create({
       data: {
         reportId: reportId || null,
-        clinicId,
+        partnerId,
         ownerId,
         name,
         breed,
@@ -214,7 +214,7 @@ const listPetForAdoption = async (req, res) => {
       },
       include: {
         report: true,
-        clinic: true,
+        partner: true,
       }
     });
 
@@ -272,9 +272,9 @@ const getAdoptionRequests = async (req, res) => {
       // Rescuers see requests for pets they listed
       whereClause.pet = { ownerId: req.user.id };
     }
-    else if (req.user.clinicId) {
-      // Vets/Clinic Admins see requests for the clinic's pets
-      whereClause.pet = { clinicId: req.user.clinicId };
+    else if (req.user.partnerId) {
+      // Vets/Partner Admins see requests for the partner's pets
+      whereClause.pet = { partnerId: req.user.partnerId };
     }
     else if (req.user.role !== 'ADMIN') {
       return res.status(403).json({ status: 'error', message: 'Unauthorized' });
@@ -285,7 +285,7 @@ const getAdoptionRequests = async (req, res) => {
       include: {
         pet: {
           include: {
-            clinic: true,
+            partner: true,
             report: {
               select: {
                 mediaUrls: true,
@@ -330,7 +330,7 @@ const updateRequestStatus = async (req, res) => {
       include: {
         pet: {
           include: {
-            clinic: true,
+            partner: true,
             owner: true,
           },
         },
@@ -352,7 +352,7 @@ const updateRequestStatus = async (req, res) => {
 
     // Check authorization: Owner of pet, or member of assigned clinic, or ADMIN
     const isOwner = request.pet.ownerId === req.user.id;
-    const isInClinic = req.user.clinicId && request.pet.clinicId === req.user.clinicId;
+    const isInClinic = req.user.partnerId && request.pet.partnerId === req.user.partnerId;
 
     if (req.user.role !== 'ADMIN' && !isOwner && !isInClinic) {
       return res.status(403).json({ status: 'error', message: 'Unauthorized to update this request' });
@@ -484,9 +484,9 @@ const updateRequestStatus = async (req, res) => {
     }
 
     if (status === 'INTERVIEW_SCHEDULED') {
-      const centerName = request.pet.clinic?.name || request.interviewLocation || 'Furzo Partner Center';
-      const centerAddress = request.pet.clinic?.address
-        ? `${request.pet.clinic.address}${request.pet.clinic.city ? ', ' + request.pet.clinic.city : ''}`
+      const centerName = request.pet.partner?.name || request.interviewLocation || 'Furzo Partner Center';
+      const centerAddress = request.pet.partner?.address
+        ? `${request.pet.partner.address}${request.pet.partner.city ? ', ' + request.pet.partner.city : ''}`
         : 'Will be shared by the coordinator';
 
       const dateObj = interviewDate ? new Date(interviewDate) : null;
@@ -643,12 +643,12 @@ const updateRequestStatus = async (req, res) => {
 
 const getClinicPets = async (req, res) => {
   try {
-    const clinicId = req.user.clinicId;
-    if (!clinicId) {
-      return res.status(400).json({ error: 'You are not associated with any clinic' });
+    const partnerId = req.user.partnerId;
+    if (!partnerId) {
+      return res.status(400).json({ error: 'You are not associated with any partner' });
     }
     const pets = await prisma.pet.findMany({
-      where: { clinicId },
+      where: { partnerId },
       include: {
         report: true,
       },
@@ -674,7 +674,7 @@ const updatePet = async (req, res) => {
     }
 
     const isOwner = pet.ownerId === req.user.id;
-    const isInClinic = req.user.clinicId && pet.clinicId === req.user.clinicId;
+    const isInClinic = req.user.partnerId && pet.partnerId === req.user.partnerId;
 
     if (req.user.role !== 'ADMIN' && !isOwner && !isInClinic) {
       return res.status(403).json({ status: 'error', message: 'Unauthorized to update this pet' });

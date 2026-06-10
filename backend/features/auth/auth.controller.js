@@ -251,20 +251,21 @@ const registerPartner = async (req, res) => {
     // Determine role: NGO or VET
     const dbRole = organizationType === 'ngo' ? 'NGO' : 'VET';
 
-    // If role is VET or NGO, we also create a Clinic record
-    let clinicId = null;
+    // If role is VET or NGO, we also create a Partner record
+    let partnerId = null;
     if (dbRole === 'VET' || dbRole === 'NGO') {
-      const clinic = await prisma.clinic.create({
+      const partner = await prisma.partner.create({
         data: {
           name: organizationName,
           address: address,
-          contact: phone,
-          isVerified: false,
+          phone,
+          verificationStatus: 'PENDING',
+          partnerType: dbRole === 'NGO' ? 'NGO' : 'VET',
           lat: lat ? parseFloat(lat) : null,
           lng: lng ? parseFloat(lng) : null
         }
       });
-      clinicId = clinic.id;
+      partnerId = partner.id;
     }
 
     // Create User record
@@ -277,7 +278,7 @@ const registerPartner = async (req, res) => {
         role: dbRole,
         status: 'Pending',
         isEmailVerified: true, // Auto verify email since it is reviewed by administrator
-        clinicId: clinicId,
+        partnerId: partnerId,
         contact: phone
       }
     });
@@ -341,7 +342,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email, clinicId: user.clinicId },
+      { id: user.id, role: user.role, email: user.email, partnerId: user.partnerId, clinicId: user.partnerId },
       process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
@@ -389,7 +390,7 @@ const refresh = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, email: user.email, clinicId: user.clinicId },
+      { id: user.id, role: user.role, email: user.email, partnerId: user.partnerId, clinicId: user.partnerId },
       process.env.JWT_SECRET,
       { expiresIn: '15m' }
     );
@@ -592,13 +593,13 @@ const updateProfile = async (req, res) => {
     // Update clinic/center coordinates if user is VET or NGO
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true, clinicId: true }
+      select: { role: true, partnerId: true }
     });
 
-    if (currentUser && (currentUser.role === 'VET' || currentUser.role === 'NGO') && currentUser.clinicId) {
+    if (currentUser && (currentUser.role === 'VET' || currentUser.role === 'NGO') && currentUser.partnerId) {
       if (clinicLat !== undefined || clinicLng !== undefined) {
-        await prisma.clinic.update({
-          where: { id: currentUser.clinicId },
+        await prisma.partner.update({
+          where: { id: currentUser.partnerId },
           data: {
             ...(clinicLat !== undefined && { lat: clinicLat !== null ? parseFloat(clinicLat) : null }),
             ...(clinicLng !== undefined && { lng: clinicLng !== null ? parseFloat(clinicLng) : null })
@@ -616,7 +617,7 @@ const updateProfile = async (req, res) => {
         ...(avatarUrl !== undefined && { avatarUrl }),
       },
       include: {
-        clinic: true
+        partner: true
       }
     });
 

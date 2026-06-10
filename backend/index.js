@@ -163,13 +163,13 @@ const cleanupRejectedUsers = async () => {
         await prisma.animalReport.deleteMany({ where: { reporterId: u.id } });
         await prisma.petDocument.deleteMany({ where: { userId: u.id } });
 
-        if (u.clinicId) {
-          const clinicIdToDelete = u.clinicId;
+        if (u.partnerId) {
+          const partnerIdToDelete = u.partnerId;
           await prisma.user.updateMany({
-            where: { clinicId: clinicIdToDelete },
-            data: { clinicId: null }
+            where: { partnerId: partnerIdToDelete },
+            data: { partnerId: null }
           });
-          await prisma.clinic.deleteMany({ where: { id: clinicIdToDelete } });
+          await prisma.partner.deleteMany({ where: { id: partnerIdToDelete } });
         }
 
         await prisma.user.deleteMany({ where: { id: u.id } });

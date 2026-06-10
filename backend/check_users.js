@@ -8,14 +8,14 @@ async function run() {
         name: true,
         email: true,
         role: true,
-        clinicId: true,
-        clinic: true
+        partnerId: true,
+        partner: true
       }
     });
     console.log('USERS:', JSON.stringify(users, null, 2));
 
-    const clinics = await prisma.clinic.findMany();
-    console.log('CLINICS:', JSON.stringify(clinics, null, 2));
+    const partners = await prisma.partner.findMany();
+    console.log('PARTNERS:', JSON.stringify(partners, null, 2));
   } catch (err) {
     console.error(err);
   } finally {
