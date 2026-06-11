@@ -232,7 +232,7 @@ const updateUserStatus = async (req, res) => {
     if (status === 'Active' && updatedUser.partnerId) {
       await prisma.partner.update({
         where: { id: updatedUser.partnerId },
-        data: { isVerified: true }
+        data: { verificationStatus: 'VERIFIED' }
       });
     }
 
@@ -615,8 +615,8 @@ const updateUserRole = async (req, res) => {
         data: {
           name: userToUpdate.name + "'s Organization",
           phone: userToUpdate.phone || '0000000000',
-          type: role === 'VET' ? 'CLINIC' : 'NGO',
-          isVerified: true
+          partnerType: role === 'VET' ? 'CLINIC' : 'NGO',
+          verificationStatus: 'VERIFIED'
         }
       });
       newPartnerId = newPartner.id;

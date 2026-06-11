@@ -10,6 +10,11 @@ const getMyPosts = async (req, res) => {
     const authorId = req.user.id;
     const posts = await prisma.post.findMany({
       where: { authorId },
+      include: {
+        _count: {
+          select: { likes: true }
+        }
+      },
       orderBy: {
         createdAt: 'desc',
       },

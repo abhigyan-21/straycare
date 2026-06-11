@@ -185,9 +185,9 @@ const Profile = () => {
             if (postsRes && postsRes.data) {
                 const mappedPosts = postsRes.data.map(p => ({
                     id: p.id,
-                    image: p.mediaUrls[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600',
-                    caption: p.content,
-                    likes: p.likesCount,
+                    image: p.postImage || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600',
+                    caption: p.caption,
+                    likes: p._count?.likes || 0,
                     createdAt: p.createdAt
                 }));
                 setPosts(mappedPosts);
@@ -337,9 +337,9 @@ const Profile = () => {
             const p = response.data;
             const createdPost = {
                 id: p.id,
-                image: p.mediaUrls[0] || newPost.postImage,
-                caption: p.content,
-                likes: p.likesCount,
+                image: p.postImage || newPost.postImage,
+                caption: p.caption,
+                likes: p._count?.likes || 0,
                 createdAt: p.createdAt
             };
             setPosts([createdPost, ...posts]);
