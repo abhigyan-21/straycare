@@ -171,13 +171,13 @@
   border-radius: 3px 3px 0 0;
 }
 
-.campaigns-grid {
+.public-partner-page .campaigns-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
 }
 
-.campaign-card {
+.public-partner-page .campaign-card {
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -191,7 +191,7 @@
   flex-direction: column;
 }
 
-.campaign-card:hover {
+.public-partner-page .campaign-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(0,0,0,0.08);
 }

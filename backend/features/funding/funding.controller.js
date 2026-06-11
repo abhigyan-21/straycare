@@ -445,7 +445,7 @@ const getFundingHighlights = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching highlights:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: error.stack || 'Internal Server Error' });
   }
 };
 

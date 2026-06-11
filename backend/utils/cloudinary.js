@@ -10,7 +10,14 @@ cloudinary.config({
 // Since the checklist specifies "memory storage" and "a Cloudinary service utility will handle the upload", 
 // we will just use multer with memory storage and manually upload to Cloudinary in the controller.
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+const upload = multer({ storage, fileFilter });
 
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {

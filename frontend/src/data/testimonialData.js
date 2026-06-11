@@ -3,7 +3,7 @@ export const testimonialData = [
         id: 1,
         name: "Namya Gaur",
         profilePic: 'Testimonial_NamyaGaur.jpg',
-        statement: 'Furzo is one of those apps that just makes sense. Such a beautiful concept! As someone new to pet care, I loved how simple and beginner-friendly Furzo feels. Everything is easy to understand, and you can tell a lot of thought and care went into building it. It genuinely makes pet parenting feel less overwhelming and more enjoyable.',
+        statement: '“Furzo is one of those apps that just makes sense. Such a beautiful concept! As someone new to pet care, I loved how simple and beginner-friendly Furzo feels. Everything is easy to understand, and you can tell a lot of thought and care went into building it. It genuinely makes pet parenting feel less overwhelming and more enjoyable.”',
     },
     {
         id:2,

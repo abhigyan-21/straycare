@@ -358,21 +358,25 @@ main,
 }
 
 .testimonial-name {
-  color: #3b3a3a;
-  margin: 0 0 0 1rem;
+  color: #5e5d5d;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  margin-left: 1rem;
   font-size: 1rem;
 }
 
 .testimonial-statement {
   color: #4a4949;
-  font-size: 0.95rem;
+  font-size: .95rem;
+  font-weight: bold;
   margin-left: 1rem;
+  margin-bottom: 0rem;
 }
 
 .testimonial-marquee {
   display: flex;
   flex-direction: column;
-  gap: 60px;
+  gap: 40px;
   padding: 20px 0;
 }
 
@@ -402,7 +406,8 @@ main,
 
 .testimonial-card {
   position: relative;
-  height: 200px;
+  text-align: justify;
+  min-height: 200px;
   min-width: 450px;
   padding-left: 25px;
   display: flex;
@@ -431,6 +436,7 @@ main,
   justify-content: center;
   padding: 1rem 2.5rem 1rem 3.5rem;
   align-items: start;
+
   margin-left: 0px;
   border-radius: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -690,10 +696,6 @@ main,
   .actions {
     grid-template-columns: 1fr;
     padding: 0 20px;
-  }
-
-  .testimonial-marquee {
-    gap: 40px;
   }
 
   .marquee-inner {

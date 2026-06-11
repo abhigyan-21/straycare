@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRescueStore } from '../store/rescueStore';
 import { useAuthStore } from '../store/authStore';
+import axios from 'axios';
 import apiClient from '../services/api';
 import '../styles/FloatingRescueButton.css';
 import ambulanceImg from '../assets/images/ambulance.png';
@@ -20,11 +21,13 @@ const FloatingRescueButton = () => {
             return;
         }
 
+        const controller = new AbortController();
+
         const syncActiveRescue = async () => {
             try {
                 if (user.role === 'RESCUER' || user.role === 'ADMIN') {
                     // Fetch all reports to find active assigned rescues
-                    const response = await apiClient.get('/reports');
+                    const response = await apiClient.get('/reports', { signal: controller.signal });
                     const active = response.data?.find(r => 
                         r.assignedRescuerId === user.id && 
                         (r.status === 'ASSIGNED' || r.status === 'RESCUED')
@@ -36,7 +39,7 @@ const FloatingRescueButton = () => {
                     }
                 } else {
                     // Fetch user's own reports to check if active
-                    const response = await apiClient.get('/reports/my-reports');
+                    const response = await apiClient.get('/reports/my-reports', { signal: controller.signal });
                     const active = response.data?.find(r => 
                         r.status === 'ASSIGNED' || r.status === 'RESCUED'
                     );
@@ -47,6 +50,10 @@ const FloatingRescueButton = () => {
                     }
                 }
             } catch (err) {
+                if (axios.isCancel(err) || err.code === 'ERR_CANCELED') {
+                    // Ignore aborted requests
+                    return;
+                }
                 console.error("Failed to sync active rescue with DB:", err);
             }
         };
@@ -54,7 +61,10 @@ const FloatingRescueButton = () => {
         syncActiveRescue();
         const intervalId = setInterval(syncActiveRescue, 10000); // sync every 10 seconds
 
-        return () => clearInterval(intervalId);
+        return () => {
+            clearInterval(intervalId);
+            controller.abort();
+        };
     }, [isLoggedIn, user?.id, user?.role, startRescue, endRescue]);
 
     // Don't show if no active rescue

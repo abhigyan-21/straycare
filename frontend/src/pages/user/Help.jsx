@@ -537,12 +537,10 @@ function Help({ openAuthModal }) {
                                 }}
                             />
                         )}
-                        {highlights.topContributor && (
-                            <HighlightCard 
-                                type="supporter" 
-                                contributor={highlights.topContributor} 
-                            />
-                        )}
+                        <HighlightCard 
+                            type="supporter" 
+                            contributor={highlights.topContributor} 
+                        />
                     </div>
                 </section>
             )}

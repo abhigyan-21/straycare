@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { apiClient } from '../../services/api';
+import apiClient from '../../services/api';
 import Loader from '../../components/Loader';
 import '../../styles/user/PublicPartner.css';
 

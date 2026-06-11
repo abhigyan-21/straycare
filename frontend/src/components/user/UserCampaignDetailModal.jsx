@@ -1,9 +1,11 @@
 import React from 'react';
 import { X, Calendar, MapPin, Info, User, Building, Clock, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getCampaignEndDate, getPartner } from '../../services/api';
 
 const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
+    const navigate = useNavigate();
+
     if (!campaign) return null;
 
     const progress = campaign.goalAmount > 0
@@ -44,7 +46,7 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                     <User className="field-icon" size={16} />
                                     <div>
                                         <label>Campaign Creator</label>
-                                        <span>{campaign.creator?.name || 'StrayCare Partner'}</span>
+                                        <span>{campaign.creator?.name || 'Anonymous'}</span>
                                     </div>
                                 </div>
                                 <div className="organiser-field">
@@ -53,16 +55,19 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                         <label>Associated Clinic</label>
                                         <span>
                                             {partner ? (
-                                                <Link 
-                                                    to={`/partner/${partner.id}`} 
+                                                <span 
                                                     className="partner-profile-link" 
-                                                    onClick={onClose}
-                                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#346c02', textDecoration: 'none', fontWeight: '600' }}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        onClose();
+                                                        setTimeout(() => navigate(`/partner/${partner.id}`), 0);
+                                                    }}
+                                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#346c02', cursor: 'pointer', fontWeight: '600' }}
                                                 >
                                                     {partner.name} <ExternalLink size={12} />
-                                                </Link>
+                                                </span>
                                             ) : (
-                                                'StrayCare Central'
+                                                'Independent'
                                             )}
                                         </span>
                                     </div>
@@ -73,7 +78,7 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                         {/* Purpose & Description */}
                         <section className="detail-section info-text-section">
                             <h3><Info size={18} /> Purpose & Goals</h3>
-                            <p className="purpose-highlight">{campaign.purpose || 'Support local stray animals rescue and treatment outreach.'}</p>
+                            {campaign.purpose && <p className="purpose-highlight">{campaign.purpose}</p>}
                             <div className="full-description">
                                 <label>Description</label>
                                 <p>{campaign.description}</p>
@@ -93,13 +98,15 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="logistics-card">
-                                    <MapPin className="log-icon" size={18} />
-                                    <div>
-                                        <label>Event Location</label>
-                                        <span>{campaign.location || 'Local StrayCare Clinic'}</span>
+                                {campaign.location && (
+                                    <div className="logistics-card">
+                                        <MapPin className="log-icon" size={18} />
+                                        <div>
+                                            <label>Event Location</label>
+                                            <span>{campaign.location}</span>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </section>
                     </div>

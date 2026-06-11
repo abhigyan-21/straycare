@@ -46,12 +46,24 @@ const HighlightCard = ({ type, campaign, badgeText, contributor, onDonate, onDet
     }
 
     if (type === 'supporter') {
-        // Fallback supporter data if contributor is null
-        const name = contributor ? contributor.name : "Elena Gilbert";
-        const avatar = contributor && contributor.avatar ? contributor.avatar : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200";
-        const quote = contributor ? "Thank you for supporting our strays! Every contribution helps save a life." : "Seeing these animals find safety is the greatest reward. Every little bit counts!";
-        const amountText = contributor ? `₹${contributor.totalAmount.toLocaleString()}` : "₹1,250";
-        const statLabel = contributor ? "This Month's Contributions" : "Contributions";
+        if (!contributor) {
+            return (
+                <div className="highlight-card top-supporter">
+                    <div className="highlight-badge">TOP SUPPORTER</div>
+                    <div className="supporter-profile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '2rem' }}>
+                        <div className="supporter-badge-icon" style={{ position: 'relative', top: 0, right: 0, fontSize: '3rem', marginBottom: '1rem' }}>🏆</div>
+                        <h3 style={{ color: '#888' }}>No Contributors Yet</h3>
+                        <p className="supporter-quote" style={{ textAlign: 'center' }}>"Be the first to make a difference this month!"</p>
+                    </div>
+                </div>
+            );
+        }
+
+        const name = contributor.name || "Anonymous";
+        const avatar = contributor.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=random";
+        const quote = "Thank you for supporting our strays! Every contribution helps save a life.";
+        const amountText = `₹${(contributor.totalAmount || 0).toLocaleString()}`;
+        const statLabel = "This Month's Contributions";
 
         return (
             <div className="highlight-card top-supporter">

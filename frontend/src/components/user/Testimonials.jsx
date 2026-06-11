@@ -32,8 +32,8 @@ function Testimonials() {
                   />
                 </div>
                 <div className="testimonial-content">
-                  <h4 className="testimonial-name">{item.name}</h4>
                   <p className="testimonial-statement">{item.statement}</p>
+                  <h4 className="testimonial-name">{item.name}</h4>
                 </div>
               </div>
             ))}
@@ -55,8 +55,8 @@ function Testimonials() {
                   />
                 </div>
                 <div className="testimonial-content">
-                  <h4 className="testimonial-name">{item.name}</h4>
                   <p className="testimonial-statement">{item.statement}</p>
+                  <h4 className="testimonial-name">{item.name}</h4>
                 </div>
               </div>
             ))}

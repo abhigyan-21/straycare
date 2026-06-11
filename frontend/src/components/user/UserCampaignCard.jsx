@@ -11,16 +11,16 @@ const UserCampaignCard = ({ campaign, category, progress, onDonate, onDetails })
     return (
         <div className={`campaign-grid-card ${colorThemes[category] || 'other-theme'}`}>
             <div className="card-image-wrapper">
-                <img src={campaign.image || 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=800&auto=format&fit=crop'} alt={campaign.title} />
+                <img src={campaign.banner || campaign.image || 'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=800&auto=format&fit=crop'} alt={campaign.title} />
                 <span className={`category-badge ${category}`}>{category.toUpperCase()}</span>
             </div>
             <div className="card-info-wrapper">
                 <div className="card-header-desc-group">
                     <div>
                         <h3 className="camp-title">{campaign.title}</h3>
-                        <span className="camp-creator">Created by: {campaign.creator?.name || 'StrayCare Partner'}</span>
+                        <span className="camp-creator">Created by: {campaign.creator?.name || 'Anonymous'}</span>
                     </div>
-                    <p className="camp-desc">{campaign.description}</p>
+                    <p className="camp-desc">{campaign.purpose || campaign.description}</p>
                 </div>
                 
                 <div className="camp-progress-bar-container">
