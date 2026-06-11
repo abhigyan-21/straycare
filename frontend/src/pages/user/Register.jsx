@@ -43,6 +43,7 @@ const Register = () => {
         address: '',
         password: '',
         confirmPassword: '',
+        razorpayId: '',
         lat: null,
         lng: null
     });
@@ -232,6 +233,7 @@ const Register = () => {
                 address: formData.address,
                 password: formData.password,
                 registerToken: registerToken,
+                razorpayId: formData.razorpayId,
                 lat: formData.lat,
                 lng: formData.lng
             });
@@ -322,16 +324,32 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label>Registration Number</label>
-                        <input 
-                            type="text" 
-                            name="registrationNumber" 
-                            value={formData.registrationNumber} 
-                            onChange={handleChange} 
-                            placeholder="Government/License Registration No." 
-                            required 
-                        />
+                    <div className="form-group-row">
+                        <div className="form-group">
+                            <label>Registration Number</label>
+                            <input 
+                                type="text" 
+                                name="registrationNumber" 
+                                value={formData.registrationNumber} 
+                                onChange={handleChange} 
+                                placeholder="Government/License Registration No." 
+                                required 
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Razorpay ID</label>
+                            <input 
+                                type="text" 
+                                name="razorpayId" 
+                                value={formData.razorpayId} 
+                                onChange={handleChange} 
+                                placeholder="rzp_live_123456789" 
+                                required 
+                            />
+                            <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+                                If you don't have an ID, kindly create it <a href="https://razorpay.com" target="_blank" rel="noopener noreferrer" style={{ color: '#346c02', textDecoration: 'underline' }}>here</a>.
+                            </div>
+                        </div>
                     </div>
                     
                     <div className="form-group">

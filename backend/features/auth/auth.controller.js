@@ -256,9 +256,9 @@ const verifyRegistrationOtp = async (req, res) => {
  */
 const registerPartner = async (req, res) => {
   try {
-    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken, lat, lng } = req.body;
+    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken, razorpayId, lat, lng } = req.body;
 
-    if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password) {
+    if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password || !razorpayId) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -317,6 +317,7 @@ const registerPartner = async (req, res) => {
           phone,
           verificationStatus: 'PENDING',
           partnerType: dbRole === 'NGO' ? 'NGO' : 'VET',
+          razorpayAccountId: razorpayId,
           lat: lat ? parseFloat(lat) : null,
           lng: lng ? parseFloat(lng) : null
         }

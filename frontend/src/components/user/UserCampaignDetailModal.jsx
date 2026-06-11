@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Calendar, MapPin, Info, User, Building, Clock } from 'lucide-react';
+import { X, Calendar, MapPin, Info, User, Building, Clock, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getCampaignEndDate, getPartner } from '../../services/api';
 
 const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
@@ -50,7 +51,20 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                     <Building className="field-icon" size={16} />
                                     <div>
                                         <label>Associated Clinic</label>
-                                        <span>{partner?.name || 'StrayCare Central'}</span>
+                                        <span>
+                                            {partner ? (
+                                                <Link 
+                                                    to={`/partner/${partner.id}`} 
+                                                    className="partner-profile-link" 
+                                                    onClick={onClose}
+                                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#346c02', textDecoration: 'none', fontWeight: '600' }}
+                                                >
+                                                    {partner.name} <ExternalLink size={12} />
+                                                </Link>
+                                            ) : (
+                                                'StrayCare Central'
+                                            )}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

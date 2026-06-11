@@ -161,7 +161,7 @@ const getReportById = async (req, res) => {
             id: true,
             name: true,
             address: true,
-            contact: true,
+            phone: true,
             lat: true,
             lng: true,
           },
@@ -191,7 +191,7 @@ const getReportById = async (req, res) => {
               id: true,
               name: true,
               address: true,
-              contact: true,
+              phone: true,
               lat: true,
               lng: true,
             }
@@ -347,6 +347,35 @@ const getClinicReports = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get all verified clinics
+ * @route GET /api/reports/clinics
+ * @access Private
+ */
+const getClinics = async (req, res) => {
+  try {
+    const clinics = await prisma.partner.findMany({
+      where: {
+        verificationStatus: 'VERIFIED',
+        lat: { not: null },
+        lng: { not: null }
+      },
+      select: {
+        id: true,
+        name: true,
+        lat: true,
+        lng: true,
+        address: true,
+        phone: true,
+      }
+    });
+    res.json(clinics);
+  } catch (error) {
+    console.error('Error fetching clinics:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   createReport,
   getMyReports,
@@ -357,4 +386,5 @@ module.exports = {
   updateRescuerLocation,
   getClinicReports,
   getMyRescues,
+  getClinics,
 };

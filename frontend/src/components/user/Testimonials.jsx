@@ -20,8 +20,8 @@ function Testimonials() {
       <div className="testimonial-marquee">
         <div className="marquee-row marquee-left">
           <div className="marquee-inner">
-            {row1.map((item) => (
-              <div className="testimonial-card" key={item.id}>
+            {[...row1, ...row1].map((item, index) => (
+              <div className="testimonial-card" key={`row1-${index}`}>
                 <div className="avatar">
                   <img
                     src={item.profilePic ? `/testimonialImages/${item.profilePic}` : defaultAvatar}
@@ -42,7 +42,7 @@ function Testimonials() {
 
         <div className="marquee-row marquee-right">
           <div className="marquee-inner">
-            {row2.map((item, index) => (
+            {[...row2, ...row2].map((item, index) => (
               <div className="testimonial-card" key={`row2-${index}`}>
                 <div className="avatar">
                   <img

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const prisma = require('../../db/prisma');
 const Razorpay = require('razorpay');
 const { sendEmail } = require('../../services/email.service');
+const { uploadToCloudinary } = require('../../utils/cloudinary');
 
 let razorpay;
 if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -175,7 +176,7 @@ const handleRazorpayWebhook = async (req, res) => {
  */
 const createCampaign = async (req, res) => {
   try {
-    const { title, description, purpose, goalAmount, startDate, endDate, startTime, location, theme, image, banner } = req.body;
+    const { title, description, purpose, goalAmount, startDate, endDate, startTime, location, theme, image, banner, requestType } = req.body;
     const userId = req.user.id;
     const partnerId = req.user.partnerId || req.user.clinicId;
 
@@ -184,8 +185,21 @@ const createCampaign = async (req, res) => {
     }
 
     // Strict validation enforcing all fields are compulsory
-    if (!title || !description || !purpose || !goalAmount || !startDate || !endDate || !startTime || !location || !theme || !image || !banner) {
-      return res.status(400).json({ error: 'All fields (title, description, purpose, goalAmount, startDate, endDate, startTime, location, theme, image, banner) are compulsory.' });
+    if (!title || !description || !purpose || !goalAmount || !startDate || !endDate || !startTime || !location || !theme) {
+      return res.status(400).json({ error: 'All compulsory fields must be provided.' });
+    }
+
+    let finalBanner = banner;
+    let finalImage = image;
+
+    if (req.file) {
+        const result = await uploadToCloudinary(req.file.buffer);
+        finalBanner = result.secure_url;
+        finalImage = result.secure_url; // Use banner for image thumbnail as well if uploaded
+    }
+
+    if (!finalBanner || !finalImage) {
+        return res.status(400).json({ error: 'Banner image is required.' });
     }
 
     const campaign = await prisma.campaign.create({
@@ -199,12 +213,12 @@ const createCampaign = async (req, res) => {
         startTime,
         location,
         theme,
-        image,
-        banner,
+        image: finalImage,
+        banner: finalBanner,
         partnerId,
         createdBy: userId,
         status: 'ACTIVE',
-        requestType: 'CAMPAIGN',
+        requestType: requestType || 'CAMPAIGN',
       },
     });
 

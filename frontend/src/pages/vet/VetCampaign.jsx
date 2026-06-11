@@ -30,7 +30,9 @@ function VetCampaign() {
         startTime: '09:00 AM',
         customTheme: '',
         customImage: '',
-        customBanner: ''
+        customBanner: '',
+        requestType: 'CAMPAIGN',
+        bannerFile: null
     });
 
     const fetchCampaigns = async () => {
@@ -113,28 +115,34 @@ function VetCampaign() {
             bannerVal = presets.banner;
         }
 
-        const payload = {
-            title: newCampaign.title,
-            description: newCampaign.description,
-            goalAmount: newCampaign.goalAmount,
-            startDate: newCampaign.startDate,
-            endDate: newCampaign.endDate,
-            location: newCampaign.location,
-            purpose: newCampaign.purpose,
-            startTime: newCampaign.startTime,
-            theme: themeVal,
-            image: imageVal,
-            banner: bannerVal
-        };
+        const formData = new FormData();
+        formData.append('title', newCampaign.title);
+        formData.append('description', newCampaign.description);
+        formData.append('goalAmount', newCampaign.goalAmount);
+        formData.append('startDate', newCampaign.startDate);
+        formData.append('endDate', newCampaign.endDate);
+        formData.append('location', newCampaign.location);
+        formData.append('purpose', newCampaign.purpose);
+        formData.append('startTime', newCampaign.startTime);
+        formData.append('theme', themeVal);
+        formData.append('image', imageVal);
+        formData.append('banner', bannerVal);
+        formData.append('requestType', newCampaign.requestType);
+        
+        if (newCampaign.bannerFile) {
+            formData.append('bannerFile', newCampaign.bannerFile);
+        }
 
         try {
-            const response = await apiClient.post('/funding/campaigns', payload);
+            const response = await apiClient.post('/funding/campaigns', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             const result = response.data;
             setCampaigns([result.data, ...campaigns]);
             setActiveTab('manage');
             setNewCampaign({ 
                 title: '', description: '', goalAmount: '', startDate: '', endDate: '', location: '', purpose: '',
-                theme: 'blue', startTime: '09:00 AM', customTheme: '', customImage: '', customBanner: ''
+                theme: 'blue', startTime: '09:00 AM', customTheme: '', customImage: '', customBanner: '', requestType: 'CAMPAIGN', bannerFile: null
             });
             alert('Campaign launched successfully!');
         } catch (error) {
@@ -234,7 +242,28 @@ function VetCampaign() {
                     <div className="create-campaign-container">
                         <form onSubmit={handleCreateCampaign} className="form-grid">
                             <div className="form-group full-width">
-                                <label><Type size={16} style={{ marginRight: '8px' }} />Campaign Title</label>
+                                <label><Type size={16} style={{ marginRight: '8px' }} />Type</label>
+                                <select 
+                                    required 
+                                    value={newCampaign.requestType}
+                                    onChange={e => setNewCampaign({...newCampaign, requestType: e.target.value})}
+                                    style={{
+                                        width: '100%',
+                                        padding: '14px 18px',
+                                        borderRadius: '14px',
+                                        border: '1.5px solid #eee',
+                                        fontFamily: "'Outfit', sans-serif",
+                                        fontSize: '1rem',
+                                        marginBottom: '1rem'
+                                    }}
+                                >
+                                    <option value="CAMPAIGN">Campaign</option>
+                                    <option value="SUPPORT_REQUEST">Support Request</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label><Type size={16} style={{ marginRight: '8px' }} />Title</label>
                                 <input 
                                     type="text" 
                                     placeholder="e.g. Stray Feeding Drive 2026" 
@@ -374,6 +403,21 @@ function VetCampaign() {
                                     </div>
                                 </>
                             )}
+
+                            <div className="form-group full-width">
+                                <label><FileText size={16} style={{ marginRight: '8px' }} />Upload Banner Image</label>
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={e => setNewCampaign({...newCampaign, bannerFile: e.target.files[0]})}
+                                    style={{
+                                        padding: '10px 0'
+                                    }}
+                                />
+                                <small style={{ color: '#666', display: 'block', marginTop: '4px' }}>
+                                    Upload a custom banner image (Optional). If uploaded, it overrides theme presets.
+                                </small>
+                            </div>
 
                             <div className="form-group full-width">
                                 <button type="submit" className="submit-campaign-btn">

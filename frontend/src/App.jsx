@@ -19,6 +19,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/user/Register";
 import RescuerDashboard from "./pages/user/RescuerDashboard";
 import RescuerNavigation from "./pages/user/RescuerNavigation";
+import PublicPartner from "./pages/user/PublicPartner";
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import doctorClosed from "./assets/images/doctor-closed.png";
 import doctorOpen from "./assets/images/doctor-open.png";
@@ -155,6 +156,7 @@ function App() {
             <Route path="/help" element={<Help openAuthModal={openAuthModal} />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/partner/:id" element={<PublicPartner />} />
 
             {/* Rescuer Section Paths */}
             <Route path="/rescuer" element={<ProtectedRoute allowedRoles={['RESCUER', 'ADMIN']} />}>

@@ -137,15 +137,6 @@
     stroke: #e6facd;
     stroke-width: 15;
     stroke-linecap: round;
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: drawPath 3s ease forwards;
-}
-
-@keyframes drawPath {
-    to {
-        stroke-dashoffset: 0;
-    }
 }
 
 .timeline-nodes {

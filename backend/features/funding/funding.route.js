@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, optionalVerifyToken } = require('../auth/auth.middleware');
+const { upload } = require('../../utils/cloudinary');
 const {
   createDonationOrder,
   handleRazorpayWebhook,
@@ -25,7 +26,7 @@ router.get('/my-donations', verifyToken, getMyDonations);
 router.post('/subscriptions/:id/cancel', verifyToken, cancelSubscription);
 
 // ── Campaign routes ───────────────────────────────
-router.post('/campaigns', verifyToken, createCampaign);
+router.post('/campaigns', verifyToken, upload.single('bannerFile'), createCampaign);
 router.get('/campaigns/highlights', optionalVerifyToken, getFundingHighlights);
 router.get('/campaigns', optionalVerifyToken, getCampaigns);
 router.patch('/campaigns/:id', verifyToken, updateCampaign);

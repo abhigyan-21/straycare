@@ -32,21 +32,25 @@ function Track() {
             const rescuerPartner = getPartner(r.rescuer);
 
             let statusIndex = -1;
-            if (r.status === 'ASSIGNED') {
+            if (r.status === 'ASSIGNED' || r.status === 'RESCUED') {
                 statusIndex = 0;
-            } else if (r.status === 'RESCUED') {
-                statusIndex = 1;
             } else if (r.status === 'TREATED') {
                 if (r.pet) {
                     if (r.pet.status === 'AVAILABLE') {
                         statusIndex = 3;
                     } else if (r.pet.status === 'ADOPTED') {
                         statusIndex = 4;
-                    } else {
+                    } else if (r.medicalRecords && r.medicalRecords.length > 0) {
                         statusIndex = 2; // treatment
+                    } else {
+                        statusIndex = 1; // reached center
                     }
                 } else {
-                    statusIndex = 2; // treatment
+                    if (r.medicalRecords && r.medicalRecords.length > 0) {
+                        statusIndex = 2; // treatment
+                    } else {
+                        statusIndex = 1; // reached center
+                    }
                 }
             } else if (r.status === 'ADOPTED') {
                 statusIndex = 4;
@@ -78,7 +82,7 @@ function Track() {
             }
 
             // 3. rescued
-            if (r.status === 'RESCUED' || r.status === 'TREATED' || r.status === 'ADOPTED') {
+            if (r.status === 'TREATED' || r.status === 'ADOPTED') {
                 history.push({
                     date: r.lastTracked ? new Date(r.lastTracked).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Rescue complete",
                     stage: "reached center",
@@ -96,17 +100,15 @@ function Track() {
                     });
                 });
             } else if (r.status === 'RESCUED') {
-                history.push({
-                    date: "Ongoing",
-                    stage: "treatment",
-                    notes: "Admitted into veterinary ward and started medical observation/treatment."
-                });
+                // Rescue is still in progress, do nothing for treatment
             } else if (r.status === 'TREATED' && (!r.pet || r.pet.status === 'UNDER_TREATMENT')) {
-                history.push({
-                    date: "Ongoing",
-                    stage: "treatment",
-                    notes: "Admitted into veterinary ward and started medical observation/treatment."
-                });
+                if (r.medicalRecords && r.medicalRecords.length > 0) {
+                    history.push({
+                        date: "Ongoing",
+                        stage: "treatment",
+                        notes: "Admitted into veterinary ward and started medical observation/treatment."
+                    });
+                }
             }
 
             // 5. treated (open for adoption)
@@ -218,8 +220,17 @@ function Track() {
                   node-1 (150, 100) -> node-2 (550, 100) -> node-3 (850, 180) -> node-4 (550, 300) -> node-5 (150, 300)
                 */}
                                 <path className="timeline-path" d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300" />
-                                {animateTimeline && petData.statusIndex >= 0 && (
-                                    <path className="timeline-path-active" d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300" />
+                                {petData.statusIndex >= 0 && (
+                                    <path 
+                                        className="timeline-path-active" 
+                                        d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300" 
+                                        pathLength="1000"
+                                        style={{
+                                            strokeDasharray: 1000,
+                                            strokeDashoffset: animateTimeline ? Math.max(0, 1000 - (1000 / 4) * petData.statusIndex) : 1000,
+                                            transition: 'stroke-dashoffset 3s ease'
+                                        }}
+                                    />
                                 )}
                             </svg>
 

@@ -18,7 +18,16 @@ const ambulanceIcon = new L.Icon({ iconUrl: ambulanceImg, iconSize: [60, 40], ic
 const hospitalIcon = new L.Icon({ iconUrl: hospitalImg, iconSize: [50, 50], iconAnchor: [25, 50] });
 const strayIcon = new L.Icon({ iconUrl: pickupImg, iconSize: [45, 45], iconAnchor: [22, 45] });
 
-
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
 
 function RescuerNavigation() {
   const { reportId } = useParams();
@@ -33,6 +42,7 @@ function RescuerNavigation() {
   const [stage, setStage] = useState('TO_STRAY'); // 'TO_STRAY' or 'TO_HOSPITAL'
   const [route, setRoute] = useState([]);
   const [resolvedAddress, setResolvedAddress] = useState('Fetching location address...');
+  const [nearestClinic, setNearestClinic] = useState(null);
 
   // Fetch live report details
   useEffect(() => {
@@ -95,13 +105,43 @@ function RescuerNavigation() {
   const rescuerPartner = getPartner(report?.rescuer);
   const userPartner = getPartner(user);
   const reportPartner = getPartner(report);
-  const hospitalLocation = rescuerPartner?.lat && rescuerPartner?.lng
+  const assignedHospitalLocation = rescuerPartner?.lat && rescuerPartner?.lng
     ? [rescuerPartner.lat, rescuerPartner.lng]
     : userPartner?.lat && userPartner?.lng
     ? [userPartner.lat, userPartner.lng]
     : reportPartner?.lat && reportPartner?.lng
     ? [reportPartner.lat, reportPartner.lng]
     : null;
+
+  const hospitalLocation = assignedHospitalLocation || (nearestClinic ? [nearestClinic.lat, nearestClinic.lng] : null);
+
+  // Fetch nearest clinic if none is explicitly assigned
+  useEffect(() => {
+    if (assignedHospitalLocation) return;
+    if (!reportLocation) return;
+
+    const fetchNearestClinic = async () => {
+      try {
+        const response = await apiClient.get('/reports/clinics');
+        const clinics = response.data;
+        if (clinics && clinics.length > 0) {
+          let nearest = null;
+          let minDistance = Infinity;
+          for (const clinic of clinics) {
+            const dist = getDistance(reportLocation[0], reportLocation[1], clinic.lat, clinic.lng);
+            if (dist < minDistance) {
+              minDistance = dist;
+              nearest = clinic;
+            }
+          }
+          setNearestClinic(nearest);
+        }
+      } catch (err) {
+        console.error("Error fetching nearest clinic:", err);
+      }
+    };
+    fetchNearestClinic();
+  }, [assignedHospitalLocation, reportLocation]);
 
   // Resolve human-readable address
   useEffect(() => {
@@ -163,6 +203,8 @@ function RescuerNavigation() {
       const start = initialPos;
       const end = stage === 'TO_STRAY' ? reportLocation : hospitalLocation;
       
+      if (!start || !end) return;
+
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
         const res = await fetch(url);
