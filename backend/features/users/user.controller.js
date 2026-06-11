@@ -1,4 +1,6 @@
 const prisma = require('../../db/prisma');
+const { sendEmail } = require('../../services/email.service');
+const { generateToken } = require('../auth/auth.middleware');
 
 /**
  * @desc Get all rescuers linked to the current vet's partner
@@ -221,9 +223,128 @@ const getProfile = async (req, res) => {
   }
 };
 
+/**
+ * @desc Request OTP to upgrade role to RESCUER
+ * @route POST /api/users/upgrade-rescuer/request-otp
+ * @access Private (USER)
+ */
+const requestRescuerUpgradeOtp = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.role !== 'USER') {
+      return res.status(400).json({ error: 'Only USER role can request this upgrade' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailOtp: otp,
+        emailOtpExpiry: otpExpiry
+      }
+    });
+
+    console.log(`[DEV OTP] Rescuer Upgrade OTP for ${user.email} is: ${otp}`);
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Your OTP for Rescuer Upgrade - StrayCare',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
+          <h2 style="color: #c93b2b; text-align: center;">Rescuer Role Upgrade</h2>
+          <p>Dear ${user.name},</p>
+          <p>You have requested to upgrade your account to a <strong>RESCUER</strong>.</p>
+          <p>Please use the following One-Time Password (OTP) to complete the verification process:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333; padding: 10px 20px; background-color: #f9f9f9; border-radius: 4px; border: 1px dashed #ccc;">${otp}</span>
+          </div>
+          <p>This OTP is valid for 10 minutes. Do not share this with anyone.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+          <p style="font-size: 0.85rem; color: #888; text-align: center;">Best regards,<br/>The StrayCare Team</p>
+        </div>
+      `
+    }).catch(err => console.error('Failed to send OTP email:', err));
+
+    res.json({ message: 'OTP sent to your email successfully' });
+  } catch (error) {
+    console.error('Error requesting rescuer upgrade OTP:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Verify OTP and upgrade role to RESCUER
+ * @route POST /api/users/upgrade-rescuer/verify-otp
+ * @access Private (USER)
+ */
+const verifyRescuerUpgradeOtp = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ error: 'OTP is required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.role !== 'USER') {
+      return res.status(400).json({ error: 'Only USER role can perform this upgrade' });
+    }
+
+    if (!user.emailOtp || user.emailOtp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+
+    if (new Date() > new Date(user.emailOtpExpiry)) {
+      return res.status(400).json({ error: 'OTP has expired' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: 'RESCUER',
+        emailOtp: null,
+        emailOtpExpiry: null
+      }
+    });
+
+    // Generate new token with updated role
+    const token = generateToken(updatedUser.id, updatedUser.role);
+
+    res.json({ 
+      message: 'Role upgraded successfully',
+      token,
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying rescuer upgrade OTP:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getClinicRescuers,
   addRescuer,
   removeRescuer,
-  getProfile
+  getProfile,
+  requestRescuerUpgradeOtp,
+  verifyRescuerUpgradeOtp
 };

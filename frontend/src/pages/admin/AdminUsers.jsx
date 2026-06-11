@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import AdminTable from '../../components/admin/AdminTable';
 import AdminBadge from '../../components/admin/AdminBadge';
-import { getAdminUsers, updateAdminUserStatus, deleteAdminUser } from '../../services/api';
+import { getAdminUsers, updateAdminUserStatus, deleteAdminUser, updateAdminUserRole } from '../../services/api';
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
@@ -55,6 +55,26 @@ const AdminUsers = () => {
                 console.error("Failed to delete user:", error);
                 alert("Error deleting user: " + (error.response?.data?.error || error.message));
             }
+        }
+    };
+
+    const handleRoleChange = async (id, newRole) => {
+        try {
+            await updateAdminUserRole(id, newRole);
+            setUsers(users.map(u => {
+                if (u.id === id) {
+                    let roleMapped = 'user';
+                    if (newRole === 'NGO') roleMapped = 'ngo';
+                    else if (newRole === 'VET' || newRole === 'RESCUER') roleMapped = 'partner';
+                    else if (newRole === 'ADMIN') roleMapped = 'admin';
+                    return { ...u, role: roleMapped, actualRole: newRole };
+                }
+                return u;
+            }));
+            alert('User role updated successfully.');
+        } catch (error) {
+            console.error('Failed to update user role:', error);
+            alert('Error updating user role: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -146,7 +166,19 @@ const AdminUsers = () => {
                             </AdminBadge>
                         </td>
                         <td className="center">
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+                                {user.actualRole !== 'ADMIN' && (
+                                    <select 
+                                        value={user.actualRole || 'USER'} 
+                                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                        style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.8rem' }}
+                                    >
+                                        <option value="USER">USER</option>
+                                        <option value="RESCUER">RESCUER</option>
+                                        <option value="VET">VET</option>
+                                        <option value="NGO">NGO</option>
+                                    </select>
+                                )}
                                 {user.status === 'Pending' && (
                                     <button onClick={() => approveUser(user.id)} className="admin-btn-action primary-flex">
                                         Approve

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, MapPin, Target, Users, Clock, Info, Printer, Send, Loader2 } from 'lucide-react';
 import '../../styles/vet/VetCampaign.css';
-import apiClient from '../../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import apiClient, { getCampaignEndDate } from '../../services/api';
 
 const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
     if (!campaign) return null;
@@ -30,7 +28,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
         goalAmount: campaign.goalAmount || '',
         location: campaign.location || '',
         startDate: formatDateForInput(campaign.startDate),
-        endDate: formatDateForInput(campaign.endDate),
+        endDate: formatDateForInput(getCampaignEndDate(campaign)),
         startTime: campaign.startTime || '09:00 AM'
     });
 
@@ -62,7 +60,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
             campaign.goalAmount = parseFloat(editedFields.goalAmount);
             campaign.location = editedFields.location;
             campaign.startDate = editedFields.startDate;
-            campaign.endDate = editedFields.endDate;
+            campaign.deadline = editedFields.endDate;
             campaign.startTime = editedFields.startTime;
 
             alert("Updated successfully! (Offline Mock Mode)");
@@ -94,9 +92,12 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
         }
     };
 
-    const progress = campaign.goalAmount > 0
-        ? Math.min((campaign.raisedAmount / campaign.goalAmount) * 100, 100)
+    const raisedAmount = Number(campaign.raisedAmount || 0);
+    const goalAmount = Number(campaign.goalAmount || 0);
+    const progress = goalAmount > 0
+        ? Math.min((raisedAmount / goalAmount) * 100, 100)
         : 0;
+    const campaignEndDate = getCampaignEndDate(campaign);
 
     // Handle real or mock volunteers list
     const volunteersList = campaign.volunteersList ||
@@ -373,11 +374,11 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                                 <div className="amount-info">
                                     <div className="raised">
                                         <label>Raised</label>
-                                        <span>₹{campaign.raisedAmount?.toLocaleString() || '0'}</span>
+                                        <span>Rs {raisedAmount.toLocaleString()}</span>
                                     </div>
                                     <div className="target">
                                         <label>Target</label>
-                                        <span>₹{campaign.goalAmount?.toLocaleString() || '0'}</span>
+                                        <span>Rs {goalAmount.toLocaleString()}</span>
                                     </div>
                                 </div>
                                 <div className="progress-bar-large">
@@ -415,7 +416,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                                 </div>
                                 <div className="timeline-item">
                                     <span className="dot"></span>
-                                    <label>Ends: {new Date(campaign.endDate).toLocaleDateString()}</label>
+                                    <label>Ends: {campaignEndDate ? new Date(campaignEndDate).toLocaleDateString() : 'N/A'}</label>
                                 </div>
                             </div>
                         </div>

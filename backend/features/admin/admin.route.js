@@ -9,6 +9,7 @@ router.use(allowRoles('ADMIN'));
 
 router.get('/stats', adminController.getStats);
 router.get('/users', adminController.getUsers);
+router.put('/users/:id/role', adminController.updateUserRole);
 router.get('/partner-applications', adminController.getPartnerApplications);
 router.patch('/users/:id/status', adminController.updateUserStatus);
 router.delete('/users/:id', adminController.deleteUser);

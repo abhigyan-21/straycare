@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { getCampaignEndDate } from '../../services/api';
 
 const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) => {
     const theme = campaign.theme || 'blue';
@@ -9,6 +10,10 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
         yellow: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1200&auto=format&fit=crop'
     };
     const imageUrl = campaign.image || defaultImages[theme] || defaultImages.blue;
+    const raisedAmount = Number(campaign.raisedAmount || 0);
+    const goalAmount = Number(campaign.goalAmount || 0);
+    const progress = goalAmount > 0 ? (raisedAmount / goalAmount) * 100 : 0;
+    const endDate = getCampaignEndDate(campaign);
 
     return (
         <div className={`campaign-active-card ${isActive ? 'active-slide' : ''}`}>
@@ -24,7 +29,7 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
                     {theme.toUpperCase()} DRIVE
                 </h3>
             </div>
-            
+
             <div className="card-details-section">
                 <div>
                     <h3 className="card-title-horizontal">{campaign.title}</h3>
@@ -35,19 +40,19 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
                         </div>
                         <div className="card-mini-stat">
                             <label>Raised</label>
-                            <span>₹{campaign.raisedAmount.toLocaleString()}</span>
+                            <span>Rs {raisedAmount.toLocaleString()}</span>
                         </div>
                         <div className="card-mini-stat">
                             <label>Goal</label>
-                            <span>₹{campaign.goalAmount.toLocaleString()}</span>
+                            <span>Rs {goalAmount.toLocaleString()}</span>
                         </div>
                     </div>
 
                     <div className="campaign-progress-container" style={{ margin: '0 0 20px 0' }}>
                         <div className="progress-bar-bg">
-                            <div 
-                                className="progress-bar-fill" 
-                                style={{ width: `${(campaign.raisedAmount / campaign.goalAmount) * 100}%` }}
+                            <div
+                                className="progress-bar-fill"
+                                style={{ width: `${progress}%` }}
                             ></div>
                         </div>
                     </div>
@@ -56,7 +61,7 @@ const CampaignHeroCard = ({ campaign, isActive, calculateDaysLeft, onDetails }) 
                 <div className="card-action-row">
                     <div className="mini-stat">
                         <span className="mini-stat-label">Time Remaining</span>
-                        <span className="mini-stat-value" style={{ fontSize: '0.9rem' }}>{calculateDaysLeft(campaign.endDate)} Days left</span>
+                        <span className="mini-stat-value" style={{ fontSize: '0.9rem' }}>{calculateDaysLeft(endDate)} Days left</span>
                     </div>
                     <button className="view-campaign-btn" onClick={() => onDetails(campaign)}>
                         View Details <ChevronRight size={18} />

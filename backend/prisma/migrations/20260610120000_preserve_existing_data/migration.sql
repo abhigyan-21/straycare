@@ -43,7 +43,7 @@ ALTER TABLE "Campaign" ADD COLUMN "requestType" "RequestType" NOT NULL DEFAULT '
 ALTER TABLE "Campaign" ADD COLUMN "category" "CampaignCategory";
 ALTER TABLE "Campaign" ADD COLUMN "urgency" "Urgency";
 ALTER TABLE "Campaign" ADD COLUMN "animalsImpacted" INTEGER;
-ALTER TABLE "Campaign" ADD COLUMN "theme" TEXT;
+-- ALTER TABLE "Campaign" ADD COLUMN "theme" TEXT;
 ALTER TABLE "Campaign" ALTER COLUMN "goalAmount" TYPE NUMERIC USING "goalAmount"::NUMERIC;
 ALTER TABLE "Campaign" ALTER COLUMN "raisedAmount" TYPE NUMERIC USING "raisedAmount"::NUMERIC;
 ALTER TABLE "Campaign" ALTER COLUMN "status" DROP DEFAULT;
@@ -78,7 +78,10 @@ SET "partnerId" = "clinicId"
 WHERE "clinicId" IS NOT NULL;
 
 UPDATE "Partner"
-SET "verificationStatus" = CASE WHEN "isVerified" THEN 'VERIFIED' ELSE 'PENDING' END;
+SET "verificationStatus" = CASE
+  WHEN "isVerified" THEN 'VERIFIED'::"VerificationStatus"
+  ELSE 'PENDING'::"VerificationStatus"
+END;
 
 UPDATE "Partner" p
 SET "partnerType" = CASE
@@ -87,14 +90,16 @@ SET "partnerType" = CASE
     FROM "User" u
     WHERE u."partnerId" = p."id"
       AND u."role" = 'NGO'
-  ) THEN 'NGO'
+  ) THEN 'NGO'::"PartnerType"
+
   WHEN EXISTS (
     SELECT 1
     FROM "User" u
     WHERE u."partnerId" = p."id"
       AND u."role" = 'VET'
-  ) THEN 'VET'
-  ELSE 'CLINIC'
+  ) THEN 'VET'::"PartnerType"
+
+  ELSE 'CLINIC'::"PartnerType"
 END;
 
 UPDATE "AnimalReport"
@@ -118,11 +123,13 @@ UPDATE "Campaign"
 SET "legacyStatus" = COALESCE("legacyStatus", 'PENDING');
 
 UPDATE "Campaign"
-SET "status" = CASE
-  WHEN "legacyStatus" = 'APPROVED' THEN 'ACTIVE'
-  WHEN "legacyStatus" = 'REJECTED' THEN 'PAUSED'
-  ELSE 'DRAFT'
-END;
+SET "status" = (
+  CASE
+    WHEN "legacyStatus" = 'APPROVED' THEN 'ACTIVE'
+    WHEN "legacyStatus" = 'REJECTED' THEN 'PAUSED'
+    ELSE 'DRAFT'
+  END
+)::"CampaignStatus";
 
 UPDATE "Donation"
 SET "partnerId" = "clinicId",
@@ -135,9 +142,11 @@ WHERE TRUE;
 
 UPDATE "Donation"
 SET "status" = CASE
-  WHEN "legacyStatus" IN ('WEBHOOK_VERIFIED', 'COMPLETED', 'SUCCESS', 'PAID') THEN 'WEBHOOK_VERIFIED'
-  WHEN "legacyStatus" IN ('REJECTED', 'FAILED', 'CANCELLED') THEN 'REJECTED'
-  ELSE 'INITIATED'
+  WHEN "legacyStatus" IN ('WEBHOOK_VERIFIED', 'COMPLETED', 'SUCCESS', 'PAID')
+    THEN 'WEBHOOK_VERIFIED'::"DonationStatus"
+  WHEN "legacyStatus" IN ('REJECTED', 'FAILED', 'CANCELLED')
+    THEN 'REJECTED'::"DonationStatus"
+  ELSE 'INITIATED'::"DonationStatus"
 END;
 
 UPDATE "Subscription"

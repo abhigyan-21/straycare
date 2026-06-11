@@ -12,14 +12,15 @@ import {
     LogOut,
     Edit2,
     Trash2,
-    Download
+    Download,
+    Star
 } from 'lucide-react';
 import '../../styles/user/Profile.css';
 import '../../styles/user/Post.css'; // For create-post-btn styles
 import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuthStore } from '../../store/authStore';
 import MiniLoader from '../../components/user/MiniLoader';
-import apiClient from '../../services/api';
+import apiClient, { requestRescuerUpgradeOtp, verifyRescuerUpgradeOtp } from '../../services/api';
 
 const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'><rect width='100%25' height='100%25' fill='%23f1f5f9'/><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 
@@ -70,6 +71,44 @@ const Profile = () => {
     const [isEditingDetails, setIsEditingDetails] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    const [upgradeOtp, setUpgradeOtp] = useState('');
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isUpgrading, setIsUpgrading] = useState(false);
+
+    const handleRequestUpgradeOtp = async () => {
+        setIsUpgrading(true);
+        try {
+            await requestRescuerUpgradeOtp();
+            setIsOtpSent(true);
+            alert('OTP sent to your email.');
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.error || 'Failed to request OTP');
+        } finally {
+            setIsUpgrading(false);
+        }
+    };
+
+    const handleVerifyUpgradeOtp = async () => {
+        setIsUpgrading(true);
+        try {
+            const data = await verifyRescuerUpgradeOtp(upgradeOtp);
+            const state = JSON.parse(localStorage.getItem('straycare_user'));
+            if (state) {
+                state.state.token = data.token;
+                state.state.user = data.user;
+                localStorage.setItem('straycare_user', JSON.stringify(state));
+            }
+            alert('Role upgraded successfully to RESCUER!');
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.error || 'Failed to verify OTP');
+        } finally {
+            setIsUpgrading(false);
+        }
+    };
 
     const [user, setUser] = useState({
         name: '',
@@ -176,7 +215,7 @@ const Profile = () => {
                     amount: `₹${d.amount}`,
                     date: new Date(d.createdAt).toISOString().split('T')[0],
                     type: d.type === 'CAMPAIGN' ? 'Campaign Donation' : `${d.type} Donation`,
-                    to: d.campaign?.title || d.clinic?.name || 'StrayCare General Fund'
+                    to: d.campaign?.title || d.partner?.name || d.clinic?.name || 'StrayCare General Fund'
                 }));
                 setDonations(mappedDonations);
 
@@ -185,7 +224,7 @@ const Profile = () => {
                     amount: `₹${s.amount}`,
                     date: new Date(s.createdAt).toISOString().split('T')[0],
                     type: 'Monthly Autopay',
-                    to: s.clinic?.name || 'Clinic Partner',
+                    to: s.partner?.name || s.clinic?.name || 'Clinic Partner',
                     status: s.status
                 }));
                 setSubscriptions(mappedSubscriptions);
@@ -230,7 +269,7 @@ const Profile = () => {
                         status: statusText,
                         statusType: statusType,
                         date: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                        clinic: a.pet.clinic?.name || 'StrayCare Center'
+                        clinic: a.pet.partner?.name || a.pet.clinic?.name || 'StrayCare Center'
                     };
                 });
                 setAdoptions(mappedAdoptions);
@@ -763,6 +802,50 @@ const Profile = () => {
                         </div>
                     </div>
                 );
+            case 'upgrade':
+                return (
+                    <div className="profile-section fade-in">
+                        <div className="profile-section-header">
+                            <h2>Become a Rescuer</h2>
+                        </div>
+                        <div className="details-card" style={{ padding: '24px', textAlign: 'center' }}>
+                            <Star size={48} color="#e0645c" style={{ marginBottom: '16px' }} />
+                            <h3>Ready to make a bigger impact?</h3>
+                            <p style={{ color: '#666', marginTop: '12px', marginBottom: '24px', lineHeight: '1.6' }}>
+                                Upgrade your account to a RESCUER. As a rescuer, you can actively pick up stray animals in distress, transport them to our partner clinics, and track their recovery progress. You will receive an OTP on your registered email to verify this upgrade.
+                            </p>
+                            {!isOtpSent ? (
+                                <button 
+                                    className="btn save-btn" 
+                                    style={{ padding: '12px 24px', fontSize: '1rem' }} 
+                                    onClick={handleRequestUpgradeOtp}
+                                    disabled={isUpgrading}
+                                >
+                                    {isUpgrading ? 'Sending...' : 'Request OTP to Upgrade'}
+                                </button>
+                            ) : (
+                                <div style={{ maxWidth: '300px', margin: '0 auto' }}>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Enter 6-digit OTP" 
+                                        value={upgradeOtp}
+                                        onChange={(e) => setUpgradeOtp(e.target.value)}
+                                        className="edit-input"
+                                        style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem', marginBottom: '16px' }}
+                                    />
+                                    <button 
+                                        className="btn save-btn" 
+                                        style={{ padding: '12px 24px', fontSize: '1rem', width: '100%' }} 
+                                        onClick={handleVerifyUpgradeOtp}
+                                        disabled={isUpgrading}
+                                    >
+                                        {isUpgrading ? 'Verifying...' : 'Verify OTP & Upgrade'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
             default:
                 return null;
         }
@@ -842,6 +925,14 @@ const Profile = () => {
                                 <LifeBuoy className="icon" size={18} /> Rescues
                             </button>
                         )}
+                        {authUser?.role === 'USER' && (
+                            <button
+                                className={`nav-btn ${activeTab === 'upgrade' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('upgrade')}
+                            >
+                                <Star className="icon" size={18} /> Become a Rescuer
+                            </button>
+                        )}
                     </nav>
 
                     <div className="sidebar-footer">
@@ -869,3 +960,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

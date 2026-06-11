@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import '../../styles/user/RescuerPages.css';
-import apiClient from '../../services/api';
+import apiClient, { getPartner } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
 
 // Reuse Icons from LiveTracking
@@ -92,12 +92,15 @@ function RescuerNavigation() {
     ? (report.location || [report.locationLat, report.locationLng])
     : null;
 
-  const hospitalLocation = report?.rescuer?.clinic?.lat && report?.rescuer?.clinic?.lng
-    ? [report.rescuer.clinic.lat, report.rescuer.clinic.lng]
-    : user?.clinic?.lat && user?.clinic?.lng
-    ? [user.clinic.lat, user.clinic.lng]
-    : report?.clinic?.lat && report?.clinic?.lng
-    ? [report.clinic.lat, report.clinic.lng]
+  const rescuerPartner = getPartner(report?.rescuer);
+  const userPartner = getPartner(user);
+  const reportPartner = getPartner(report);
+  const hospitalLocation = rescuerPartner?.lat && rescuerPartner?.lng
+    ? [rescuerPartner.lat, rescuerPartner.lng]
+    : userPartner?.lat && userPartner?.lng
+    ? [userPartner.lat, userPartner.lng]
+    : reportPartner?.lat && reportPartner?.lng
+    ? [reportPartner.lat, reportPartner.lng]
     : null;
 
   // Resolve human-readable address

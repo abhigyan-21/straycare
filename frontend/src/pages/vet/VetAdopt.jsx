@@ -12,7 +12,11 @@ import CreateAdoptionModal from '../../components/vet/CreateAdoptionModal';
 import ActionLoader from '../../components/ActionLoader';
 import apiClient, { getClinicPets, updatePet } from '../../services/api';
 
-import { ADOPT_STATUS_OPTIONS, MOCK_ADOPT_DATA } from '../../data/mock_vet_data';
+const ADOPT_STATUS_OPTIONS = [
+    { label: 'up for adoption', value: 'up for adoption', class: 'up-for-adoption' },
+    { label: 'Adopted', value: 'Adopted', class: 'treated' },
+    { label: 'Remove', value: 'Remove', class: 'under-treatment' }
+];
 
 function VetAdopt() {
     const [activeTab, setActiveTab] = useState('live');
@@ -38,7 +42,7 @@ function VetAdopt() {
                 apiClient.get('/adoptions/requests')
             ]);
 
-            const pets = petsRes.data || [];
+            const pets = petsRes || [];
             const reqs = reqsRes.data.data || [];
 
             const today = new Date().toISOString().split('T')[0];
@@ -72,12 +76,12 @@ function VetAdopt() {
                 }))
             });
         } catch (error) {
-            console.warn("Using mock data fallback for VetAdopt:", error);
+            console.warn("Failed to fetch VetAdopt data:", error);
             setData({
-                todaysInterviews: MOCK_ADOPT_DATA.todaysInterviews,
-                liveAdoptions: MOCK_ADOPT_DATA.liveAdoptions,
-                currentRequests: MOCK_ADOPT_DATA.currentRequests,
-                newRequests: MOCK_ADOPT_DATA.newRequests
+                todaysInterviews: [],
+                liveAdoptions: [],
+                currentRequests: [],
+                newRequests: []
             });
         } finally {
             const elapsedTime = Date.now() - startTime;

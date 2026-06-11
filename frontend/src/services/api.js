@@ -7,6 +7,22 @@ const apiClient = axios.create({
   timeout: 15000, // 15 seconds to allow serverless db cold starts
 });
 
+export const unwrapApiData = (payload, fallback = []) => {
+  if (payload?.status === 'success' && payload.data !== undefined) {
+    return payload.data;
+  }
+  return payload ?? fallback;
+};
+
+export const getCampaignEndDate = (campaign) => campaign?.deadline || campaign?.endDate || null;
+
+export const isActiveCampaign = (campaign) => {
+  const status = String(campaign?.status || '').toUpperCase();
+  return !status || status === 'ACTIVE' || status === 'APPROVED';
+};
+
+export const getPartner = (entity) => entity?.partner || entity?.clinic || null;
+
 // Request interceptor to attach JWT token
 apiClient.interceptors.request.use(
   (config) => {
@@ -179,6 +195,21 @@ export const updateAdminUserStatus = async (id, status) => {
 
 export const deleteAdminUser = async (id) => {
   const response = await apiClient.delete(`/admin/users/${id}`);
+  return response.data;
+};
+
+export const updateAdminUserRole = async (id, role) => {
+  const response = await apiClient.put(`/admin/users/${id}/role`, { role });
+  return response.data;
+};
+
+export const requestRescuerUpgradeOtp = async () => {
+  const response = await apiClient.post('/users/upgrade-rescuer/request-otp');
+  return response.data;
+};
+
+export const verifyRescuerUpgradeOtp = async (otp) => {
+  const response = await apiClient.post('/users/upgrade-rescuer/verify-otp', { otp });
   return response.data;
 };
 

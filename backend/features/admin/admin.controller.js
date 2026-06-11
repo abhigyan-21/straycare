@@ -139,6 +139,7 @@ const getUsers = async (req, res) => {
         name: u.name,
         email: u.email,
         role: roleMapped,
+        actualRole: u.role,
         status: u.status,
         joined: u.createdAt.toISOString().split('T')[0]
       };
@@ -583,6 +584,59 @@ const deleteUser = async (req, res) => {
   }
 };
 
+/**
+ * @desc Update a user's role
+ * @route PUT /api/admin/users/:id/role
+ * @access Private (Admin only)
+ */
+const updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!role) {
+      return res.status(400).json({ error: 'Role is required' });
+    }
+
+    const validRoles = ['USER', 'RESCUER', 'VET', 'NGO', 'ADMIN'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const userToUpdate = await prisma.user.findUnique({ where: { id } });
+    if (!userToUpdate) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // IMPORTANT: If role is VET or NGO, and user has no partnerId, create a Partner record
+    let newPartnerId = userToUpdate.partnerId;
+    if ((role === 'VET' || role === 'NGO') && !userToUpdate.partnerId) {
+      const newPartner = await prisma.partner.create({
+        data: {
+          name: userToUpdate.name + "'s Organization",
+          phone: userToUpdate.phone || '0000000000',
+          type: role === 'VET' ? 'CLINIC' : 'NGO',
+          isVerified: true
+        }
+      });
+      newPartnerId = newPartner.id;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { 
+        role,
+        partnerId: newPartnerId
+      }
+    });
+
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getStats,
   getUsers,
@@ -594,5 +648,6 @@ module.exports = {
   updatePostStatus,
   deletePost,
   getReports,
-  deleteUser
+  deleteUser,
+  updateUserRole
 };

@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import { User, Phone, MapPin, Ambulance, Info, ArrowLeft, FileText } from 'lucide-react';
 import '../../styles/vet/VetTracking.css';
-import apiClient from '../../services/api';
+import apiClient, { getPartner } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
 
 // Icons
@@ -33,6 +33,7 @@ function VetTracking() {
       try {
         const response = await apiClient.get(`/reports/${id}`);
         const data = response.data;
+        const partner = getPartner(data);
         setReport({
           id: data.id.substring(0, 8).toUpperCase(),
           type: data.pet?.breed || 'Stray Animal',
@@ -48,8 +49,8 @@ function VetTracking() {
           setRescuerPos([data.rescuerLat, data.rescuerLng]);
         }
         
-        if (data.clinic && data.clinic.lat && data.clinic.lng) {
-          setHospitalPos([data.clinic.lat, data.clinic.lng]);
+        if (partner?.lat && partner?.lng) {
+          setHospitalPos([partner.lat, partner.lng]);
         }
       } catch (err) {
         console.error("Failed to fetch live report tracking details:", err);

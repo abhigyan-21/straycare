@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import '../../styles/user/Track.css';
-import apiClient from '../../services/api';
+import apiClient, { getPartner } from '../../services/api';
 
 const STAGES = [
     "rescue in progress",
@@ -28,6 +28,8 @@ function Track() {
         try {
             const response = await apiClient.get(`/reports/${idToTrack.trim()}`);
             const r = response.data;
+            const partner = getPartner(r);
+            const rescuerPartner = getPartner(r.rescuer);
 
             let statusIndex = -1;
             if (r.status === 'ASSIGNED') {
@@ -54,7 +56,7 @@ function Track() {
                 { label: "Date of Report", value: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) },
                 { label: "Location Coordinates", value: `Lat: ${r.locationLat.toFixed(4)}, Lng: ${r.locationLng.toFixed(4)}` },
                 { label: "Condition Reported", value: r.description || 'N/A' },
-                { label: "Assigned Center", value: r.clinic?.name || r.rescuer?.clinic?.name || 'StrayCare Center' }
+                { label: "Assigned Center", value: partner?.name || rescuerPartner?.name || 'StrayCare Center' }
             ];
 
             const history = [];
@@ -80,7 +82,7 @@ function Track() {
                 history.push({
                     date: r.lastTracked ? new Date(r.lastTracked).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Rescue complete",
                     stage: "reached center",
-                    notes: `Animal successfully rescued and taken to ${r.clinic?.name || r.rescuer?.clinic?.name || 'clinic'} for care.`
+                    notes: `Animal successfully rescued and taken to ${partner?.name || rescuerPartner?.name || 'clinic'} for care.`
                 });
             }
 

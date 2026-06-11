@@ -39,7 +39,7 @@ function VetStatus() {
             ]);
 
             const reports = reportsRes.data || [];
-            const pets = petsRes.data || [];
+            const pets = petsRes || [];
 
             // 1. Live rescues (green box): Show REPORTED or ASSIGNED status reports
             const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');

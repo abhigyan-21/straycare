@@ -119,7 +119,7 @@ const getReports = async (req, res) => {
             phone: true,
           },
         },
-        clinic: {
+        partner: {
           select: {
             id: true,
             name: true,
@@ -156,7 +156,7 @@ const getReportById = async (req, res) => {
             phone: true,
           },
         },
-        clinic: {
+        partner: {
           select: {
             id: true,
             name: true,
@@ -186,7 +186,7 @@ const getReportById = async (req, res) => {
           contact: true,
           phone: true,
           avatarUrl: true,
-          clinic: {
+          partner: {
             select: {
               id: true,
               name: true,

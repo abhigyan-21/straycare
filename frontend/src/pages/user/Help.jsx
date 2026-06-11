@@ -9,9 +9,7 @@ import SupportModal from '../../components/user/SupportModal';
 import UserCampaignDetailModal from '../../components/user/UserCampaignDetailModal';
 import UserCampaignCard from '../../components/user/UserCampaignCard';
 import { useAuthStore } from '../../store/authStore';
-import apiClient from '../../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import apiClient, { isActiveCampaign } from '../../services/api';
 
 function Help({ openAuthModal }) {
     const { isLoggedIn } = useAuthStore();
@@ -378,7 +376,7 @@ function Help({ openAuthModal }) {
     };
 
     // Filter campaigns based on search query and category
-    const activeCampaignsList = campaigns.filter(c => c.status === undefined || c.status === 'active' || c.status === 'APPROVED');
+    const activeCampaignsList = campaigns.filter(isActiveCampaign);
     
     const filteredCampaigns = activeCampaignsList.filter(camp => {
         const matchesSearch = searchQuery.trim() === '' || 

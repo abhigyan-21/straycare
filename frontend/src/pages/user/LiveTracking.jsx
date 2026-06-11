@@ -6,7 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-
 import L from 'leaflet';
 import io from 'socket.io-client';
 import '../../styles/user/LiveTracking.css';
-import apiClient from '../../services/api';
+import apiClient, { getPartner } from '../../services/api';
 import { User } from 'lucide-react';
 
 // Fix for default marker icons in Leaflet with React
@@ -117,10 +117,12 @@ function LiveTracking() {
   }, [report, defaultUserPos]);
 
   const reportHospitalPos = useMemo(() => {
-    return report?.rescuer?.clinic?.lat && report?.rescuer?.clinic?.lng
-      ? [report.rescuer.clinic.lat, report.rescuer.clinic.lng]
-      : report?.clinic?.lat && report?.clinic?.lng
-        ? [report.clinic.lat, report.clinic.lng]
+    const rescuerPartner = getPartner(report?.rescuer);
+    const reportPartner = getPartner(report);
+    return rescuerPartner?.lat && rescuerPartner?.lng
+      ? [rescuerPartner.lat, rescuerPartner.lng]
+      : reportPartner?.lat && reportPartner?.lng
+        ? [reportPartner.lat, reportPartner.lng]
         : defaultHospitalPos;
   }, [report, defaultHospitalPos]);
 
@@ -295,7 +297,7 @@ function LiveTracking() {
   // Determine rescuer details dynamically
   const rescuerName = report?.rescuer?.name || (isDemo ? 'Dr. Aman Sharma' : 'Assigning Rescuer...');
   const rescuerContact = report?.rescuer?.phone || report?.rescuer?.contact || (isDemo ? '+91 98765 43210' : 'N/A');
-  const clinicName = report?.rescuer?.clinic?.name || report?.clinic?.name || (isDemo ? 'StrayCare North Center' : 'Pending Association...');
+  const clinicName = getPartner(report?.rescuer)?.name || getPartner(report)?.name || (isDemo ? 'StrayCare North Center' : 'Pending Association...');
   const rescuerAvatarUrl = report?.rescuer?.avatarUrl;
   const isRescueCompleted = report && (report.status === 'TREATED' || report.status === 'ADOPTED');
   const [copied, setCopied] = useState(false);

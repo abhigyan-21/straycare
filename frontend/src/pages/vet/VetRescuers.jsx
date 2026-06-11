@@ -4,7 +4,6 @@ import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetRescuers.css';
 import ActionLoader from '../../components/ActionLoader';
-import { MOCK_RESCUERS } from '../../data/mock_vet_data';
 import apiClient from '../../services/api';
 
 const VetRescuers = () => {
@@ -26,8 +25,8 @@ const VetRescuers = () => {
                 const response = await apiClient.get('/users/rescuers');
                 setRescuers(response.data);
             } catch (error) {
-                console.warn("Using mock rescuers as fallback:", error.message);
-                setRescuers(MOCK_RESCUERS);
+                console.warn("Failed to fetch rescuers:", error.message);
+                setRescuers([]);
             } finally {
                 const elapsedTime = Date.now() - startTime;
                 const remainingTime = Math.max(0, 800 - elapsedTime);

@@ -6,9 +6,7 @@ import LiveStatusView from '../../components/vet/LiveStatusView';
 import ActionLoader from '../../components/ActionLoader';
 import VetStatCard from '../../components/vet/VetStatCard';
 import { useAuthStore } from '../../store/authStore';
-import apiClient from '../../services/api';
-
-import { MOCK_DASHBOARD_DATA } from '../../data/mock_vet_data';
+import apiClient, { unwrapApiData, getCampaignEndDate } from '../../services/api';
 
 function VetDashboard() {
     const [rescues, setRescues] = useState([]);
@@ -33,11 +31,11 @@ function VetDashboard() {
             ]);
 
             const reports = reportsRes.data;
-            const pets = petsRes.data;
-            const reqs = reqsRes.data;
-            const camps = campsRes.data;
+            const pets = unwrapApiData(petsRes.data);
+            const reqs = unwrapApiData(reqsRes.data);
+            const camps = unwrapApiData(campsRes.data);
 
-            const latestCamp = camps.data?.[0];
+            const latestCamp = camps?.[0];
 
             const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');
             setRescues(liveRescues.map(r => ({
@@ -48,18 +46,25 @@ function VetDashboard() {
             })));
 
             setStats({
-                liveAdoptions: pets.data?.filter(p => p.status === 'AVAILABLE').length || 0,
-                newRequests: reqs.data?.filter(r => r.status === 'PENDING').length || 0,
-                liveRequests: reqs.data?.filter(r => r.status === 'INTERVIEW_SCHEDULED').length || 0,
+                liveAdoptions: pets?.filter(p => p.status === 'AVAILABLE').length || 0,
+                newRequests: reqs?.filter(r => r.status === 'PENDING').length || 0,
+                liveRequests: reqs?.filter(r => r.status === 'INTERVIEW_SCHEDULED').length || 0,
                 latestCampaign: latestCamp ? {
                     title: latestCamp.title,
-                    date: new Date(latestCamp.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                    date: getCampaignEndDate(latestCamp)
+                        ? new Date(getCampaignEndDate(latestCamp)).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                        : '--'
                 } : { title: 'No active campaign', date: '--' }
             });
         } catch (error) {
             console.warn("Using mock data fallback for VetDashboard:", error);
-            setRescues(MOCK_DASHBOARD_DATA.rescues);
-            setStats(MOCK_DASHBOARD_DATA.stats);
+            setRescues([]);
+            setStats({
+                liveAdoptions: 0,
+                newRequests: 0,
+                liveRequests: 0,
+                latestCampaign: { title: 'No active campaign', date: '--' }
+            });
         } finally {
             const elapsedTime = Date.now() - startTime;
             const minimumLoadingTime = isFirstLogin ? 2000 : 800; // 2 seconds for splash, 800ms for regular loader

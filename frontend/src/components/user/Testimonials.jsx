@@ -1,5 +1,5 @@
 import { testimonialData } from "../../data/testimonialData";
-
+import { useMemo } from 'react';
 function Testimonials() {
   // Split testimonials into two rows for the marquee
   const { row1, row2 } = useMemo(() => {

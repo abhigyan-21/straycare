@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Calendar, MapPin, Info, User, Building, Clock } from 'lucide-react';
+import { getCampaignEndDate, getPartner } from '../../services/api';
 
 const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
     if (!campaign) return null;
@@ -15,6 +16,8 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
         yellow: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1600&auto=format&fit=crop'
     };
     const bannerUrl = campaign.banner || campaign.image || defaultBanners[theme] || defaultBanners.blue;
+    const partner = getPartner(campaign);
+    const endDate = getCampaignEndDate(campaign);
 
     return (
         <div className="help-modal-overlay">
@@ -47,7 +50,7 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                     <Building className="field-icon" size={16} />
                                     <div>
                                         <label>Associated Clinic</label>
-                                        <span>{campaign.clinic?.name || 'StrayCare Central'}</span>
+                                        <span>{partner?.name || 'StrayCare Central'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -120,7 +123,7 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                             </button>
                         </div>
 
-                        {campaign.endDate && (
+                        {endDate && (
                             <div className="detail-timeline-card">
                                 <h3><Clock size={16} /> Campaign Timeline</h3>
                                 <div className="timeline-labels">
@@ -130,7 +133,7 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                     </div>
                                     <div className="timeline-point">
                                         <span className="point-dot"></span>
-                                        <label>Ends: {new Date(campaign.endDate).toLocaleDateString()}</label>
+                                        <label>Ends: {new Date(endDate).toLocaleDateString()}</label>
                                     </div>
                                 </div>
                             </div>

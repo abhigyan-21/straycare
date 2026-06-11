@@ -92,18 +92,18 @@ const VetProfile = () => {
                     phone: profileData.user.contact || profileData.user.phone || 'N/A',
                     role: profileData.user.role,
                     avatar: profileData.user.avatarUrl || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop',
-                    clinicName: profileData.user.clinic?.name || 'StrayCare Partner',
+                    clinicName: profileData.user.partner?.name || profileData.user.clinic?.name || 'StrayCare Partner',
                     licenseNo: profileData.registrationDetails?.registrationNumber || 'N/A',
                     joined: new Date(profileData.user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
-                    location: profileData.user.clinic?.address || 'N/A',
+                    location: profileData.user.partner?.address || profileData.user.clinic?.address || 'N/A',
                     specialization: 'General Veterinary Care',
                     experience: 'N/A',
                     experienceFull: 'Board certified veterinary clinic staff.',
                     totalRescues: profileData.stats?.totalRescues || 0,
                     activeCampaigns: profileData.stats?.activeCampaigns || 0,
                     successfulAdoptions: profileData.stats?.successfulAdoptions || 0,
-                    lat: profileData.user.clinic?.lat || null,
-                    lng: profileData.user.clinic?.lng || null
+                    lat: profileData.user.partner?.lat || profileData.user.clinic?.lat || null,
+                    lng: profileData.user.partner?.lng || profileData.user.clinic?.lng || null
                 });
 
                 // Filter out registration document since we display registration details on main tab

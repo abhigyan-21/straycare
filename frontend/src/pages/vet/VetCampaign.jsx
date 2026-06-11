@@ -9,7 +9,7 @@ import CampaignListItem from '../../components/vet/CampaignListItem';
 import VetTabs from '../../components/vet/VetTabs';
 import CampaignDetailModal from '../../components/vet/CampaignDetailModal';
 import ActionLoader from '../../components/ActionLoader';
-import apiClient from '../../services/api';
+import apiClient, { getCampaignEndDate, isActiveCampaign } from '../../services/api';
 
 function VetCampaign() {
     const [activeTab, setActiveTab] = useState('manage');
@@ -55,16 +55,17 @@ function VetCampaign() {
         fetchCampaigns();
     }, []);
 
-    const activeCampaigns = campaigns.filter(c => c.status === 'active' || c.status === 'APPROVED');
+    const activeCampaigns = campaigns.filter(isActiveCampaign);
 
     const filteredCampaigns = campaigns.filter(c => {
         if (filter === 'all') return true;
         const today = new Date();
         const start = new Date(c.startDate);
-        const end = new Date(c.endDate);
+        const endDate = getCampaignEndDate(c);
+        const end = endDate ? new Date(endDate) : null;
         
         if (filter === 'current') {
-            return start <= today && today <= end;
+            return start <= today && (!end || today <= end);
         }
         if (filter === 'upcoming') {
             return start > today;
@@ -143,6 +144,7 @@ function VetCampaign() {
     };
 
     const calculateDaysLeft = (endDate) => {
+        if (!endDate) return 0;
         const diff = new Date(endDate) - new Date();
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
         return days > 0 ? days : 0;
