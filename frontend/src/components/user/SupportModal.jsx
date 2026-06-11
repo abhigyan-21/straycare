@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import apiClient from '../../services/api';
 
 
 const SupportModal = ({
@@ -27,6 +28,11 @@ const SupportModal = ({
     const [donationAmount, setDonationAmount] = useState('1000');
     const [customAmount, setCustomAmount] = useState('');
     const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+    
+    // Razorpay Integration States
+    const [paymentMode, setPaymentMode] = useState('one-time'); // 'one-time' | 'autopay'
+    const [splitRecommendation, setSplitRecommendation] = useState([]);
+    const [isLoadingSplit, setIsLoadingSplit] = useState(false);
 
     const handleVolunteerClick = () => {
         if (!isLoggedIn) {
@@ -45,6 +51,18 @@ const SupportModal = ({
         if (card.id === 4) {
             setViewMode('donations');
         } else {
+            setPaymentMode('one-time');
+            setSelectedCampaign({
+                id: `general-card-${card.id}`,
+                title: card.title
+            });
+            setViewMode('payment');
+        }
+    };
+
+    const handleAutopayClick = () => {
+        if (card.id !== 4) {
+            setPaymentMode('autopay');
             setSelectedCampaign({
                 id: `general-card-${card.id}`,
                 title: card.title
@@ -66,19 +84,152 @@ const SupportModal = ({
             return;
         }
 
+        if (!isLoggedIn) {
+            openAuthModal('signin');
+            return;
+        }
+
         setIsPaymentProcessing(true);
 
-        // Simulate a 2-second premium payment gateway processing loader
-        setTimeout(async () => {
-            const success = await onDonate(selectedCampaign.id, amount);
-            setIsPaymentProcessing(false);
-            if (success) {
-                setViewMode('success');
-            } else {
-                alert('Donation failed. Please try again.');
+        try {
+            if (card.id === 4) {
+                let options = {
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyHere',
+                    amount: Math.round(amount * 100),
+                    currency: "INR",
+                    name: "Furzo",
+                    description: `Support Campaign: ${selectedCampaign?.title || 'Animal Rescue'}`,
+                    handler: async function (response) {
+                        setIsPaymentProcessing(false);
+                        setViewMode('success');
+                    },
+                    prefill: {
+                        name: "Donor",
+                    },
+                    theme: {
+                        color: "#346c02"
+                    }
+                };
+
+                const res = await apiClient.post('/funding/donate', {
+                    amount: amount,
+                    type: 'CAMPAIGN',
+                    campaignId: selectedCampaign.id,
+                    partnerId: selectedCampaign.partnerId || selectedCampaign.clinicId || 'mock-partner-id'
+                });
+
+                if (res.data && res.data.order) {
+                    options.order_id = res.data.order.id;
+                }
+
+                const rzp = new window.Razorpay(options);
+                
+                rzp.on('payment.failed', function (response){
+                    setIsPaymentProcessing(false);
+                    alert('Payment failed: ' + response.error.description);
+                });
+                
+                rzp.open();
+                return;
             }
-        }, 2000);
+
+            // New Razorpay Smart Hub Flow
+            let category = 'FOOD';
+            if (card.id === 2) category = 'TREATMENT';
+            if (card.id === 3) category = 'SHELTER';
+
+            let options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyHere',
+                amount: Math.round(amount * 100),
+                currency: "INR",
+                name: "Furzo",
+                description: `Support ${category} Hub`,
+                handler: async function (response) {
+                    setIsPaymentProcessing(false);
+                    setViewMode('success');
+                },
+                prefill: {
+                    name: "Donor",
+                },
+                theme: {
+                    color: "#346c02"
+                }
+            };
+
+            if (paymentMode === 'one-time') {
+                if (splitRecommendation && splitRecommendation.length > 0) {
+                    const res = await apiClient.post('/funding/confirm-split', {
+                        totalAmount: amount,
+                        splits: splitRecommendation
+                    });
+                    if (res.data && res.data.order) {
+                        options.order_id = res.data.order.id;
+                    }
+                } else {
+                    // Fallback to regular donate if no splits available in this hub
+                    const typeMap = { 1: 'FOOD', 2: 'TREATMENT', 3: 'SHELTER' };
+                    const res = await apiClient.post('/funding/donate', {
+                        amount: amount,
+                        type: typeMap[card.id] || 'FOOD',
+                        partnerId: 'mock-partner-id'
+                    });
+                    if (res.data && res.data.order) {
+                        options.order_id = res.data.order.id;
+                    }
+                }
+            } else if (paymentMode === 'autopay') {
+                const res = await apiClient.post(`/funding/hubs/${category}/subscribe`, { amount });
+                if (res.data && res.data.subscriptionId) {
+                    options.subscription_id = res.data.subscriptionId;
+                    // For subscriptions, amount and order_id are not passed, only subscription_id
+                    delete options.amount;
+                    delete options.order_id;
+                }
+            }
+
+            const rzp = new window.Razorpay(options);
+            
+            rzp.on('payment.failed', function (response){
+                setIsPaymentProcessing(false);
+                alert('Payment failed: ' + response.error.description);
+            });
+            
+            rzp.open();
+
+        } catch (err) {
+            console.error("Payment setup failed:", err);
+            setIsPaymentProcessing(false);
+            alert('Failed to initialize payment. Please try again later.');
+        }
     };
+
+    // Fetch Smart Recommendation Split dynamically
+    useEffect(() => {
+        if (viewMode === 'payment' && card.id !== 4) {
+            const amount = customAmount ? parseFloat(customAmount) : parseFloat(donationAmount);
+            if (isNaN(amount) || amount <= 0) {
+                setSplitRecommendation([]);
+                return;
+            }
+
+            let category = 'FOOD';
+            if (card.id === 2) category = 'TREATMENT';
+            if (card.id === 3) category = 'SHELTER';
+
+            setIsLoadingSplit(true);
+            apiClient.post('/funding/split-donate', { amount, category })
+                .then(res => {
+                    if (res.data && res.data.status === 'success') {
+                        setSplitRecommendation(res.data.data || []);
+                    }
+                })
+                .catch(err => {
+                    console.warn("Failed to fetch split:", err);
+                    setSplitRecommendation([]);
+                })
+                .finally(() => setIsLoadingSplit(false));
+        }
+    }, [viewMode, customAmount, donationAmount, card.id]);
 
     const handleClose = () => {
         // Reset local states
@@ -91,13 +242,15 @@ const SupportModal = ({
 
     const renderContent = () => {
         if (viewMode === 'main') {
+            const isVolunteerCard = card.id === 4;
+
             return (
                 <div className="expanded-content">
                     <h2>{card.title}</h2>
                     <p className="details-text">{card.details}</p>
 
                     <div className="support-actions">
-                        {confirmingVolunteer ? (
+                        {isVolunteerCard && confirmingVolunteer ? (
                             <div className="volunteer-reconfirm">
                                 <p className="reconfirm-title">Are you sure you want to register as a volunteer?</p>
                                 <p className="reconfirm-subtitle">You will receive notifications of upcoming outreach campaigns.</p>
@@ -106,7 +259,7 @@ const SupportModal = ({
                                     <button className="cancel-btn outline" onClick={() => setConfirmingVolunteer(false)}>Go Back</button>
                                 </div>
                             </div>
-                        ) : volunteerPending ? (
+                        ) : isVolunteerCard && volunteerPending ? (
                             <div className="volunteer-pending-card">
                                 <div className="pending-badge">PENDING COOLDOWN</div>
                                 <p className="thank-you-msg">Thank you for volunteering! Your registration will commit in {cooldownRemaining}s.</p>
@@ -117,7 +270,7 @@ const SupportModal = ({
                                     sorry I wouldn't volunteer
                                 </button>
                             </div>
-                        ) : hasVolunteered ? (
+                        ) : isVolunteerCard && hasVolunteered ? (
                             <div className="volunteer-applied-card">
                                 <div className="success-badge">✓ ENROLLED</div>
                                 <p className="thank-you-msg">Thank you for volunteering! You are now part of our volunteer pool.</p>
@@ -130,14 +283,14 @@ const SupportModal = ({
                             </div>
                         ) : (
                             <>
-                                <span className="support-prefix">I would like to support by</span>
-                                <button className="action-btn" onClick={handleDonatingClick}>Donating</button>
-                                {card.id === 4 ? (
+                                {!isVolunteerCard && <span className="support-prefix">I would like to support by</span>}
+                                {!isVolunteerCard && <button className="action-btn" onClick={handleDonatingClick}>Donating</button>}
+                                {isVolunteerCard ? (
                                     <button className="action-btn" onClick={handleVolunteerClick}>
                                         I would like to volunteer
                                     </button>
                                 ) : (
-                                    <button className="action-btn outline">starting a autopay</button>
+                                    <button className="action-btn outline" onClick={handleAutopayClick}>starting a autopay</button>
                                 )}
                             </>
                         )}
@@ -253,8 +406,32 @@ const SupportModal = ({
                                 />
                             </div>
 
-                            <button type="submit" className="action-btn proceed-pay-btn">
-                                Proceed to Pay ₹{isNaN(amount) ? '0' : amount.toLocaleString()}
+                            {card.id !== 4 && (
+                                <div className="split-recommendation-box" style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f9fbf7', borderRadius: '8px', textAlign: 'left' }}>
+                                    <h4 style={{ margin: '0 0 10px 0', color: '#346c02', fontSize: '0.95rem' }}>Smart Routing Breakdown:</h4>
+                                    {isLoadingSplit ? (
+                                        <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>Calculating optimal impact...</p>
+                                    ) : splitRecommendation.length > 0 ? (
+                                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#444' }}>
+                                            {splitRecommendation.map((split, i) => (
+                                                <li key={i} style={{ marginBottom: '4px' }}>
+                                                    <strong>₹{split.amount}</strong> to support request #{split.campaignId.substring(0,6)}...
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>Funds will be dynamically allocated to the most urgent rescues in this category.</p>
+                                    )}
+                                    {paymentMode === 'autopay' && (
+                                        <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '10px', fontStyle: 'italic', marginBottom: 0 }}>
+                                            * This split will be dynamically updated every month to ensure your money always goes to the most urgent rescues.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            <button type="submit" className="action-btn proceed-pay-btn" style={{ marginTop: '20px' }}>
+                                {paymentMode === 'autopay' ? `Set up ₹${isNaN(amount) ? '0' : amount.toLocaleString()}/month` : `Proceed to Pay ₹${isNaN(amount) ? '0' : amount.toLocaleString()}`}
                             </button>
                         </form>
                     )}
