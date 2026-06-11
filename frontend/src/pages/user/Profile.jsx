@@ -68,6 +68,7 @@ const Profile = () => {
     const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
     const [rescueSubTab, setRescueSubTab] = useState('active'); // 'active' or 'completed'
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [postToEdit, setPostToEdit] = useState(null);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -313,17 +314,34 @@ const Profile = () => {
         }
     }, [authUser]);
 
-    const handleOpenCreateModal = () => {
+    const handleOpenCreateModal = (post = null) => {
+        setPostToEdit(post);
         setIsCreateModalOpen(true);
         document.body.style.overflow = 'hidden';
     };
 
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
+        setPostToEdit(null);
         document.body.style.overflow = 'auto';
     };
 
     const handleCreatePostSubmit = async (newPost) => {
+        if (newPost.id) {
+            // It's an edit submission
+            try {
+                const response = await apiClient.patch(`/feed/${newPost.id}`, {
+                    caption: newPost.caption
+                });
+                const updatedPost = response.data;
+                setPosts(posts.map(p => p.id === newPost.id ? { ...p, caption: updatedPost.caption } : p));
+            } catch (err) {
+                console.warn('Backend failed to update post, falling back to local update.', err);
+                setPosts(posts.map(p => p.id === newPost.id ? { ...p, caption: newPost.caption } : p));
+            }
+            return;
+        }
+
         handleCloseCreateModal();
         setIsUploading(true);
         setUploadProgress(0);
@@ -567,7 +585,7 @@ const Profile = () => {
                             <h2>Manage Posts</h2>
                             <button 
                                 className={`create-post-btn inline-btn ${isUploading ? 'uploading' : ''}`} 
-                                onClick={handleOpenCreateModal}
+                                onClick={() => handleOpenCreateModal()}
                                 disabled={isUploading}
                             >
                                 {isUploading ? (
@@ -594,7 +612,7 @@ const Profile = () => {
                                     <div key={post.id} className="post-grid-item">
                                         <img src={post.image} alt="Post" />
                                         <div className="post-overlay">
-                                            <button className="icon-btn edit" onClick={() => alert('Edit Post (Mock)')}>
+                                            <button className="icon-btn edit" onClick={() => handleOpenCreateModal(post)}>
                                                 <Edit2 size={16} />
                                             </button>
                                             <button className="icon-btn delete" onClick={() => handleDeletePost(post.id)}>
@@ -953,6 +971,7 @@ const Profile = () => {
                 isOpen={isCreateModalOpen}
                 onClose={handleCloseCreateModal}
                 onSubmit={handleCreatePostSubmit}
+                initialPost={postToEdit}
             />
         </div>
         </>

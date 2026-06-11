@@ -5,7 +5,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import '../../styles/user/Post.css';
 import { useAuthStore } from '../../store/authStore';
 
-const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
+const CreatePostModal = ({ isOpen, onClose, onSubmit, initialPost }) => {
     const { user } = useAuthStore();
     const [newPostCaption, setNewPostCaption] = useState('');
     const [imgSrc, setImgSrc] = useState('');
@@ -18,7 +18,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
     const [shareLocation, setShareLocation] = useState(true);
     const imgRef = useRef(null);
 
-    if (!isOpen) return null;
+
 
     const handleClose = () => {
         setNewPostCaption('');
@@ -31,6 +31,19 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
         setIsFetchingLocation(false);
         onClose();
     };
+
+    React.useEffect(() => {
+        if (isOpen && initialPost) {
+            setNewPostCaption(initialPost.caption || '');
+            setNewPostImagePreview(initialPost.image || null);
+            setIsCropMode(false);
+        } else if (isOpen && !initialPost) {
+            setNewPostCaption('');
+            setNewPostImagePreview(null);
+        }
+    }, [isOpen, initialPost]);
+
+    if (!isOpen) return null;
 
     function onSelectFile(e) {
         if (e.target.files && e.target.files.length > 0) {
@@ -97,23 +110,41 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
         const canvas = document.createElement('canvas');
         const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
         const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
-        canvas.width = completedCrop.width;
-        canvas.height = completedCrop.height;
+
+        const cropTargetWidth = completedCrop.width * scaleX;
+        const cropTargetHeight = completedCrop.height * scaleY;
+
+        let finalWidth = cropTargetWidth;
+        let finalHeight = cropTargetHeight;
+
+        // Resize if it exceeds 1080px (like Instagram)
+        if (finalWidth > 1080 || finalHeight > 1080) {
+            const ratio = Math.min(1080 / finalWidth, 1080 / finalHeight);
+            finalWidth = Math.floor(finalWidth * ratio);
+            finalHeight = Math.floor(finalHeight * ratio);
+        }
+
+        canvas.width = finalWidth;
+        canvas.height = finalHeight;
         const ctx = canvas.getContext('2d');
+
+        // Better interpolation for scaling down
+        ctx.imageSmoothingQuality = 'high';
 
         ctx.drawImage(
             imgRef.current,
             completedCrop.x * scaleX,
             completedCrop.y * scaleY,
-            completedCrop.width * scaleX,
-            completedCrop.height * scaleY,
+            cropTargetWidth,
+            cropTargetHeight,
             0,
             0,
-            completedCrop.width,
-            completedCrop.height
+            finalWidth,
+            finalHeight
         );
 
-        const base64Image = canvas.toDataURL('image/jpeg');
+        // Apply compression (0.8 quality for JPEG)
+        const base64Image = canvas.toDataURL('image/jpeg', 0.8);
         setNewPostImagePreview(base64Image);
         setIsCropMode(false);
     };
@@ -121,6 +152,12 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!newPostImagePreview || !newPostCaption.trim()) return;
+
+        if (initialPost) {
+            onSubmit({ id: initialPost.id, caption: newPostCaption });
+            handleClose();
+            return;
+        }
 
         try {
             const base64Response = await fetch(newPostImagePreview);
@@ -146,7 +183,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
             <div className="create-post-modal-backdrop" onClick={handleClose}></div>
             <div className="create-post-modal preview-active">
                 <div className="modal-header">
-                    <h2>Create New Post</h2>
+                    <h2>{initialPost ? "Edit Post" : "Create New Post"}</h2>
                     <button className="modal-close-btn" onClick={handleClose}>&times;</button>
                 </div>
 
@@ -177,28 +214,30 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
                             ) : newPostImagePreview ? (
                                 <>
                                     <img src={newPostImagePreview} alt="Preview" className="post-main-image" />
-                                    <div className="preview-actions">
-                                        <button
-                                            type="button"
-                                            className="preview-btn"
-                                            onClick={() => {
-                                                setNewPostImagePreview(null);
-                                                setIsCropMode(true);
-                                            }}
-                                        >
-                                            Change Crop
-                                        </button>
-                                        <label htmlFor="post-image-change-preview" className="preview-btn">
-                                            Change Photo
-                                        </label>
-                                        <input
-                                            type="file"
-                                            id="post-image-change-preview"
-                                            accept="image/*"
-                                            onChange={onSelectFile}
-                                            style={{ display: 'none' }}
-                                        />
-                                    </div>
+                                    {!initialPost && (
+                                        <div className="preview-actions">
+                                            <button
+                                                type="button"
+                                                className="preview-btn"
+                                                onClick={() => {
+                                                    setNewPostImagePreview(null);
+                                                    setIsCropMode(true);
+                                                }}
+                                            >
+                                                Change Crop
+                                            </button>
+                                            <label htmlFor="post-image-change-preview" className="preview-btn">
+                                                Change Photo
+                                            </label>
+                                            <input
+                                                type="file"
+                                                id="post-image-change-preview"
+                                                accept="image/*"
+                                                onChange={onSelectFile}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <div className="upload-placeholder" style={{ backgroundColor: '#fafafa', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -273,7 +312,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit }) => {
                                     className="submit-post-btn"
                                     disabled={!newPostImagePreview || !newPostCaption.trim()}
                                 >
-                                    Share Post
+                                    {initialPost ? "Save Changes" : "Share Post"}
                                 </button>
                             </div>
                         </div>

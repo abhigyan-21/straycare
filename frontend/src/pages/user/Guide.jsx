@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from 'react-helmet-async';
+import ReactMarkdown from "react-markdown";
 import doctorClosed from "../../assets/images/doctor-closed.png";
 import doctorOpen from "../../assets/images/doctor-open.png";
 import "../../styles/user/Guide.css";
@@ -93,13 +94,11 @@ function Guide() {
     e.preventDefault();
     if (!inputValue.trim() || isTalking || isFetching) return;
 
-    // Add user message
     const userMessage = inputValue.trim();
     setMessages(prev => [...prev, { text: userMessage, sender: "user" }]);
     setInputValue("");
-    
     setIsFetching(true);
-    setIsTalking(false); // Stop talking while fetching
+    setIsTalking(false);
 
     const lowerMessage = userMessage.toLowerCase();
 
@@ -114,17 +113,21 @@ function Guide() {
 
     // Backend API Call
     try {
+      const apiMessages = messages
+        .filter((m, i) => !(m.sender === "bot" && i === 0))
+        .map(m => ({
+          role: m.sender === "user" ? "user" : "assistant",
+          content: m.text
+        }));
+      apiMessages.push({ role: "user", content: userMessage });
+
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: userMessage }]
-        }),
+        body: JSON.stringify({ messages: apiMessages }),
       });
 
-      if (!response.ok) {
-        throw new Error("Server error");
-      }
+      if (!response.ok) throw new Error("Server error");
 
       const data = await response.json();
       simulateTyping(data.reply);
@@ -136,70 +139,74 @@ function Guide() {
 
   return (
     <>
-    <Helmet>
-      <title>Furzo - AI Pet Guide</title>
-      <meta name="description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
-      <meta property="og:title" content="Furzo - AI Pet Guide" />
-      <meta property="og:description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
-      <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-      <meta property="og:url" content="https://furzo.vercel.app/guide" />
-      <meta property="og:type" content="website" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="Furzo - AI Pet Guide" />
-      <meta name="twitter:description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
-      <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-    </Helmet>
-    <div className="guide-page">
-      <div className="guide-container">
+      <Helmet>
+        <title>Furzo - AI Pet Guide</title>
+        <meta name="description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+        <meta property="og:title" content="Furzo - AI Pet Guide" />
+        <meta property="og:description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+        <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
+        <meta property="og:url" content="https://furzo.vercel.app/guide" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Furzo - AI Pet Guide" />
+        <meta name="twitter:description" content="Chat with Furzo's AI-powered pet guide for animal care advice, first-aid tips, and rescue guidance." />
+        <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
+      </Helmet>
+      <div className="guide-page">
+        <div className="guide-container">
 
-        {/* Character Image Section */}
-        <div className="character-section">
-          <img
-            src={currentDoctorImage}
-            alt="Doctor Guide"
-            className="character-image"
-          />
-        </div>
-
-        {/* Chat UI Section */}
-        <div className="chat-section">
-          <div className="chat-history">
-            {messages.map((msg, index) => (
-              <div key={index} className={`chat-message ${msg.sender}`}>
-                <div className="message-bubble">
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {isFetching && (
-              <div className="chat-message bot">
-                <TypingIndicator />
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+          {/* Character Image Section */}
+          <div className="character-section">
+            <img
+              src={currentDoctorImage}
+              alt="Doctor Guide"
+              className="character-image"
+            />
           </div>
 
-          <form className="chat-input-container" onSubmit={handleSendMessage}>
-            <input
-              type="text"
-              className="chat-input"
-              placeholder="Ask me something..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              disabled={isTalking || isFetching}
-            />
-            <button
-              type="submit"
-              className="chat-send-btn"
-              disabled={isTalking || isFetching || !inputValue.trim()}
-            >
-              Send
-            </button>
-          </form>
-        </div>
+          {/* Chat UI Section */}
+          <div className="chat-section">
+            <div className="chat-history">
+              {messages.map((msg, index) => (
+                <div key={index} className={`chat-message ${msg.sender}`}>
+                  <div className="message-bubble">
+                    {msg.sender === "bot" ? (
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    ) : (
+                      msg.text
+                    )}
+                  </div>
+                </div>
+              ))}
+              {isFetching && (
+                <div className="chat-message bot">
+                  <TypingIndicator />
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
 
+            <form className="chat-input-container" onSubmit={handleSendMessage}>
+              <input
+                type="text"
+                className="chat-input"
+                placeholder="Ask me something..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                disabled={isTalking || isFetching}
+              />
+              <button
+                type="submit"
+                className="chat-send-btn"
+                disabled={isTalking || isFetching || !inputValue.trim()}
+              >
+                Send
+              </button>
+            </form>
+          </div>
+
+        </div>
       </div>
-    </div>
     </>
   );
 }

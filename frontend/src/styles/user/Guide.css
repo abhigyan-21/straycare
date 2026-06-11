@@ -149,6 +149,43 @@
     z-index: 1;
 }
 
+/* Markdown content inside bot bubbles */
+.message-bubble>* {
+    margin: 0;
+}
+
+.message-bubble p {
+    margin: 0 0 4px 0;
+}
+
+.message-bubble p:last-child {
+    margin-bottom: 0;
+    /* critical — prevents extra height that misaligns tails */
+}
+
+.message-bubble ul,
+.message-bubble ol {
+    margin: 4px 0 0 0;
+    padding-left: 16px;
+}
+
+.message-bubble li {
+    margin-bottom: 2px;
+}
+
+.message-bubble li:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble strong {
+    font-weight: 700;
+}
+
+.message-bubble p+ul,
+.message-bubble p+ol {
+    margin-top: 6px;
+}
+
 /* Input Area */
 .chat-input-container {
     display: flex;

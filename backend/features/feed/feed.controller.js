@@ -89,8 +89,51 @@ const deletePost = async (req, res) => {
   }
 };
 
+/**
+ * @desc Update a feed post
+ * @route PATCH /api/feed/:id
+ * @access Private
+ */
+const updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { caption } = req.body;
+    const authorId = req.user.id;
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.authorId !== authorId) {
+      return res.status(403).json({ error: 'Unauthorized to edit this post' });
+    }
+
+    const updatedPost = await prisma.post.update({
+      where: { id },
+      data: {
+        ...(caption !== undefined && { caption }),
+        },
+      include: {
+        _count: {
+          select: { likes: true }
+        }
+      }
+    });
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.error('Error updating post:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getMyPosts,
   createPost,
   deletePost,
+  updatePost,
 };

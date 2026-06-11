@@ -8,7 +8,7 @@ const chatService = require('./chat.service');
 const handleChatRequest = async (req, res) => {
   try {
     const { messages } = req.body;
-    
+
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Messages array is required' });
     }
