@@ -143,32 +143,44 @@
 }
 
 /* Mobile adjustments */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .rescue-floating-container {
-        right: 20px;
-        bottom: 20px;
+        right: 15px;
+        bottom: 96px; /* Positioned above the mobile bottom nav bar */
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
     }
 
     .rescue-pill {
-        min-width: 280px;
-        padding: 10px 12px 10px 25px;
-        gap: 20px;
+        width: auto;
+        min-width: 0;
+        padding: 4px 6px 4px 16px;
+        gap: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .rescue-text-section {
+        margin-right: 2px;
     }
 
     .rescue-eta {
-        font-size: 1.5rem;
+        font-size: 0.95rem;
     }
 
     .rescue-destination {
-        font-size: 1.2rem;
+        font-size: 0.75rem;
+        margin-top: 1px;
     }
 
     .white-inner-circle {
-        width: 60px;
-        height: 60px;
+        width: 40px;
+        height: 40px;
     }
 
     .ambulance-icon-small {
-        width: 42px;
+        width: 28px;
+    }
+
+    .rescue-icon-circle {
+        padding: 2px;
     }
 }

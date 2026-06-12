@@ -511,9 +511,6 @@ function LiveTracking() {
 
               <div className="details-grid">
                 <div className="detail-item">
-                  <strong>Vehicle:</strong> <span>Ambulance CH01-SC-2024</span>
-                </div>
-                <div className="detail-item">
                   <strong>Clinic:</strong> <span>{clinicName}</span>
                 </div>
                 <div className="detail-item">

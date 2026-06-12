@@ -190,5 +190,90 @@
 @media (max-width: 900px) {
   .tracking-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .live-tracking-page {
+    padding: 10px;
+  }
+
+  .tracking-status-card {
+    padding: 25px 15px;
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(139, 195, 74, 0.2);
+  }
+
+  .tracking-status-card h2 {
+    font-size: 1.45rem;
+  }
+
+  .tracking-status-card .arrival-time {
+    font-size: 1.1rem;
+    margin-top: 6px;
+  }
+
+  .info-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    padding: 20px 15px;
+    gap: 15px;
+    border-radius: 16px;
+  }
+
+  .rescuer-avatar-container {
+    width: 88px;
+    height: 88px;
+    border-width: 3px;
+  }
+
+  .details-content h3 {
+    font-size: 1.3rem;
+  }
+
+  .specialty {
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 12px;
+    width: 100%;
+  }
+
+  .detail-item {
+    align-items: center;
+  }
+
+  /* Make progress bar elements fit better on mobile */
+  .hospital-track {
+    width: calc(100% - 60px);
+    margin: 20px auto 30px auto;
+  }
+
+  .track-img {
+    height: 40px;
+    top: -20px;
+  }
+  .track-img.start {
+    left: -5px;
+  }
+  .track-img.end {
+    right: -35px;
+  }
+  .track-img.rescuer-img {
+    top: -28px;
+    height: 52px;
+  }
+
+  .map-container {
+    height: 320px;
+    border-radius: 20px;
+    border-width: 4px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   }
 }
