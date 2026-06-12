@@ -674,25 +674,34 @@
 @media (max-width: 900px) {
     .profile-container {
         flex-direction: column;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .profile-sidebar {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 30px 20px;
+        padding: 30px 0px;
+        box-sizing: border-box;
     }
 
     .profile-nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding: 15px 16px;
+        box-sizing: border-box;
     }
 
     .nav-btn {
-        padding: 12px 20px;
-        border-radius: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .nav-btn.active::before {
@@ -700,12 +709,24 @@
     }
 
     .nav-btn.active {
-        background: #10b981;
-        color: #fff;
+        background: rgba(16, 185, 129, 0.08);
+        color: #10b981;
     }
 
     .profile-content {
         padding: 30px 20px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .create-post-btn.inline-btn {
+        width: 100%;
+        max-width: 280px;
+        height: 44px;
+        min-width: unset;
+        font-size: 0.95rem;
+        border-radius: 22px;
+        box-sizing: border-box;
     }
 }
 

@@ -200,9 +200,6 @@ function RescuerDashboard() {
     <div className="rescuer-page">
       <div className="rescuer-header">
         <h1>RESCUER DASHBOARD</h1>
-        <div className="user-profile-badge">
-            <strong>{user?.name?.toUpperCase() || 'RESCUER'}</strong>
-        </div>
       </div>
 
       <div className="rescue-feed">

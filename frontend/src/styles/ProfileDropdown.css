@@ -191,8 +191,12 @@
 }
 
 @media (max-width: 768px) {
+  .profile-dropdown-container {
+    margin-left: 0 !important;
+  }
+
   .profile-dropdown-menu {
-    right: auto;
-    left: 0;
+    right: 0 !important;
+    left: auto !important;
   }
 }

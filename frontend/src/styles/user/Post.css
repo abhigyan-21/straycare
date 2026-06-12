@@ -733,7 +733,7 @@
         bottom: 100px; /* Float above the bottom nav pill */
     }
 
-    .create-post-btn {
+    .create-post-btn:not(.inline-btn) {
         width: 56px;
         height: 56px;
         min-width: 56px;
@@ -747,7 +747,7 @@
         position: relative;
     }
 
-    .create-post-btn .plus-icon {
+    .create-post-btn:not(.inline-btn) .plus-icon {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -760,7 +760,7 @@
         justify-content: center;
     }
 
-    .create-post-btn.uploading {
+    .create-post-btn.uploading:not(.inline-btn) {
         width: 56px !important;
         height: 56px !important;
         min-width: 56px !important;

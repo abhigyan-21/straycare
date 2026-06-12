@@ -97,6 +97,25 @@
 }
 
 @media (max-width: 900px) {
+    .stories-section {
+        padding: 2rem 1rem;
+        box-sizing: border-box;
+    }
+
+    .stories-header {
+        margin-bottom: 2.5rem;
+        box-sizing: border-box;
+    }
+
+    .stories-header h2 {
+        font-size: 1.8rem;
+    }
+
+    .stories-header p {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
     .stories-grid {
         grid-template-columns: 1fr;
     }

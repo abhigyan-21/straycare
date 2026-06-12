@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../../styles/user/StoriesSection.css';
 import { getStories } from '../../services/api';
+import { storiesData } from '../../data/storiesData';
 
 const StoriesSection = () => {
     const [stories, setStories] = useState([]);
@@ -8,7 +9,11 @@ const StoriesSection = () => {
     useEffect(() => {
         const fetchStories = async () => {
             const data = await getStories();
-            setStories(data);
+            if (data && data.length > 0) {
+                setStories(data);
+            } else {
+                setStories(storiesData);
+            }
         };
         fetchStories();
     }, []);

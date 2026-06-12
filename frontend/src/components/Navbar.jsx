@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import logo from "../assets/straycare_logo.png";
 import { useAuthStore } from '../store/authStore';
@@ -8,6 +8,8 @@ import { Home, Heart, PlusSquare, MapPin, HandHeart, BookOpen, UserPlus, User } 
 function Navbar({ openAuthModal }) {
   const { isLoggedIn, logout } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
+  const authDropdownRef = useRef(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -16,6 +18,18 @@ function Navbar({ openAuthModal }) {
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (authDropdownRef.current && !authDropdownRef.current.contains(event.target)) {
+        setIsAuthDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -72,15 +86,24 @@ function Navbar({ openAuthModal }) {
             Emergency
           </NavLink>
 
-          <div className="desktop-only-auth">
+          <div className="header-auth" ref={authDropdownRef}>
             {!isLoggedIn ? (
-              <button onClick={() => openAuthModal('signin')} className="sign-btn">
-                Login
-                <div className="arrow-wrapper">
-                  <div className="arrow"></div>
-
-                </div>
-              </button>
+              <div className="auth-dropdown-container">
+                <button onClick={() => setIsAuthDropdownOpen(!isAuthDropdownOpen)} className="auth-trigger-btn">
+                  <User size={18} />
+                  <span className="auth-btn-text">Account</span>
+                </button>
+                {isAuthDropdownOpen && (
+                  <div className="auth-dropdown-menu">
+                    <button onClick={() => { openAuthModal('signin'); setIsAuthDropdownOpen(false); }} className="auth-dropdown-item">
+                      Login
+                    </button>
+                    <button onClick={() => { openAuthModal('signup'); setIsAuthDropdownOpen(false); }} className="auth-dropdown-item">
+                      Register
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <ProfileDropdown />
             )}
@@ -116,17 +139,10 @@ function Navbar({ openAuthModal }) {
           <HandHeart size={20} />
           <span className="mobile-nav-label">Support</span>
         </NavLink>
-        {!isLoggedIn ? (
-          <button onClick={() => { openAuthModal('signin'); closeMenu(); }} className="mobile-nav-item mobile-nav-btn">
-            <UserPlus size={20} />
-            <span className="mobile-nav-label">Login</span>
-          </button>
-        ) : (
-          <NavLink to="/profile" onClick={closeMenu} className="mobile-nav-item">
-            <User size={20} />
-            <span className="mobile-nav-label">Profile</span>
-          </NavLink>
-        )}
+        <NavLink to="/guide" onClick={closeMenu} className="mobile-nav-item">
+          <BookOpen size={20} />
+          <span className="mobile-nav-label">Guide</span>
+        </NavLink>
       </div>
     </>
   );
