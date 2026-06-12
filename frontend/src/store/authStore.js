@@ -108,10 +108,10 @@ export const useAuthStore = create(
       
       clearFirstLogin: () => set({ isFirstLogin: false }),
 
-      updateProfileAction: async (name, email, phone, avatarUrl, clinicLat, clinicLng) => {
+      updateProfileAction: async (name, email, phone, avatarUrl, clinicLat, clinicLng, upiId, upiQrCode, razorpayId) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.patch('/auth/profile', { name, email, phone, avatarUrl, clinicLat, clinicLng });
+          const response = await apiClient.patch('/auth/profile', { name, email, phone, avatarUrl, clinicLat, clinicLng, upiId, upiQrCode, razorpayId });
           const { user } = response.data;
           set({ user, isLoading: false });
           return { success: true, user };

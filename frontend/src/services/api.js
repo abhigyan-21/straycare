@@ -18,7 +18,20 @@ export const getCampaignEndDate = (campaign) => campaign?.deadline || campaign?.
 
 export const isActiveCampaign = (campaign) => {
   const status = String(campaign?.status || '').toUpperCase();
-  return !status || status === 'ACTIVE' || status === 'APPROVED';
+  const isStatusActive = !status || status === 'ACTIVE' || status === 'APPROVED';
+
+  if (!isStatusActive) return false;
+
+  const endDate = campaign?.deadline || campaign?.endDate;
+  if (endDate) {
+    const limitDate = new Date(endDate);
+    limitDate.setDate(limitDate.getDate() + 1);
+    limitDate.setHours(23, 59, 59, 999);
+    if (new Date() > limitDate) {
+      return false;
+    }
+  }
+  return true;
 };
 
 export const getPartner = (entity) => entity?.partner || entity?.clinic || null;

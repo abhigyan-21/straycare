@@ -11,6 +11,8 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [collectedAmount, setCollectedAmount] = useState(campaign.raisedAmount || 0);
+    const [isUpdatingAmount, setIsUpdatingAmount] = useState(false);
 
     const formatDateForInput = (dateString) => {
         if (!dateString) return '';
@@ -89,6 +91,28 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
             onClose();
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleUpdateCollectedAmount = async (e) => {
+        e.preventDefault();
+        const amount = parseFloat(collectedAmount);
+        if (isNaN(amount) || amount < 0) {
+            alert('Please enter a valid positive number for the collected amount.');
+            return;
+        }
+        setIsUpdatingAmount(true);
+        try {
+            await apiClient.put(`/funding/campaigns/${campaign.id}/progress`, {
+                raisedAmount: amount
+            });
+            alert('Collected amount updated successfully!');
+            if (onRefresh) onRefresh();
+        } catch (err) {
+            console.error('Failed to update collected amount:', err);
+            alert('Failed to update collected amount.');
+        } finally {
+            setIsUpdatingAmount(false);
         }
     };
 
@@ -364,6 +388,30 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                                             )) : <p className="no-volunteers-placeholder">No confirmed volunteers yet. Click "Confirm volunteers" to notify nearby volunteers!</p>}
                                         </div>
                                     </section>
+
+                                     <section className="progress-updates-section" style={{ marginTop: '30px' }}>
+                                         <h3><Info size={20} /> Update Collected Amount</h3>
+                                         <form onSubmit={handleUpdateCollectedAmount} style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                             <input 
+                                                 type="number" 
+                                                 value={collectedAmount}
+                                                 onChange={(e) => setCollectedAmount(e.target.value)}
+                                                 placeholder="Enter collected amount (₹)"
+                                                 style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                                 required
+                                                 min="0"
+                                                 step="any"
+                                             />
+                                             <button 
+                                                 type="submit" 
+                                                 className="action-btn"
+                                                 disabled={isUpdatingAmount}
+                                                 style={{ background: '#346c02', color: '#fff', border: 'none', borderRadius: '8px', padding: '0 20px', fontWeight: 'bold', cursor: 'pointer' }}
+                                             >
+                                                 {isUpdatingAmount ? 'Updating...' : 'Update Amount'}
+                                             </button>
+                                         </form>
+                                     </section>
                                 </>
                             )}
                         </div>

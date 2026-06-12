@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Calendar, MapPin, Info, User, Building, Clock, ExternalLink } from 'lucide-react';
+import { X, Calendar, MapPin, Info, User, Building, Clock, ExternalLink, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getCampaignEndDate, getPartner } from '../../services/api';
 
@@ -109,6 +109,20 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                 )}
                             </div>
                         </section>
+
+                        {/* Progress Updates Section */}
+                        {campaign.progressUpdates && campaign.progressUpdates.length > 0 && (
+                            <section className="detail-section progress-updates-info" style={{ marginTop: '24px' }}>
+                                <h3><Activity size={18} /> Campaign Updates</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                                    {campaign.progressUpdates.map((update, index) => (
+                                        <div key={index} style={{ padding: '12px', background: '#fdfdf9', borderLeft: '4px solid #346c02', borderRadius: '4px', fontSize: '0.9rem', color: '#555' }}>
+                                            {update}
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
                     </div>
 
                     <div className="detail-sidebar-content">
@@ -156,6 +170,31 @@ const UserCampaignDetailModal = ({ campaign, onClose, onDonate }) => {
                                         <span className="point-dot"></span>
                                         <label>Ends: {new Date(endDate).toLocaleDateString()}</label>
                                     </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Recent Supporters */}
+                        {campaign.donations && campaign.donations.length > 0 && (
+                            <div className="detail-funding-card" style={{ marginTop: '20px', background: '#fafafa', border: '1px solid #eee' }}>
+                                <h3 style={{ fontSize: '1rem', borderBottom: '1px solid #eaeaea', paddingBottom: '8px', marginBottom: '12px' }}>Recent Supporters</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    {campaign.donations.slice(0, 5).map((donation) => (
+                                        <div key={donation.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#346c02', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                {(donation.user?.name || 'A')[0].toUpperCase()}
+                                            </div>
+                                            <div style={{ flex: 1, fontSize: '0.9rem', color: '#333' }}>
+                                                <strong>{donation.user?.name || 'Anonymous'}</strong>
+                                                <div style={{ fontSize: '0.75rem', color: '#888' }}>
+                                                    {new Date(donation.createdAt).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: '0.8rem', color: '#346c02', fontWeight: 'bold' }}>
+                                                Supported
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}

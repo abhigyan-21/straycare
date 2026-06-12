@@ -44,6 +44,8 @@ const Register = () => {
         password: '',
         confirmPassword: '',
         razorpayId: '',
+        upiId: '',
+        upiQrCode: '',
         lat: null,
         lng: null
     });
@@ -110,6 +112,17 @@ const Register = () => {
             if (value === 'vet' || value === 'hospital') {
                 setShowMap(true);
             }
+        }
+    };
+
+    const handleQrUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, upiQrCode: reader.result });
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -234,6 +247,8 @@ const Register = () => {
                 password: formData.password,
                 registerToken: registerToken,
                 razorpayId: formData.razorpayId,
+                upiId: formData.upiId,
+                upiQrCode: formData.upiQrCode,
                 lat: formData.lat,
                 lng: formData.lng
             });
@@ -337,18 +352,42 @@ const Register = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Razorpay ID</label>
+                            <label>Razorpay ID (Optional)</label>
                             <input 
                                 type="text" 
                                 name="razorpayId" 
                                 value={formData.razorpayId} 
                                 onChange={handleChange} 
                                 placeholder="rzp_live_123456789" 
-                                required 
                             />
                             <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
-                                If you don't have an ID, kindly create it <a href="https://razorpay.com" target="_blank" rel="noopener noreferrer" style={{ color: '#346c02', textDecoration: 'underline' }}>here</a>.
+                                Required for split-donations/hubs. <a href="https://razorpay.com" target="_blank" rel="noopener noreferrer" style={{ color: '#346c02', textDecoration: 'underline' }}>Create here</a>.
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="form-group-row">
+                        <div className="form-group">
+                            <label>UPI ID</label>
+                            <input 
+                                type="text" 
+                                name="upiId" 
+                                value={formData.upiId} 
+                                onChange={handleChange} 
+                                placeholder="yourname@upi" 
+                                required 
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>UPI QR Code Image</label>
+                            <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={handleQrUpload} 
+                                required 
+                                style={{ padding: '8px' }}
+                            />
+                            {formData.upiQrCode && <div style={{ fontSize: '0.8rem', color: '#346c02', marginTop: '4px' }}>QR Code loaded successfully!</div>}
                         </div>
                     </div>
                     

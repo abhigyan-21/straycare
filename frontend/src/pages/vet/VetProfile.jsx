@@ -103,7 +103,10 @@ const VetProfile = () => {
                     activeCampaigns: profileData.stats?.activeCampaigns || 0,
                     successfulAdoptions: profileData.stats?.successfulAdoptions || 0,
                     lat: profileData.user.partner?.lat || profileData.user.clinic?.lat || null,
-                    lng: profileData.user.partner?.lng || profileData.user.clinic?.lng || null
+                    lng: profileData.user.partner?.lng || profileData.user.clinic?.lng || null,
+                    upiId: profileData.user.partner?.upiId || '',
+                    upiQrCode: profileData.user.partner?.upiQrCode || '',
+                    razorpayId: profileData.user.partner?.razorpayAccountId || ''
                 });
 
                 // Filter out registration document since we display registration details on main tab
@@ -128,7 +131,10 @@ const VetProfile = () => {
                     activeCampaigns: 2,
                     successfulAdoptions: 89,
                     lat: 30.7333,
-                    lng: 76.7794
+                    lng: 76.7794,
+                    upiId: '',
+                    upiQrCode: '',
+                    razorpayId: ''
                 });
                 setDocuments([]);
             } finally {
@@ -145,11 +151,20 @@ const VetProfile = () => {
     const [profileMapCenter, setProfileMapCenter] = useState([30.7333, 76.7794]);
     const [isSavingLocation, setIsSavingLocation] = useState(false);
 
+    // Payment Info Update States
+    const [upiIdVal, setUpiIdVal] = useState('');
+    const [razorpayIdVal, setRazorpayIdVal] = useState('');
+    const [upiQrCodeVal, setUpiQrCodeVal] = useState('');
+    const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
+
     useEffect(() => {
         if (vetData) {
             setNameVal(vetData.name);
             setClinicLatVal(vetData.lat);
             setClinicLngVal(vetData.lng);
+            setUpiIdVal(vetData.upiId || '');
+            setRazorpayIdVal(vetData.razorpayId || '');
+            setUpiQrCodeVal(vetData.upiQrCode || '');
             if (vetData.lat && vetData.lng) {
                 setProfileMapCenter([vetData.lat, vetData.lng]);
             }
@@ -208,6 +223,60 @@ const VetProfile = () => {
             setSettingsError(err.message || 'Failed to update profile details.');
         } finally {
             setIsUpdatingProfile(false);
+        }
+    };
+
+    const handleQrUploadSettings = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = 500;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    setUpiQrCodeVal(compressedBase64);
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePaymentUpdateSubmit = async (e) => {
+        e.preventDefault();
+        setSettingsSuccess('');
+        setSettingsError('');
+        setIsUpdatingPayment(true);
+        try {
+            await updateProfileAction(undefined, undefined, undefined, undefined, undefined, undefined, upiIdVal, upiQrCodeVal, razorpayIdVal);
+            setVetData(prev => ({ ...prev, upiId: upiIdVal, upiQrCode: upiQrCodeVal, razorpayId: razorpayIdVal }));
+            setSettingsSuccess('Payment information updated successfully!');
+        } catch (err) {
+            setSettingsError(err.message || 'Failed to update payment details.');
+        } finally {
+            setIsUpdatingPayment(false);
         }
     };
 
@@ -446,7 +515,7 @@ const VetProfile = () => {
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '40px' }}>
                             {/* Profile Info Form */}
                             <div>
                                 <h3 style={{ marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '8px', fontSize: '1.2rem', color: '#1a1a1a', fontWeight: 'bold' }}>Personal Information</h3>
@@ -509,6 +578,49 @@ const VetProfile = () => {
                                     </button>
                                 </form>
                             </div>
+                        </div>
+
+                        <div style={{ marginBottom: '40px', background: '#fdfdf9', padding: '24px', borderRadius: '12px', border: '1px solid #e0e0e0' }}>
+                            <h3 style={{ marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '8px', fontSize: '1.2rem', color: '#1a1a1a', fontWeight: 'bold' }}>Payment Information</h3>
+                            <form onSubmit={handlePaymentUpdateSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontWeight: '600', color: '#333' }}>UPI ID</label>
+                                    <input 
+                                        type="text" 
+                                        value={upiIdVal}
+                                        onChange={(e) => setUpiIdVal(e.target.value)}
+                                        placeholder="yourname@upi"
+                                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontWeight: '600', color: '#333' }}>Razorpay ID (Optional)</label>
+                                    <input 
+                                        type="text" 
+                                        value={razorpayIdVal}
+                                        onChange={(e) => setRazorpayIdVal(e.target.value)}
+                                        placeholder="rzp_live_123456789"
+                                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px', gridColumn: 'span 2' }}>
+                                    <label style={{ fontWeight: '600', color: '#333' }}>UPI QR Code Image</label>
+                                    {upiQrCodeVal && (
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <img src={upiQrCodeVal} alt="UPI QR" style={{ height: '100px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '8px' }} />
+                                        </div>
+                                    )}
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={handleQrUploadSettings}
+                                        style={{ padding: '8px 0', color: '#333' }}
+                                    />
+                                </div>
+                                <button className="btn" type="submit" style={{ gridColumn: 'span 2', background: '#1a1a1a', color: '#fff', fontWeight: 'bold', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer', justifySelf: 'start' }} disabled={isUpdatingPayment}>
+                                    {isUpdatingPayment ? 'Saving...' : 'Update Payment Info'}
+                                </button>
+                            </form>
                         </div>
 
                         {(vetData.role === 'VET' || vetData.role === 'NGO') && (

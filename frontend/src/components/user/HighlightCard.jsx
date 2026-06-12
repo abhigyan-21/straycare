@@ -14,11 +14,11 @@ const HighlightCard = ({ type, campaign, badgeText, contributor, onDonate, onDet
                 <div className="highlight-content">
                     <div 
                         className="highlight-image" 
-                        style={{ backgroundImage: `url(${campaign.image || 'https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&q=80&w=800'})` }}
+                        style={{ backgroundImage: `url(${campaign.banner || campaign.image || 'https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&q=80&w=800'})` }}
                     ></div>
                     <div className="highlight-details">
                         <h3>{campaign.title}</h3>
-                        <p>{campaign.description}</p>
+                        <p>{campaign.purpose || campaign.description}</p>
                         <div className="progress-bar">
                             <div className="progress-fill" style={{ width: `${progress}%` }}></div>
                         </div>

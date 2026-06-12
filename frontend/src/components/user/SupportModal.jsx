@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from '../../services/api';
+import apiClient, { getPartner } from '../../services/api';
 
 
 const SupportModal = ({
@@ -93,43 +93,12 @@ const SupportModal = ({
 
         try {
             if (card.id === 4) {
-                let options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyHere',
-                    amount: Math.round(amount * 100),
-                    currency: "INR",
-                    name: "Furzo",
-                    description: `Support Campaign: ${selectedCampaign?.title || 'Animal Rescue'}`,
-                    handler: async function (response) {
-                        setIsPaymentProcessing(false);
-                        setViewMode('success');
-                    },
-                    prefill: {
-                        name: "Donor",
-                    },
-                    theme: {
-                        color: "#346c02"
-                    }
-                };
-
-                const res = await apiClient.post('/funding/donate', {
-                    amount: amount,
-                    type: 'CAMPAIGN',
-                    campaignId: selectedCampaign.id,
-                    partnerId: selectedCampaign.partnerId || selectedCampaign.clinicId || 'mock-partner-id'
+                // MVP Manual Donation Flow for Campaigns
+                await apiClient.post(`/campaigns/${selectedCampaign.id}/donate-manual`, {
+                    amount: amount
                 });
-
-                if (res.data && res.data.order) {
-                    options.order_id = res.data.order.id;
-                }
-
-                const rzp = new window.Razorpay(options);
-                
-                rzp.on('payment.failed', function (response){
-                    setIsPaymentProcessing(false);
-                    alert('Payment failed: ' + response.error.description);
-                });
-                
-                rzp.open();
+                setIsPaymentProcessing(false);
+                setViewMode('success');
                 return;
             }
 
@@ -406,33 +375,62 @@ const SupportModal = ({
                                 />
                             </div>
 
-                            {card.id !== 4 && (
-                                <div className="split-recommendation-box" style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f9fbf7', borderRadius: '8px', textAlign: 'left' }}>
-                                    <h4 style={{ margin: '0 0 10px 0', color: '#346c02', fontSize: '0.95rem' }}>Smart Routing Breakdown:</h4>
-                                    {isLoadingSplit ? (
-                                        <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>Calculating optimal impact...</p>
-                                    ) : splitRecommendation.length > 0 ? (
-                                        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#444' }}>
-                                            {splitRecommendation.map((split, i) => (
-                                                <li key={i} style={{ marginBottom: '4px' }}>
-                                                    <strong>₹{split.amount}</strong> to support request #{split.campaignId.substring(0,6)}...
-                                                </li>
-                                            ))}
-                                        </ul>
+                            {card.id === 4 ? (() => {
+                                const partner = getPartner(selectedCampaign);
+                                return (
+                                <div className="manual-upi-section" style={{ marginTop: '0', padding: '10px', backgroundColor: '#f9fbf7', borderRadius: '12px', textAlign: 'center', border: '1px solid #e0e0e0', maxWidth: '320px', margin: '0 auto', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                                    <h4 style={{ margin: '0 0 2px 0', color: '#1a1a1a', fontSize: '1rem' }}>Direct UPI Transfer</h4>
+                                    <p style={{ fontSize: '0.8rem', color: '#555', marginBottom: '4px', lineHeight: '1.2' }}>
+                                        Transfer your donation using any UPI app to the details below, then click "I have paid".
+                                    </p>
+                                    
+                                    {partner?.upiQrCode ? (
+                                        <div style={{ marginBottom: '6px' }}>
+                                            <img src={partner.upiQrCode} alt="UPI QR Code" style={{ width: '150px', height: '150px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '8px', padding: '5px', background: '#fff' }} />
+                                        </div>
                                     ) : (
-                                        <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>Funds will be dynamically allocated to the most urgent rescues in this category.</p>
+                                        <div style={{ marginBottom: '6px', padding: '8px', background: '#f5f5f5', borderRadius: '8px', border: '1px dashed #ccc' }}>
+                                            <p style={{ color: '#888', margin: 0, fontSize: '0.8rem' }}>QR Code not available</p>
+                                        </div>
                                     )}
-                                    {paymentMode === 'autopay' && (
-                                        <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '10px', fontStyle: 'italic', marginBottom: 0 }}>
-                                            * This split will be dynamically updated every month to ensure your money always goes to the most urgent rescues.
-                                        </p>
-                                    )}
+                                    
+                                    <div style={{ background: '#fff', padding: '4px 8px', borderRadius: '6px', border: '1px solid #ddd', display: 'inline-block', marginBottom: '8px' }}>
+                                        <strong style={{ color: '#333', fontSize: '0.85rem' }}>UPI ID:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', marginLeft: '5px' }}>{partner?.upiId || 'Not provided'}</span>
+                                    </div>
+                                    
+                                    <button type="submit" className="action-btn proceed-pay-btn" style={{ width: '100%', background: '#346c02', color: '#fff', padding: '8px', fontSize: '0.95rem' }} disabled={!partner?.upiId && !partner?.upiQrCode}>
+                                        I have Paid ₹{isNaN(amount) ? '0' : amount.toLocaleString()}
+                                    </button>
                                 </div>
+                                );
+                            })() : (
+                                <>
+                                    <div className="split-recommendation-box" style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f9fbf7', borderRadius: '8px', textAlign: 'left' }}>
+                                        <h4 style={{ margin: '0 0 10px 0', color: '#346c02', fontSize: '0.95rem' }}>Smart Routing Breakdown:</h4>
+                                        {isLoadingSplit ? (
+                                            <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>Calculating optimal impact...</p>
+                                        ) : splitRecommendation.length > 0 ? (
+                                            <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#444' }}>
+                                                {splitRecommendation.map((split, i) => (
+                                                    <li key={i} style={{ marginBottom: '4px' }}>
+                                                        <strong>₹{split.amount}</strong> to support request #{split.campaignId.substring(0,6)}...
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p style={{ fontSize: '0.85rem', color: '#666', margin: 0 }}>Funds will be dynamically allocated to the most urgent rescues in this category.</p>
+                                        )}
+                                        {paymentMode === 'autopay' && (
+                                            <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '10px', fontStyle: 'italic', marginBottom: 0 }}>
+                                                * This split will be dynamically updated every month to ensure your money always goes to the most urgent rescues.
+                                            </p>
+                                        )}
+                                    </div>
+                                    <button type="submit" className="action-btn proceed-pay-btn" style={{ marginTop: '20px' }}>
+                                        {paymentMode === 'autopay' ? `Set up ₹${isNaN(amount) ? '0' : amount.toLocaleString()}/month` : `Proceed to Pay ₹${isNaN(amount) ? '0' : amount.toLocaleString()}`}
+                                    </button>
+                                </>
                             )}
-
-                            <button type="submit" className="action-btn proceed-pay-btn" style={{ marginTop: '20px' }}>
-                                {paymentMode === 'autopay' ? `Set up ₹${isNaN(amount) ? '0' : amount.toLocaleString()}/month` : `Proceed to Pay ₹${isNaN(amount) ? '0' : amount.toLocaleString()}`}
-                            </button>
                         </form>
                     )}
                 </div>
@@ -471,7 +469,7 @@ const SupportModal = ({
     return (
         <div className="help-modal-overlay">
             <div className="help-modal-backdrop" onClick={handleClose}></div>
-            <div className="expanded-card">
+            <div className="expanded-card" style={viewMode === 'payment' ? { maxWidth: '500px', minHeight: 'auto', padding: '1.5rem 2rem' } : {}}>
                 <div
                     className="expanded-card-bg"
                     style={{ backgroundImage: getBackgroundImage() }}

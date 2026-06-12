@@ -73,6 +73,7 @@ enum DonationStatus {
   INITIATED
   WEBHOOK_VERIFIED
   REJECTED
+  SELF_REPORTED
 }
 
 enum CampaignCategory {
@@ -114,6 +115,8 @@ model Partner {
   verificationStatus     VerificationStatus @default(PENDING)
 
   razorpayAccountId      String? @unique
+  upiId                  String? @unique
+  upiQrCode              String?
 
   commissionEligible     Boolean @default(false)
   customCommissionRate   Decimal @default(0)
@@ -223,6 +226,7 @@ model Campaign {
 
   goalAmount       Decimal
   raisedAmount     Decimal @default(0)
+  progressUpdates  String[]
 
   requestType      RequestType @default(CAMPAIGN)
 
@@ -283,7 +287,7 @@ model Donation {
 
   grossAmount               Decimal
 
-  razorpayPaymentLinkId     String @unique
+  razorpayPaymentLinkId     String? @unique
 
   razorpayPaymentId         String?
 

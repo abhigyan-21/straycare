@@ -256,10 +256,10 @@ const verifyRegistrationOtp = async (req, res) => {
  */
 const registerPartner = async (req, res) => {
   try {
-    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken, razorpayId, lat, lng } = req.body;
+    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken, razorpayId, lat, lng, upiId, upiQrCode } = req.body;
 
-    if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password || !razorpayId) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password || !upiId || !upiQrCode) {
+      return res.status(400).json({ error: 'All required fields must be provided, including UPI details' });
     }
 
     if (!registerToken) {
@@ -317,7 +317,9 @@ const registerPartner = async (req, res) => {
           phone,
           verificationStatus: 'PENDING',
           partnerType: dbRole === 'NGO' ? 'NGO' : 'VET',
-          razorpayAccountId: razorpayId,
+          razorpayAccountId: razorpayId || null,
+          upiId,
+          upiQrCode,
           lat: lat ? parseFloat(lat) : null,
           lng: lng ? parseFloat(lng) : null
         }
@@ -617,9 +619,9 @@ const requestEmailOtp = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, email, phone, avatarUrl, clinicLat, clinicLng } = req.body;
+    const { name, email, phone, avatarUrl, clinicLat, clinicLng, upiId, upiQrCode, razorpayId } = req.body;
 
-    if (!name && !email && !phone && avatarUrl === undefined && clinicLat === undefined && clinicLng === undefined) {
+    if (!name && !email && !phone && avatarUrl === undefined && clinicLat === undefined && clinicLng === undefined && upiId === undefined && upiQrCode === undefined && razorpayId === undefined) {
       return res.status(400).json({ error: 'At least one field is required to update.' });
     }
 
@@ -653,12 +655,15 @@ const updateProfile = async (req, res) => {
     });
 
     if (currentUser && (currentUser.role === 'VET' || currentUser.role === 'NGO') && currentUser.partnerId) {
-      if (clinicLat !== undefined || clinicLng !== undefined) {
+      if (clinicLat !== undefined || clinicLng !== undefined || upiId !== undefined || upiQrCode !== undefined || razorpayId !== undefined) {
         await prisma.partner.update({
           where: { id: currentUser.partnerId },
           data: {
             ...(clinicLat !== undefined && { lat: clinicLat !== null ? parseFloat(clinicLat) : null }),
-            ...(clinicLng !== undefined && { lng: clinicLng !== null ? parseFloat(clinicLng) : null })
+            ...(clinicLng !== undefined && { lng: clinicLng !== null ? parseFloat(clinicLng) : null }),
+            ...(upiId !== undefined && { upiId: upiId || null }),
+            ...(upiQrCode !== undefined && { upiQrCode: upiQrCode || null }),
+            ...(razorpayId !== undefined && { razorpayAccountId: razorpayId || null })
           }
         });
       }
