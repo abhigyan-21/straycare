@@ -1,23 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import '../../styles/user/StoriesSection.css';
-import { getStories } from '../../services/api';
 import { storiesData } from '../../data/storiesData';
 
 const StoriesSection = () => {
-    const [stories, setStories] = useState([]);
-
-    useEffect(() => {
-        const fetchStories = async () => {
-            const data = await getStories();
-            if (data && data.length > 0) {
-                setStories(data);
-            } else {
-                setStories(storiesData);
-            }
-        };
-        fetchStories();
-    }, []);
-
     return (
         <section className="stories-section">
             <div className="stories-header">
@@ -25,7 +10,7 @@ const StoriesSection = () => {
                 <p>Every small contribution writes a big story of survival and hope.</p>
             </div>
             <div className="stories-grid">
-                {stories.map((story) => (
+                {storiesData.map((story) => (
                     <div key={story.id} className="story-card">
                         <div className="story-image-container">
                             <img src={story.image} alt={story.title} className="story-image" />
