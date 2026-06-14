@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import '../../styles/AuthModal.css';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import bgImage from '../../assets/images/happy_animals_bg.png';
+import bgImage from '../../assets/images/happy_animals_bg.webp';
 
 const AdminLogin = () => {
     const [email, setEmail] = useState('');
