@@ -35,7 +35,7 @@ function VetNavbar() {
       </div>
 
       <div className="nav-right">
-        <div className="desktop-only-auth" style={{ gap: '15px' }}>
+        <div className="desktop-only-auth" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <NavLink to="/vet/profile" className="nav-link-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <User size={18} />
             <span>Profile</span>

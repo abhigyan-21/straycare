@@ -26,7 +26,7 @@ import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetProfile.css';
 import { getProfile, getUserDocuments, uploadUserDocument, deleteUserDocument } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
-import hospitalImg from '../../assets/images/Hospital.png';
+import hospitalImg from '../../assets/images/Hospital.webp';
 
 const circularLocationIcon = new L.DivIcon({ 
     className: 'custom-circular-marker',
@@ -186,21 +186,55 @@ const VetProfile = () => {
         avatarInputRef.current.click();
     };
 
-    const handleAvatarChange = (e) => {
+    const compressImage = (file, maxWidth = 400, maxHeight = 400, quality = 0.7) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedBase64);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
+    const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64Image = reader.result;
-                try {
-                    await updateProfileAction(undefined, undefined, undefined, base64Image);
-                    setVetData(prev => ({ ...prev, avatar: base64Image }));
-                    alert('Profile picture updated successfully!');
-                } catch (err) {
-                    alert(err.message || 'Failed to update profile picture');
-                }
-            };
-            reader.readAsDataURL(file);
+            try {
+                const compressedBase64 = await compressImage(file);
+                await updateProfileAction(undefined, undefined, undefined, compressedBase64);
+                setVetData(prev => ({ ...prev, avatar: compressedBase64 }));
+                alert('Profile picture updated successfully!');
+            } catch (err) {
+                alert(err.message || 'Failed to update profile picture');
+            }
         }
     };
 
@@ -778,23 +812,12 @@ const VetProfile = () => {
                 {/* Sidebar */}
                 <div className="profile-sidebar">
                     <div className="user-info-header">
-                        <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture" style={{ cursor: 'pointer', position: 'relative' }}>
-                            <img src={vetData.avatar} alt="Vet Avatar" className="avatar" />
-                            <div className="avatar-overlay" style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                borderRadius: '50%',
-                                background: 'rgba(0, 0, 0, 0.4)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: 0,
-                                transition: 'opacity 0.2s'
-                            }}>
-                                <span style={{ color: '#fff', fontSize: '1.2rem' }}>📷</span>
+                        <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture">
+                            <div className="avatar-wrapper">
+                                <img src={vetData.avatar} alt="Vet Avatar" className="avatar" />
+                                <div className="avatar-overlay">
+                                    <span className="camera-icon">📷</span>
+                                </div>
                             </div>
                             <input
                                 type="file"
