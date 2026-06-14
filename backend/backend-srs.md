@@ -1,4 +1,4 @@
-# Software Requirements Specification (SRS) for StrayCare Backend
+# Software Requirements Specification (SRS) for Furzo Backend
 
 ## 1. Introduction
 
@@ -6,7 +6,7 @@
 This document specifies the software requirements for the backend of the **Furzo** platform. The backend will act as the central system for managing stray animal reporting, rescues, adoptions, and funding.
 
 ### 1.2 Scope
-StrayCare is a global platform designed to assist stray animals by connecting people who find them with rescuers, veterinarians, and people looking to adopt. The platform handles everything from the initial report (including geolocation and photos) to medical tracking, adoption workflows, and crowdfunding for specific animals' treatments. It also features a community feed to keep users engaged and updated.
+Furzo is a global platform designed to assist stray animals by connecting people who find them with rescuers, veterinarians, and people looking to adopt. The platform handles everything from the initial report (including geolocation and photos) to medical tracking, adoption workflows, and crowdfunding for specific animals' treatments. It also features a community feed to keep users engaged and updated.
 
 ## 2. Overall Description
 

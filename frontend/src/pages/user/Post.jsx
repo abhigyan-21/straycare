@@ -10,14 +10,25 @@ import ActionLoader from '../../components/ActionLoader';
 
 function Post({ openAuthModal }) {
     const { isLoggedIn, user: authUser } = useAuthStore();
-    const { posts, loading, fetchPosts, createPost, toggleLike, addComment } = usePostStore();
+    const { posts, loading, fetchPosts, createPost, toggleLike, addComment, page, hasMore } = usePostStore();
     const [newComment, setNewComment] = useState({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
-        fetchPosts();
+        fetchPosts(1);
     }, [fetchPosts]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (loading || !hasMore) return;
+            if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 150) {
+                fetchPosts(page + 1);
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [page, hasMore, loading, fetchPosts]);
 
     useEffect(() => {
         if (isCreateModalOpen) {
@@ -124,19 +135,26 @@ function Post({ openAuthModal }) {
                 {loading && posts.length === 0 ? (
                     <ActionLoader message="Loading posts..." />
                 ) : (
-                    posts.map(post => (
-                        <PostCard
-                            key={post.id}
-                            post={post}
-                            currentUser={authUser}
-                            currentUserId={authUser?.id}
-                            onLike={handleLike}
-                            onShare={handleShare}
-                            onCommentChange={handleCommentChange}
-                            onSubmitComment={submitComment}
-                            newComment={newComment[post.id]}
-                        />
-                    ))
+                    <>
+                        {posts.map(post => (
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                currentUser={authUser}
+                                currentUserId={authUser?.id}
+                                onLike={handleLike}
+                                onShare={handleShare}
+                                onCommentChange={handleCommentChange}
+                                onSubmitComment={submitComment}
+                                newComment={newComment[post.id]}
+                            />
+                        ))}
+                        {loading && (
+                            <div className="posts-loading-more" style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+                                <MiniLoader /> <span style={{ marginLeft: '8px', color: '#666' }}>Loading more posts...</span>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 <CreatePostModal

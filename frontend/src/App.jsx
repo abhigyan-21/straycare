@@ -32,10 +32,10 @@ import { useAuthStore } from "./store/authStore";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
-import dogRun1 from "./assets/loader/dog_run1.png";
-import dogRun2 from "./assets/loader/dog_run2.png";
-import catRun1 from "./assets/loader/cat_run1.png";
-import catRun2 from "./assets/loader/cat_run2.png";
+import dogRun1 from "./assets/loader/dog_run1.webp";
+import dogRun2 from "./assets/loader/dog_run2.webp";
+import catRun1 from "./assets/loader/cat_run1.webp";
+import catRun2 from "./assets/loader/cat_run2.webp";
 
 // Layout for the main user-facing application
 const UserLayout = ({ openAuthModal }) => (

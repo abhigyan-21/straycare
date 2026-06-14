@@ -5,12 +5,21 @@ export const usePostStore = create((set, get) => ({
     posts: [],
     loading: false,
     error: null,
+    page: 1,
+    hasMore: true,
 
-    fetchPosts: async () => {
+    fetchPosts: async (pageNumber = 1, limit = 10) => {
         set({ loading: true, error: null });
         try {
-            const data = await fetchPosts();
-            set({ posts: data.data, loading: false });
+            const data = await fetchPosts(pageNumber, limit);
+            const newPosts = data.data;
+            const pagination = data.pagination || {};
+            set((state) => ({
+                posts: pageNumber === 1 ? newPosts : [...state.posts, ...newPosts],
+                page: pageNumber,
+                hasMore: pagination.hasMore !== undefined ? pagination.hasMore : false,
+                loading: false
+            }));
         } catch (error) {
             set({ error: error.message || 'Failed to fetch posts', loading: false });
         }

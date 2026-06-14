@@ -27,14 +27,14 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
         <div className="post-card">
             {/* Left Side: Image */}
             <div className="post-image-section">
-                <img src={post.postImage} alt="Post content" className="post-main-image" />
+                <img src={post.postImage} alt="Post content" className="post-main-image" loading="lazy" />
             </div>
 
             {/* Right Side: Details */}
             <div className="post-details-section">
                 {/* Header: User Info */}
                 <div className="post-header">
-                    <img src={authorImage} alt="User profile" className="post-user-img" />
+                    <img src={authorImage} alt="User profile" className="post-user-img" loading="lazy" />
                     <div className="post-user-info">
                         <span className="post-username">{authorName}</span>
                         <div className="post-meta-line">
@@ -62,7 +62,7 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                             const commenterImage = comment.user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenterName)}&background=random`;
                             return (
                                 <div key={comment.id} className="comment">
-                                    <img src={commenterImage} alt="User profile" className="post-user-img-small" style={{ width: '24px', height: '24px', marginRight: '8px', display: 'inline-block', verticalAlign: 'middle' }} />
+                                    <img src={commenterImage} alt="User profile" className="post-user-img-small" loading="lazy" style={{ width: '24px', height: '24px', marginRight: '8px', display: 'inline-block', verticalAlign: 'middle' }} />
                                     <div>
                                         <span className="comment-username">{commenterName}</span>
                                         {' '}

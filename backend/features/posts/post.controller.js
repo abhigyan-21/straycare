@@ -1,13 +1,15 @@
 const prisma = require('../../db/prisma');
-const { uploadToCloudinary } = require('../../utils/cloudinary');
+const { uploadToCloudinary, getOptimizedUrl } = require('../../utils/cloudinary');
 
 exports.getPosts = async (req, res, next) => {
   try {
-    // Determine user ID if authenticated (to check isLiked). Auth middleware could optionally append user, but GET might be public.
-    // If we want isLiked, we need the requester's ID. Let's assume auth middleware handles it, or we rely on the client passing it.
-    // For now, we'll just return all posts and let the client match `likes.some(like => like.userId === currentUserId)` if they want.
-    
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
     const posts = await prisma.post.findMany({
+      skip,
+      take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
         author: {
@@ -27,7 +29,36 @@ exports.getPosts = async (req, res, next) => {
       }
     });
 
-    res.status(200).json({ status: 'success', data: posts });
+    const totalPosts = await prisma.post.count();
+    const hasMore = skip + posts.length < totalPosts;
+
+    // Apply Cloudinary URL optimization
+    const optimizedPosts = posts.map(post => ({
+      ...post,
+      postImage: getOptimizedUrl(post.postImage, { width: 800 }),
+      author: post.author ? {
+        ...post.author,
+        avatarUrl: getOptimizedUrl(post.author.avatarUrl, { width: 100, crop: 'fill' })
+      } : null,
+      comments: post.comments.map(comment => ({
+        ...comment,
+        user: comment.user ? {
+          ...comment.user,
+          avatarUrl: getOptimizedUrl(comment.user.avatarUrl, { width: 60, crop: 'fill' })
+        } : null
+      }))
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      data: optimizedPosts,
+      pagination: {
+        page,
+        limit,
+        totalPosts,
+        hasMore
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -132,7 +163,12 @@ exports.getMyPosts = async (req, res, next) => {
       }
     });
 
-    res.status(200).json({ status: 'success', data: posts });
+    const optimizedPosts = posts.map(post => ({
+      ...post,
+      postImage: getOptimizedUrl(post.postImage, { width: 800 })
+    }));
+
+    res.status(200).json({ status: 'success', data: optimizedPosts });
   } catch (error) {
     next(error);
   }

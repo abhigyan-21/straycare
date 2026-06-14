@@ -35,8 +35,16 @@ const uploadToCloudinary = (fileBuffer) => {
   });
 };
 
+const getOptimizedUrl = (url, options = {}) => {
+  if (!url || typeof url !== 'string' || !url.includes('res.cloudinary.com')) return url;
+  const { width = 800, quality = 'auto', format = 'auto', crop = 'limit' } = options;
+  const transformString = `f_${format},q_${quality},w_${width},c_${crop}`;
+  return url.replace('/image/upload/', `/image/upload/${transformString}/`);
+};
+
 module.exports = {
   cloudinary,
   upload,
-  uploadToCloudinary
+  uploadToCloudinary,
+  getOptimizedUrl
 };

@@ -279,8 +279,10 @@ export const submitAdoptionRequest = async (petId, formDetails = {}) => {
   const response = await apiClient.post('/adoptions/requests', { petId, formDetails });
   return response.data;
 };
-export const fetchPosts = async () => {
-  const response = await apiClient.get('/posts');
+export const fetchPosts = async (page = 1, limit = 10) => {
+  const response = await apiClient.get('/posts', {
+    params: { page, limit }
+  });
   return response.data;
 };
 
