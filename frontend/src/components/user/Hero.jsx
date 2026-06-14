@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import sparrowImg from "../../assets/sparrow.png";
+import catImg from "../../assets/catImg.webp";
+import dogImg from "../../assets/dogImg.webp"
 
 const animals = [
-  "https://images.unsplash.com/photo-1558788353-f76d92427f16?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  dogImg,
+  catImg,
   sparrowImg,
 ];
 

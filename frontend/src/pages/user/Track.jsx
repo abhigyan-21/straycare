@@ -164,158 +164,161 @@ function Track() {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo - Track a Rescue</title>
-            <meta name="description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
-            <meta property="og:title" content="Furzo - Track a Rescue" />
-            <meta property="og:description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
-            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-            <meta property="og:url" content="https://furzo.vercel.app/track" />
-            <meta property="og:type" content="website" />
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" content="Furzo - Track a Rescue" />
-            <meta name="twitter:description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
-            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-        </Helmet>
-        <div className="track-page">
-            <div className="search-section">
-                <input
-                    type="text"
-                    placeholder="Tracking Id:"
-                    className="search-input"
-                    value={trackingId}
-                    onChange={(e) => setTrackingId(e.target.value)}
-                />
-                <button className="track-btn" onClick={handleTrack}>track</button>
-            </div>
-
-            {isLoading && (
-                <div style={{ textAlign: 'center', margin: '40px auto', fontSize: '1.1rem', color: '#666', fontWeight: '500' }}>
-                    Searching database for Report ID...
+            <Helmet>
+                <title>Furzo - Track a Rescue</title>
+                <meta name="description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
+                <meta property="og:title" content="Furzo - Track a Rescue" />
+                <meta property="og:description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
+                <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
+                <meta property="og:url" content="https://furzo.vercel.app/track" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Furzo - Track a Rescue" />
+                <meta name="twitter:description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
+                <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
+            </Helmet>
+            <div className="track-page">
+                <div className="search-section">
+                    <input
+                        type="text"
+                        placeholder="Tracking Id:"
+                        className="search-input"
+                        value={trackingId}
+                        onChange={(e) => setTrackingId(e.target.value)}
+                    />
+                    <button className="track-btn" onClick={handleTrack}>track</button>
                 </div>
-            )}
+                <p className="track-clue-text" style={{ textAlign: 'center', fontSize: '0.9rem', color: '#949393ff', marginTop: '-30px', marginBottom: '20px' }}>
+                    Use your Tracking Id to track your stray reports
+                </p>
 
-            {errorMsg && (
-                <div style={{ maxWidth: '600px', margin: '30px auto', padding: '16px 20px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '8px', color: '#e74c3c', fontWeight: 'bold', textAlign: 'center', fontSize: '0.95rem' }}>
-                    {errorMsg}
-                </div>
-            )}
+                {isLoading && (
+                    <div style={{ textAlign: 'center', margin: '40px auto', fontSize: '1.1rem', color: '#666', fontWeight: '500' }}>
+                        Searching database for Report ID...
+                    </div>
+                )}
 
-            {!isLoading && petData && (
-                <>
-                    <div className="tracking-content">
-                        <div className="pet-info-card">
-                            <div className="pet-image-container">
-                                <img src={petData.image} alt={petData.name || "Pet"} className="pet-image" />
+                {errorMsg && (
+                    <div style={{ maxWidth: '600px', margin: '30px auto', padding: '16px 20px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '8px', color: '#e74c3c', fontWeight: 'bold', textAlign: 'center', fontSize: '0.95rem' }}>
+                        {errorMsg}
+                    </div>
+                )}
+
+                {!isLoading && petData && (
+                    <>
+                        <div className="tracking-content">
+                            <div className="pet-info-card">
+                                <div className="pet-image-container">
+                                    <img src={petData.image} alt={petData.name || "Pet"} className="pet-image" />
+                                </div>
+                                {petData.name && <div className="pet-name-plate">{petData.name}</div>}
+                                <div className="pet-id-pill">id:{petData.id}</div>
                             </div>
-                            {petData.name && <div className="pet-name-plate">{petData.name}</div>}
-                            <div className="pet-id-pill">id:{petData.id}</div>
-                        </div>
 
-                        <div className="timeline-section">
-                            {/* Wavy path background */}
-                            <svg className="timeline-svg" preserveAspectRatio="none" viewBox="0 0 1000 400">
-                                {/* 
+                            <div className="timeline-section">
+                                {/* Wavy path background */}
+                                <svg className="timeline-svg" preserveAspectRatio="none" viewBox="0 0 1000 400">
+                                    {/* 
                   Curve to follow nodes: 
                   node-1 (150, 100) -> node-2 (550, 100) -> node-3 (850, 180) -> node-4 (550, 300) -> node-5 (150, 300)
                 */}
-                                <path className="timeline-path" d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300" />
-                                {petData.statusIndex >= 0 && (
-                                    <path 
-                                        className="timeline-path-active" 
-                                        d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300" 
-                                        pathLength="1000"
-                                        style={{
-                                            strokeDasharray: 1000,
-                                            strokeDashoffset: animateTimeline ? Math.max(0, 1000 - (1000 / 4) * petData.statusIndex) : 1000,
-                                            transition: 'stroke-dashoffset 3s ease'
-                                        }}
-                                    />
-                                )}
-                            </svg>
+                                    <path className="timeline-path" d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300" />
+                                    {petData.statusIndex >= 0 && (
+                                        <path
+                                            className="timeline-path-active"
+                                            d="M 150 100 C 300 100, 400 50, 550 100 C 650 130, 850 100, 850 180 C 850 250, 700 280, 550 300 C 400 320, 300 250, 150 300"
+                                            pathLength="1000"
+                                            style={{
+                                                strokeDasharray: 1000,
+                                                strokeDashoffset: animateTimeline ? Math.max(0, 1000 - (1000 / 4) * petData.statusIndex) : 1000,
+                                                transition: 'stroke-dashoffset 3s ease'
+                                            }}
+                                        />
+                                    )}
+                                </svg>
 
-                            <div className="timeline-nodes">
-                                {STAGES.map((stage, index) => {
-                                    let statusClass = "node";
-                                    if (petData.statusIndex > index) statusClass += " completed";
-                                    else if (petData.statusIndex === index && animateTimeline) statusClass += " active";
+                                <div className="timeline-nodes">
+                                    {STAGES.map((stage, index) => {
+                                        let statusClass = "node";
+                                        if (petData.statusIndex > index) statusClass += " completed";
+                                        else if (petData.statusIndex === index && animateTimeline) statusClass += " active";
 
-                                    return (
-                                        <div
-                                            key={index}
-                                            className={`node node-${index + 1} ${statusClass}`}
-                                            style={{ '--delay': `${index * 0.5}s` }}
-                                        >
-                                            <span className="node-text">{stage}</span>
-                                        </div>
-                                    );
-                                })}
+                                        return (
+                                            <div
+                                                key={index}
+                                                className={`node node-${index + 1} ${statusClass}`}
+                                                style={{ '--delay': `${index * 0.5}s` }}
+                                            >
+                                                <span className="node-text">{stage}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="details-section">
-                        <table className="details-table">
-                            <thead>
-                                <tr>
-                                    <th colSpan={2}>Tracking Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {petData.details.map((row, index) => (
-                                    <tr key={index}>
-                                        <td style={{ width: '30%', fontWeight: 'bold' }}>{row.label}</td>
-                                        <td>{row.value}</td>
-                                    </tr>
-                                ))}
-                                <tr>
-                                    <td style={{ width: '30%', fontWeight: 'bold' }}>Current Status</td>
-                                    <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ textTransform: 'capitalize' }}>
-                                            {petData.statusIndex >= 0 ? STAGES[petData.statusIndex] : 'reported'}
-                                        </span>
-                                        <button className="view-more-btn" onClick={() => setShowHistoryModal(true)}>
-                                            View More Details
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
-
-            {showHistoryModal && (
-                <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
-                    <div className="history-modal-content" onClick={e => e.stopPropagation()}>
-                        <h3>Complete Process History</h3>
-                        <div className="history-table-container">
-                            <table className="history-table">
+                        <div className="details-section">
+                            <table className="details-table">
                                 <thead>
                                     <tr>
-                                        <th>Date/Time</th>
-                                        <th>Stage</th>
-                                        <th>Notes</th>
+                                        <th colSpan={2}>Tracking Details</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {petData.history.map((record, index) => (
+                                    {petData.details.map((row, index) => (
                                         <tr key={index}>
-                                            <td>{record.date}</td>
-                                            <td style={{ textTransform: 'capitalize' }}>{record.stage}</td>
-                                            <td>{record.notes}</td>
+                                            <td style={{ width: '30%', fontWeight: 'bold' }}>{row.label}</td>
+                                            <td>{row.value}</td>
                                         </tr>
                                     ))}
+                                    <tr>
+                                        <td style={{ width: '30%', fontWeight: 'bold' }}>Current Status</td>
+                                        <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ textTransform: 'capitalize' }}>
+                                                {petData.statusIndex >= 0 ? STAGES[petData.statusIndex] : 'reported'}
+                                            </span>
+                                            <button className="view-more-btn" onClick={() => setShowHistoryModal(true)}>
+                                                View More Details
+                                            </button>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div className="close-btn-container">
-                            <button className="close-btn" onClick={() => setShowHistoryModal(false)}>Close</button>
+                    </>
+                )}
+
+                {showHistoryModal && (
+                    <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
+                        <div className="history-modal-content" onClick={e => e.stopPropagation()}>
+                            <h3>Complete Process History</h3>
+                            <div className="history-table-container">
+                                <table className="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date/Time</th>
+                                            <th>Stage</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {petData.history.map((record, index) => (
+                                            <tr key={index}>
+                                                <td>{record.date}</td>
+                                                <td style={{ textTransform: 'capitalize' }}>{record.stage}</td>
+                                                <td>{record.notes}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="close-btn-container">
+                                <button className="close-btn" onClick={() => setShowHistoryModal(false)}>Close</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
         </>
     );
 }

@@ -26,10 +26,10 @@ const createAmbulanceIcon = (isFlipped) => new L.Icon({
 });
 
 // Asset Imports
-import ambulanceImg from '../../assets/images/ambulance.png';
-import hospitalImg from "../../assets/images/Hospital.png";
-import pickupImg from '../../assets/images/Pickup.png';
-import rescuerAvatar from '../../assets/images/doctor-open.png';
+import ambulanceImg from '../../assets/images/ambulance.webp';
+import hospitalImg from "../../assets/images/Hospital.webp";
+import pickupImg from '../../assets/images/Pickup.webp';
+import rescuerAvatar from '../../assets/images/doctor-open.webp';
 
 const hospitalIcon = new L.Icon({ iconUrl: hospitalImg, iconSize: [50, 50], iconAnchor: [25, 50] });
 const userIcon = new L.Icon({ iconUrl: pickupImg, iconSize: [45, 45], iconAnchor: [22, 45] });
@@ -458,104 +458,104 @@ function LiveTracking() {
 
   return (
     <>
-    <Helmet>
-      <title>Furzo - Live Tracking</title>
-      <meta name="description" content="Follow your rescue in real-time. Track the rescuer's live location as they reach the animal and transport it to a care center." />
-    </Helmet>
-    <div className="live-tracking-page">
-      <div className="tracking-header">
-        <div className="hospital-track">
-          <img src={pickupImg} className="track-img start" alt="pickup" />
-          <div
-            className="hospital-track-progress"
-            style={{
-              width: `${progressPercent}%`,
-              left: journeyStage === 'RESCUING' ? '0' : 'auto',
-              right: journeyStage === 'EN_ROUTE' ? '0' : 'auto'
-            }}
-          ></div>
-          {isAssigned || isDemo ? (
-            <img
-              src={ambulanceImg}
-              className={`track-img rescuer-img ${isFlipped ? 'flipped' : ''}`}
-              style={{ left: `${leftPosition}%` }}
-              alt="rescuer"
-            />
-          ) : null}
-          <img src={hospitalImg} className="track-img end" alt="hospital" />
-        </div>
-      </div>
-
-      <div className="tracking-grid">
-        <div className="tracking-left">
-          <div className="tracking-status-card">
-            <h2>{displayStatus}</h2>
-            <div className="arrival-time">
-              {displayArrivalTime}
-            </div>
+      <Helmet>
+        <title>Furzo - Live Tracking</title>
+        <meta name="description" content="Follow your rescue in real-time. Track the rescuer's live location as they reach the animal and transport it to a care center." />
+      </Helmet>
+      <div className="live-tracking-page">
+        <div className="tracking-header">
+          <div className="hospital-track">
+            <img src={pickupImg} className="track-img start" alt="pickup" />
+            <div
+              className="hospital-track-progress"
+              style={{
+                width: `${progressPercent}%`,
+                left: journeyStage === 'RESCUING' ? '0' : 'auto',
+                right: journeyStage === 'EN_ROUTE' ? '0' : 'auto'
+              }}
+            ></div>
+            {isAssigned || isDemo ? (
+              <img
+                src={ambulanceImg}
+                className={`track-img rescuer-img ${isFlipped ? 'flipped' : ''}`}
+                style={{ left: `${leftPosition}%` }}
+                alt="rescuer"
+              />
+            ) : null}
+            <img src={hospitalImg} className="track-img end" alt="hospital" />
           </div>
+        </div>
 
-          <div className="info-card">
-            <div className="rescuer-avatar-container">
-              {rescuerAvatarUrl ? (
-                <img src={rescuerAvatarUrl} alt="Rescuer" className="rescuer-avatar" />
-              ) : isDemo ? (
-                <img src={rescuerAvatar} alt="Rescuer" className="rescuer-avatar" />
-              ) : (
-                <User className="default-avatar-icon" />
-              )}
+        <div className="tracking-grid">
+          <div className="tracking-left">
+            <div className="tracking-status-card">
+              <h2>{displayStatus}</h2>
+              <div className="arrival-time">
+                {displayArrivalTime}
+              </div>
             </div>
-            <div className="details-content">
-              <h3>{rescuerName}</h3>
-              <p className="specialty">Certified Lead Rescuer</p>
 
-              <div className="details-grid">
-                <div className="detail-item">
-                  <strong>Clinic:</strong> <span>{clinicName}</span>
-                </div>
-                <div className="detail-item">
-                  <strong>Contact:</strong> <span>{rescuerContact}</span>
-                </div>
-                <div className="detail-item">
-                  <strong>Status:</strong> <span>{(!isDemo && !isAssigned) ? 'Assigning...' : (journeyStage === 'EN_ROUTE' ? 'En route to you' : 'Heading to clinic')}</span>
+            <div className="info-card">
+              <div className="rescuer-avatar-container">
+                {rescuerAvatarUrl ? (
+                  <img src={rescuerAvatarUrl} alt="Rescuer" className="rescuer-avatar" />
+                ) : isDemo ? (
+                  <img src={rescuerAvatar} alt="Rescuer" className="rescuer-avatar" />
+                ) : (
+                  <User className="default-avatar-icon" />
+                )}
+              </div>
+              <div className="details-content">
+                <h3>{rescuerName}</h3>
+                <p className="specialty">Certified Lead Rescuer</p>
+
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <strong>Clinic:</strong> <span>{clinicName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Contact:</strong> <span>{rescuerContact}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Status:</strong> <span>{(!isDemo && !isAssigned) ? 'Assigning...' : (journeyStage === 'EN_ROUTE' ? 'En route to you' : 'Heading to clinic')}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="tracking-right">
-          <div className="map-container">
-            <MapContainer center={rescuerPos} zoom={14} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              />
+          <div className="tracking-right">
+            <div className="map-container">
+              <MapContainer center={rescuerPos} zoom={14} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                />
 
-              {fullRoute.length > 0 && (isAssigned || isDemo) && (
-                <Polyline positions={fullRoute} color="#8BC34A" weight={6} opacity={0.8} />
-              )}
+                {fullRoute.length > 0 && (isAssigned || isDemo) && (
+                  <Polyline positions={fullRoute} color="#8BC34A" weight={6} opacity={0.8} />
+                )}
 
-              <Marker position={reportUserPos} icon={userIcon}><Popup>Your Location</Popup></Marker>
-              <Marker position={reportHospitalPos} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
+                <Marker position={reportUserPos} icon={userIcon}><Popup>Your Location</Popup></Marker>
+                <Marker position={reportHospitalPos} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
 
-              {/* Force rescuer marker to be on top with higher zIndexOffset */}
-              {(isAssigned || isDemo) && (
-                <Marker
-                  position={rescuerPos}
-                  icon={isFlipped ? ambIconFlipped : ambIconNormal}
-                  zIndexOffset={1000}
-                >
-                  <Popup>Rescuer ({journeyStage === 'EN_ROUTE' ? 'To You' : 'To Clinic'})</Popup>
-                </Marker>
-              )}
+                {/* Force rescuer marker to be on top with higher zIndexOffset */}
+                {(isAssigned || isDemo) && (
+                  <Marker
+                    position={rescuerPos}
+                    icon={isFlipped ? ambIconFlipped : ambIconNormal}
+                    zIndexOffset={1000}
+                  >
+                    <Popup>Rescuer ({journeyStage === 'EN_ROUTE' ? 'To You' : 'To Clinic'})</Popup>
+                  </Marker>
+                )}
 
-              <MapRecenter center={rescuerPos} />
-            </MapContainer>
+                <MapRecenter center={rescuerPos} />
+              </MapContainer>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

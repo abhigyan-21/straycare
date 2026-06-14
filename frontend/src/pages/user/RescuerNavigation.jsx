@@ -10,9 +10,9 @@ import apiClient, { getPartner } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
 
 // Reuse Icons from LiveTracking
-import ambulanceImg from '../../assets/images/ambulance.png';
-import hospitalImg from '../../assets/images/Hospital.png';
-import pickupImg from '../../assets/images/Pickup.png';
+import ambulanceImg from '../../assets/images/ambulance.webp';
+import hospitalImg from '../../assets/images/Hospital.webp';
+import pickupImg from '../../assets/images/Pickup.webp';
 
 const ambulanceIcon = new L.Icon({ iconUrl: ambulanceImg, iconSize: [60, 40], iconAnchor: [30, 20] });
 const hospitalIcon = new L.Icon({ iconUrl: hospitalImg, iconSize: [50, 50], iconAnchor: [25, 50] });

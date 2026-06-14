@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from 'react-helmet-async';
 import ReactMarkdown from "react-markdown";
-import doctorClosed from "../../assets/images/doctor-closed.png";
-import doctorOpen from "../../assets/images/doctor-open.png";
+import doctorClosed from "../../assets/images/doctor-closed.webp";
+import doctorOpen from "../../assets/images/doctor-open.webp";
 import "../../styles/user/Guide.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';

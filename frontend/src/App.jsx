@@ -21,8 +21,8 @@ import RescuerDashboard from "./pages/user/RescuerDashboard";
 import RescuerNavigation from "./pages/user/RescuerNavigation";
 import PublicPartner from "./pages/user/PublicPartner";
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import doctorClosed from "./assets/images/doctor-closed.png";
-import doctorOpen from "./assets/images/doctor-open.png";
+import doctorClosed from "./assets/images/doctor-closed.webp";
+import doctorOpen from "./assets/images/doctor-open.webp";
 import FloatingRescueButton from "./components/FloatingRescueButton";
 import Loader from "./components/Loader";
 const AdminApp = lazy(() => import("./AdminApp"));
@@ -36,6 +36,9 @@ import dogRun1 from "./assets/loader/dog_run1.webp";
 import dogRun2 from "./assets/loader/dog_run2.webp";
 import catRun1 from "./assets/loader/cat_run1.webp";
 import catRun2 from "./assets/loader/cat_run2.webp";
+import dogImg from "./assets/dogImg.webp";
+import catImg from "./assets/catImg.webp";
+import sparrowImg from "./assets/sparrow.png";
 
 // Layout for the main user-facing application
 const UserLayout = ({ openAuthModal }) => (
@@ -99,7 +102,10 @@ function App() {
       dogRun1,
       dogRun2,
       catRun1,
-      catRun2
+      catRun2,
+      dogImg,
+      catImg,
+      sparrowImg
     ];
 
     const preloadImage = (src) => {

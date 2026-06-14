@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { registerPartner, sendRegistrationOtp, verifyRegistrationOtp } from '../../services/api';
 import '../../styles/user/Register.css';
-import hospitalImg from '../../assets/images/Hospital.png';
+import hospitalImg from '../../assets/images/Hospital.webp';
 
 const circularLocationIcon = new L.DivIcon({ 
     className: 'custom-circular-marker',

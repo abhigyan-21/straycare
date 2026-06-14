@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import axios from 'axios';
 import apiClient from '../services/api';
 import '../styles/FloatingRescueButton.css';
-import ambulanceImg from '../assets/images/ambulance.png';
+import ambulanceImg from '../assets/images/ambulance.webp';
 
 const FloatingRescueButton = () => {
     const { activeRescue, startRescue, endRescue } = useRescueStore();
@@ -28,8 +28,8 @@ const FloatingRescueButton = () => {
                 if (user.role === 'RESCUER' || user.role === 'ADMIN') {
                     // Fetch all reports to find active assigned rescues
                     const response = await apiClient.get('/reports', { signal: controller.signal });
-                    const active = response.data?.find(r => 
-                        r.assignedRescuerId === user.id && 
+                    const active = response.data?.find(r =>
+                        r.assignedRescuerId === user.id &&
                         (r.status === 'ASSIGNED' || r.status === 'RESCUED')
                     );
                     if (active) {
@@ -40,7 +40,7 @@ const FloatingRescueButton = () => {
                 } else {
                     // Fetch user's own reports to check if active
                     const response = await apiClient.get('/reports/my-reports', { signal: controller.signal });
-                    const active = response.data?.find(r => 
+                    const active = response.data?.find(r =>
                         r.status === 'ASSIGNED' || r.status === 'RESCUED'
                     );
                     if (active) {
@@ -73,14 +73,14 @@ const FloatingRescueButton = () => {
     // Don't show if already on the map page
     const mapPaths = ['/live-track', '/rescuer/nav', '/track'];
     const isOnMapPage = mapPaths.some(path => location.pathname.startsWith(path));
-    
+
     if (isOnMapPage) return null;
 
     const handleClick = () => {
-        const targetPath = activeRescue.mode === 'user' 
-            ? `/live-track/${activeRescue.reportId}` 
+        const targetPath = activeRescue.mode === 'user'
+            ? `/live-track/${activeRescue.reportId}`
             : `/rescuer/nav/${activeRescue.reportId}`;
-        
+
         navigate(targetPath);
     };
 
