@@ -53,14 +53,56 @@ function Emergency({ openAuthModal }) {
         }
     }, []);
 
-    const handleImageChange = (e) => {
+    const compressImage = (file, maxWidth = 1024, maxHeight = 1024, quality = 0.75) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(dataUrl);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
+            try {
+                setErrorMessage('');
+                const compressedDataUrl = await compressImage(file);
+                setImagePreview(compressedDataUrl);
+            } catch (err) {
+                console.error("Error compressing image:", err);
+                setErrorMessage("Failed to process image. Please try again.");
+            }
         }
     };
 
@@ -75,18 +117,28 @@ function Emergency({ openAuthModal }) {
             return;
         }
 
+        const descriptionVal = e.target.querySelector('textarea').value;
+
+        if (!imagePreview) {
+            setErrorMessage("Please upload a picture of the animal/situation.");
+            return;
+        }
+
+        if (!descriptionVal || !descriptionVal.trim()) {
+            setErrorMessage("Please write a brief description of the emergency.");
+            return;
+        }
+
         setIsReporting(true);
         setErrorMessage('');
 
         try {
-            const descriptionVal = e.target.querySelector('textarea').value;
-
             // Post emergency report to the backend API
             const response = await apiClient.post('/reports', {
                 locationLat: coordinates.lat,
                 locationLng: coordinates.lon,
                 description: descriptionVal,
-                mediaUrls: imagePreview ? [imagePreview] : []
+                mediaUrls: [imagePreview]
             });
 
             setTimeout(() => {

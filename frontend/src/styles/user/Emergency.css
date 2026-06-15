@@ -239,6 +239,11 @@
 }
 
 @media (max-width: 768px) {
+    .emergency-title {
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }
+
     .emergency-page {
         padding: 20px;
         gap: 30px;
