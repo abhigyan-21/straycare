@@ -117,6 +117,7 @@ function Emergency({ openAuthModal }) {
             <title>Furzo - Report an Emergency</title>
             <meta name="description" content="Report an injured or distressed stray animal in your area. Upload photos, share location, and connect with nearby rescuers instantly." />
         </Helmet>
+        <p className="emergency-title">Report for adoption or rescue</p>
         <div className="emergency-page">
             <div className={`emergency-left ${imagePreview ? 'has-image' : ''}`}>
                 {imagePreview ? (

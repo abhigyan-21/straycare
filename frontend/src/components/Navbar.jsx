@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/straycare_logo.png";
 import { useAuthStore } from '../store/authStore';
 import ProfileDropdown from "./ProfileDropdown";
@@ -7,6 +7,7 @@ import { Home, Heart, PlusSquare, MapPin, HandHeart, BookOpen, UserPlus, User } 
 
 function Navbar({ openAuthModal }) {
   const { isLoggedIn, logout } = useAuthStore();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
   const authDropdownRef = useRef(null);
@@ -17,6 +18,11 @@ function Navbar({ openAuthModal }) {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleNavLinkClick = () => {
+    closeMenu();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -35,36 +41,36 @@ function Navbar({ openAuthModal }) {
     <>
       <div className="navbar">
         <div className="nav-left">
-          <Link to="/" onClick={closeMenu} style={{ position: 'relative', zIndex: 102 }}>
+          <Link to="/" onClick={handleNavLinkClick} style={{ position: 'relative', zIndex: 102 }}>
             <img src={logo} alt="StrayCare Logo" className="logo" />
           </Link>
 
           <div className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
-            <NavLink to="/" end onClick={closeMenu}>
+            <NavLink to="/" end onClick={handleNavLinkClick} data-tooltip="Home">
               <Home size={18} />
               <span>Home</span>
             </NavLink>
-            <NavLink to="/adopt" onClick={closeMenu}>
+            <NavLink to="/adopt" onClick={handleNavLinkClick} data-tooltip="Adopt a pet">
               <Heart size={18} />
               <span>Adopt a pet</span>
             </NavLink>
-            <NavLink to="/post" onClick={closeMenu}>
+            <NavLink to="/post" onClick={handleNavLinkClick} data-tooltip="create or view posts">
               <PlusSquare size={18} />
               <span>Post</span>
             </NavLink>
-            <NavLink to="/track" onClick={closeMenu}>
+            <NavLink to="/track" onClick={handleNavLinkClick} data-tooltip="Track reports">
               <MapPin size={18} />
               <span>Track</span>
             </NavLink>
-            <NavLink to="/help" onClick={closeMenu}>
+            <NavLink to="/help" onClick={handleNavLinkClick} data-tooltip="Support our campaigns">
               <HandHeart size={18} />
               <span>Support Us</span>
             </NavLink>
-            <NavLink to="/guide" onClick={closeMenu}>
+            <NavLink to="/guide" onClick={handleNavLinkClick} data-tooltip="Furzo Guide for your doubts">
               <BookOpen size={18} />
               <span>Guide</span>
             </NavLink>
-            <NavLink to="/register" onClick={closeMenu}>
+            <NavLink to="/register" onClick={handleNavLinkClick} data-tooltip="Register as a partner">
               <UserPlus size={18} />
               <span>Register</span>
             </NavLink>
@@ -82,8 +88,8 @@ function Navbar({ openAuthModal }) {
         </div>
 
         <div className="nav-right">
-          <NavLink to="/emergency" className="emergency mobile-emergency">
-            Emergency
+          <NavLink to="/emergency" className="emergency mobile-emergency" data-tooltip="Report a stray for adoption or emergency">
+            Report
           </NavLink>
 
           <div className="header-auth" ref={authDropdownRef}>
@@ -99,7 +105,10 @@ function Navbar({ openAuthModal }) {
                       Login
                     </button>
                     <button onClick={() => { openAuthModal('signup'); setIsAuthDropdownOpen(false); }} className="auth-dropdown-item">
-                      Register
+                      Sign-up
+                    </button>
+                    <button onClick={() => { navigate('/register'); setIsAuthDropdownOpen(false); }} className="auth-dropdown-item">
+                      Register as partner
                     </button>
                   </div>
                 )}
@@ -148,4 +157,4 @@ function Navbar({ openAuthModal }) {
   );
 }
 
-export default Navbar;
+export default Navbar;
