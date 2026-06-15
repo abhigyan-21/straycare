@@ -23,7 +23,13 @@ function VetRequestCard({ req, isNew = false, onAccept, onReject, onSetTime }) {
                 <span className="status-title">Status</span>
                 {showActions ? (
                     <div className="request-action-btns">
-                        <button className="request-action-btn accept-btn" onClick={onAccept} title="Accept Application">
+                        <button 
+                            className="request-action-btn accept-btn" 
+                            onClick={onAccept} 
+                            title={isNew ? "Schedule interview before accepting" : "Accept Application"}
+                            disabled={isNew}
+                            style={isNew ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                        >
                             <Check size={20} />
                         </button>
                         <button className="request-action-btn reject-btn" onClick={onReject} title="Reject Application">

@@ -242,6 +242,18 @@ const submitAdoptionRequest = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Pet is no longer available for adoption' });
     }
 
+    const existingRequest = await prisma.adoptionRequest.findFirst({
+      where: {
+        petId,
+        userId,
+        status: { in: ['PENDING', 'INTERVIEW_SCHEDULED'] }
+      }
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({ status: 'error', message: 'You already have an active adoption request for this pet' });
+    }
+
     const request = await prisma.adoptionRequest.create({
       data: {
         petId,
@@ -356,6 +368,10 @@ const updateRequestStatus = async (req, res) => {
 
     if (req.user.role !== 'ADMIN' && !isOwner && !isInClinic) {
       return res.status(403).json({ status: 'error', message: 'Unauthorized to update this request' });
+    }
+
+    if (status === 'APPROVED' && !request.interviewDate && !interviewDate) {
+      return res.status(400).json({ status: 'error', message: 'Cannot approve request without scheduling an interview first' });
     }
 
     const updatedRequest = await prisma.adoptionRequest.update({
@@ -702,6 +718,26 @@ const updatePet = async (req, res) => {
   }
 };
 
+const cancelAdoptionRequest = async (req, res) => {
+  try {
+    const { petId } = req.params;
+    const userId = req.user.id;
+
+    // Delete any pending/scheduled request from this user for this pet
+    await prisma.adoptionRequest.deleteMany({
+      where: {
+        petId,
+        userId,
+        status: { in: ['PENDING', 'INTERVIEW_SCHEDULED'] }
+      }
+    });
+
+    res.json({ status: 'success', message: 'Adoption request cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
 module.exports = {
   listPets,
   getPetDetails,
@@ -711,4 +747,5 @@ module.exports = {
   updateRequestStatus,
   getClinicPets,
   updatePet,
+  cancelAdoptionRequest,
 };

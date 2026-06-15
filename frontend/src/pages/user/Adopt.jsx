@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import '../../styles/user/Adopt.css';
-import { getPets, submitAdoptionRequest } from '../../services/api';
+import { getPets, submitAdoptionRequest, getUserAdoptionRequests, cancelAdoptionRequest } from '../../services/api';
 import PetCarousel from '../../components/user/PetCarousel';
 import FilterModal from '../../components/user/FilterModal';
 
@@ -17,15 +17,31 @@ function Adopt() {
     });
 
     useEffect(() => {
-        const fetchPets = async () => {
-            const data = await getPets();
-            setPets(data);
+        const fetchPetsAndRequests = async () => {
+            try {
+                const [petsData, reqsData] = await Promise.all([
+                    getPets(),
+                    getUserAdoptionRequests()
+                ]);
+                setPets(petsData);
+                
+                // Initialize user's active requests
+                const activePetIds = new Set(
+                    reqsData
+                        .filter(r => r.status === 'PENDING' || r.status === 'INTERVIEW_SCHEDULED')
+                        .map(r => r.petId)
+                );
+                setInterestedPets(activePetIds);
+            } catch (err) {
+                console.error("Failed to load initial adoption data:", err);
+            }
         };
-        fetchPets();
+        fetchPetsAndRequests();
     }, []);
 
     const filteredPets = useMemo(() => {
         return pets.filter(pet => {
+            if (pet.status !== 'AVAILABLE') return false;
             let match = true;
             if (filters.type && pet.type !== filters.type) match = false;
             if (filters.breed && (!pet.breed || !pet.breed.toLowerCase().includes(filters.breed.toLowerCase()))) match = false;
@@ -62,12 +78,17 @@ function Adopt() {
     const handleInterested = async (pet) => {
         const isCurrentlyInterested = interestedPets.has(pet.id);
         if (isCurrentlyInterested) {
-            // Toggle off locally
-            setInterestedPets(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(pet.id);
-                return newSet;
-            });
+            try {
+                await cancelAdoptionRequest(pet.id);
+                setInterestedPets(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(pet.id);
+                    return newSet;
+                });
+            } catch (error) {
+                console.error('Failed to cancel adoption request:', error);
+                alert('Failed to cancel adoption request. Please try again.');
+            }
             return;
         }
 

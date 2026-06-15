@@ -14,5 +14,6 @@ router.patch('/pets/:id', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN', 'NG
 router.post('/requests', verifyToken, allowRoles('USER', 'RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.submitAdoptionRequest);
 router.get('/requests', verifyToken, adoptionController.getAdoptionRequests);
 router.patch('/requests/:id', verifyToken, allowRoles('RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.updateRequestStatus);
+router.delete('/requests/pet/:petId', verifyToken, allowRoles('USER', 'RESCUER', 'VET', 'ADMIN', 'NGO'), adoptionController.cancelAdoptionRequest);
 
 module.exports = router;

@@ -284,6 +284,22 @@ export const submitAdoptionRequest = async (petId, formDetails = {}) => {
   const response = await apiClient.post('/adoptions/requests', { petId, formDetails });
   return response.data;
 };
+
+export const getUserAdoptionRequests = async () => {
+  try {
+    const response = await apiClient.get('/adoptions/requests');
+    return response.data?.data || response.data || [];
+  } catch (error) {
+    console.warn('Failed to fetch user adoption requests:', error.message);
+    return [];
+  }
+};
+
+export const cancelAdoptionRequest = async (petId) => {
+  const response = await apiClient.delete(`/adoptions/requests/pet/${petId}`);
+  return response.data;
+};
+
 export const fetchPosts = async (page = 1, limit = 10) => {
   const response = await apiClient.get('/posts', {
     params: { page, limit }
