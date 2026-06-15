@@ -32,9 +32,11 @@ function VetAdopt() {
         newRequests: []
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const fetchData = async () => {
         setIsLoading(true);
+        setError(null);
         const startTime = Date.now();
         try {
             const [petsRes, reqsRes] = await Promise.all([
@@ -42,8 +44,8 @@ function VetAdopt() {
                 apiClient.get('/adoptions/requests')
             ]);
 
-            const pets = petsRes || [];
-            const reqs = reqsRes.data.data || [];
+            const pets = Array.isArray(petsRes) ? petsRes : (petsRes?.data || []);
+            const reqs = Array.isArray(reqsRes?.data?.data) ? reqsRes.data.data : (Array.isArray(reqsRes?.data) ? reqsRes.data : []);
 
             const today = new Date().toISOString().split('T')[0];
 
@@ -77,6 +79,7 @@ function VetAdopt() {
             });
         } catch (error) {
             console.warn("Failed to fetch VetAdopt data:", error);
+            setError("Failed to fetch adoption data. Please check your connection or try again later.");
             setData({
                 todaysInterviews: [],
                 liveAdoptions: [],
@@ -196,6 +199,12 @@ function VetAdopt() {
             <meta name="description" content="Manage live adoption listings, review adoption requests, and schedule interviews from your Furzo clinic portal." />
         </Helmet>
         <div className="vet-dashboard vet-adopt-page">
+            {error && (
+                <div className="error-banner" style={{ padding: '12px 20px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}>
+                    <AlertTriangle size={20} />
+                    <span>{error}</span>
+                </div>
+            )}
             <div className="main-rescue-section adopt-interview-section">
                 <div className="section-header">
                     <h1 className="section-title">Todays Interview</h1>

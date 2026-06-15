@@ -141,8 +141,13 @@ export const getProfile = async () => {
 };
 
 export const getClinicPets = async () => {
-  const response = await apiClient.get('/adoptions/clinic-pets');
-  return response.data;
+  try {
+    const response = await apiClient.get('/adoptions/clinic-pets');
+    return response.data?.data || response.data || [];
+  } catch (error) {
+    console.warn('Failed to fetch clinic pets:', error.message);
+    return [];
+  }
 };
 
 export const updatePet = async (id, data) => {

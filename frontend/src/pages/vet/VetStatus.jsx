@@ -29,17 +29,19 @@ function VetStatus() {
     const [showConfirm, setShowConfirm] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState(null);
+    const [error, setError] = useState(null);
 
     const fetchData = async () => {
         setIsLoading(true);
+        setError(null);
         try {
             const [reportsRes, petsRes] = await Promise.all([
                 apiClient.get('/reports/clinic'),
                 getClinicPets()
             ]);
 
-            const reports = reportsRes.data || [];
-            const pets = petsRes || [];
+            const reports = Array.isArray(reportsRes.data) ? reportsRes.data : (reportsRes.data?.data || []);
+            const pets = Array.isArray(petsRes) ? petsRes : (petsRes?.data || []);
 
             // 1. Live rescues (green box): Show REPORTED or ASSIGNED status reports
             const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');
@@ -81,6 +83,7 @@ function VetStatus() {
             setTreatmentList([...reportTreatments, ...petTreatments]);
         } catch (error) {
             console.error("Failed to fetch status data:", error);
+            setError("Failed to fetch status/treatment data. Please check your connection or try again later.");
         } finally {
             setIsLoading(false);
         }
@@ -160,6 +163,12 @@ function VetStatus() {
             <meta name="description" content="Track and update treatment statuses of rescued animals at your clinic on the Furzo Vet Portal." />
         </Helmet>
         <div className="vet-dashboard vet-status-page">
+            {error && (
+                <div className="error-banner" style={{ padding: '12px 20px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}>
+                    <AlertTriangle size={20} />
+                    <span>{error}</span>
+                </div>
+            )}
             <LiveStatusView rescues={currentRescues} />
 
             {/* List Section */}
