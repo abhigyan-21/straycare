@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import apiClient, { getPartner } from '../../services/api';
 
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        if (window.Razorpay) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 const SupportModal = ({
     card,
@@ -103,6 +116,13 @@ const SupportModal = ({
             }
 
             // New Razorpay Smart Hub Flow
+            const loaded = await loadRazorpayScript();
+            if (!loaded) {
+                setIsPaymentProcessing(false);
+                alert('Failed to load payment gateway. Please check your internet connection and try again.');
+                return;
+            }
+
             let category = 'FOOD';
             if (card.id === 2) category = 'TREATMENT';
             if (card.id === 3) category = 'SHELTER';

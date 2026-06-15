@@ -5,6 +5,12 @@
     background-color: #fcfdf9;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
+}
+
+.help-page,
+.help-page * {
+    box-sizing: border-box;
 }
 
 .help-content-wrapper {
@@ -566,12 +572,33 @@
 
 @media (max-width: 768px) {
     .help-content-wrapper {
-        padding: 2rem 1rem;
+        padding: 1.5rem 1rem;
+    }
+
+    .help-cards-container {
+        width: 700%; /* 7 cards in total, exactly 1 card visible at a time */
+    }
+
+    .help-card-wrapper {
+        padding: 0 8px; /* Tighter padding for mobile screens */
     }
 
     .help-card {
-        min-height: 250px;
-        padding: 1.5rem;
+        height: 340px;
+        padding: 1.2rem;
+    }
+
+    .help-card h3 {
+        font-size: 1.25rem;
+    }
+
+    .support-btn {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+    }
+
+    .carousel-dots {
+        margin-top: 1rem;
     }
 
     .expanded-card {
@@ -582,6 +609,11 @@
     .close-btn {
         top: 15px;
         right: 15px;
+    }
+
+    .no-campaigns-found {
+        padding: 2.5rem 1.5rem;
+        font-size: 0.95rem;
     }
 }
 
