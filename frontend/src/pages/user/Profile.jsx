@@ -21,6 +21,8 @@ import CreatePostModal from '../../components/user/CreatePostModal';
 import { useAuthStore } from '../../store/authStore';
 import MiniLoader from '../../components/user/MiniLoader';
 import apiClient, { requestRescuerUpgradeOtp, verifyRescuerUpgradeOtp } from '../../services/api';
+import { useProfileStore } from '../../store/profileStore';
+import { processPDF, formatFileSize } from '../../utils/pdfUtils';
 
 const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'><rect width='100%25' height='100%25' fill='%23f1f5f9'/><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 
@@ -64,13 +66,33 @@ const Profile = () => {
     const avatarInputRef = useRef(null);
 
     const { user: authUser, logout, updateProfileAction } = useAuthStore();
+    const profileStore = useProfileStore();
+    const {
+        posts,
+        reports,
+        donations,
+        subscriptions,
+        documents,
+        adoptions,
+        rescues,
+        loading: isLoadingData,
+        fetchProfileData,
+        addPost,
+        editPost,
+        deletePost,
+        addDocument,
+        deleteDocument,
+        cancelSubscription,
+    } = profileStore;
+
     const [activeTab, setActiveTab] = useState('personal');
-    const [adoptionSubTab, setAdoptionSubTab] = useState('interested'); // 'interested' or 'adopted'
-    const [rescueSubTab, setRescueSubTab] = useState('active'); // 'active' or 'completed'
+    const [adoptionSubTab, setAdoptionSubTab] = useState('interested');
+    const [rescueSubTab, setRescueSubTab] = useState('active');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [postToEdit, setPostToEdit] = useState(null);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+    const [pdfStatus, setPdfStatus] = useState(''); // live compression status message
+    const [isProcessingPDF, setIsProcessingPDF] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [upgradeOtp, setUpgradeOtp] = useState('');
@@ -191,161 +213,11 @@ const Profile = () => {
         }
     };
 
-    const [posts, setPosts] = useState([]);
-    const [reports, setReports] = useState([]);
-    const [donations, setDonations] = useState([]);
-    const [subscriptions, setSubscriptions] = useState([]);
-    const [documents, setDocuments] = useState([]);
-    const [adoptions, setAdoptions] = useState([]);
-    const [rescues, setRescues] = useState([]);
-    const [isLoadingData, setIsLoadingData] = useState(true);
-
-    const fetchProfileData = async () => {
-        setIsLoadingData(true);
-        try {
-            const promises = [
-                apiClient.get('/feed/my-posts').catch(() => ({ data: null })),
-                apiClient.get('/reports/my-reports').catch(() => ({ data: null })),
-                apiClient.get('/funding/my-donations').catch(() => ({ data: null })),
-                apiClient.get('/medical/documents').catch(() => ({ data: null })),
-                apiClient.get('/adoptions/requests').catch(() => ({ data: null }))
-            ];
-
-            if (authUser?.role === 'RESCUER') {
-                promises.push(apiClient.get('/reports/my-rescues').catch(() => ({ data: null })));
-            }
-
-            const results = await Promise.all(promises);
-            const [postsRes, reportsRes, donationsRes, docsRes, adoptionsRes, rescuesRes] = results;
-
-            if (postsRes && postsRes.data) {
-                const mappedPosts = postsRes.data.map(p => ({
-                    id: p.id,
-                    image: p.postImage || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600',
-                    caption: p.caption,
-                    likes: p._count?.likes || 0,
-                    createdAt: p.createdAt
-                }));
-                setPosts(mappedPosts);
-            } else {
-                setPosts([]);
-            }
-
-            if (reportsRes && reportsRes.data) {
-                const mappedReports = reportsRes.data.map(r => ({
-                    id: r.id.substring(0, 8),
-                    actualId: r.id,
-                    image: r.mediaUrls[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                    name: r.description.length > 25 ? r.description.substring(0, 25) + '...' : r.description,
-                    location: `Lat: ${r.locationLat.toFixed(2)}, Lng: ${r.locationLng.toFixed(2)}`,
-                    date: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                }));
-                setReports(mappedReports);
-            } else {
-                setReports([]);
-            }
-
-            if (donationsRes && donationsRes.data && donationsRes.data.status === 'success') {
-                const mappedDonations = donationsRes.data.donations.map(d => ({
-                    id: d.id,
-                    amount: `₹${d.amount}`,
-                    date: new Date(d.createdAt).toISOString().split('T')[0],
-                    type: d.type === 'CAMPAIGN' ? 'Campaign Donation' : `${d.type} Donation`,
-                    to: d.campaign?.title || d.partner?.name || d.clinic?.name || 'StrayCare General Fund'
-                }));
-                setDonations(mappedDonations);
-
-                const mappedSubscriptions = donationsRes.data.subscriptions.map(s => ({
-                    id: s.id,
-                    amount: `₹${s.amount}`,
-                    date: new Date(s.createdAt).toISOString().split('T')[0],
-                    type: 'Monthly Autopay',
-                    to: s.partner?.name || s.clinic?.name || 'Clinic Partner',
-                    status: s.status
-                }));
-                setSubscriptions(mappedSubscriptions);
-            } else {
-                setDonations([]);
-                setSubscriptions([]);
-            }
-
-            if (docsRes && docsRes.data) {
-                const mappedDocs = docsRes.data.map(d => ({
-                    id: d.id,
-                    name: d.name,
-                    dateAdded: new Date(d.createdAt).toISOString().split('T')[0],
-                    type: d.type,
-                    fileData: d.fileData
-                }));
-                setDocuments(mappedDocs);
-            } else {
-                setDocuments([]);
-            }
-
-            if (adoptionsRes && adoptionsRes.data && adoptionsRes.data.status === 'success') {
-                const mappedAdoptions = adoptionsRes.data.data.map(a => {
-                    let statusText = 'Pending Review';
-                    let statusType = 'pending';
-                    if (a.status === 'INTERVIEW_SCHEDULED') {
-                        statusText = 'Interview Scheduled';
-                        statusType = 'interview';
-                    } else if (a.status === 'APPROVED') {
-                        statusText = 'Successfully Adopted';
-                        statusType = 'adopted';
-                    } else if (a.status === 'REJECTED') {
-                        statusText = 'Rejected';
-                        statusType = 'rejected';
-                    }
-
-                    return {
-                        id: a.id,
-                        petName: a.pet.name || 'Stray Pet',
-                        petBreed: a.pet.breed || 'Mixed',
-                        petImage: a.pet.report?.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=500',
-                        status: statusText,
-                        statusType: statusType,
-                        date: new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                        clinic: a.pet.partner?.name || a.pet.clinic?.name || 'StrayCare Center'
-                    };
-                });
-                setAdoptions(mappedAdoptions);
-            } else {
-                setAdoptions([]);
-            }
-
-            if (authUser?.role === 'RESCUER' && rescuesRes && rescuesRes.data) {
-                const mappedRescues = rescuesRes.data.map(r => ({
-                    id: r.id,
-                    image: r.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60',
-                    description: r.description,
-                    status: r.status,
-                    reporterName: r.reporter?.name || 'Anonymous',
-                    reporterPhone: r.reporter?.phone || 'N/A',
-                    date: new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                    lat: r.locationLat,
-                    lng: r.locationLng
-                }));
-                setRescues(mappedRescues);
-            } else {
-                setRescues([]);
-            }
-        } catch (error) {
-            console.error('Error fetching profile data:', error);
-            setPosts([]);
-            setReports([]);
-            setDonations([]);
-            setSubscriptions([]);
-            setDocuments([]);
-            setAdoptions([]);
-            setRescues([]);
-        } finally {
-            setIsLoadingData(false);
-        }
-    };
+    // Profile data (posts, reports, etc.) is read from profileStore
 
     useEffect(() => {
         if (authUser) {
-            fetchProfileData();
+            fetchProfileData(authUser);
         }
     }, [authUser]);
 
@@ -363,16 +235,13 @@ const Profile = () => {
 
     const handleCreatePostSubmit = async (newPost) => {
         if (newPost.id) {
-            // It's an edit submission
+            // Edit submission — delegate to profileStore
             try {
-                const response = await apiClient.patch(`/feed/${newPost.id}`, {
-                    caption: newPost.caption
-                });
-                const updatedPost = response.data;
-                setPosts(posts.map(p => p.id === newPost.id ? { ...p, caption: updatedPost.caption } : p));
+                const response = await apiClient.patch(`/feed/${newPost.id}`, { caption: newPost.caption });
+                editPost(newPost.id, response.data.caption || newPost.caption);
             } catch (err) {
-                console.warn('Backend failed to update post, falling back to local update.', err);
-                setPosts(posts.map(p => p.id === newPost.id ? { ...p, caption: newPost.caption } : p));
+                console.warn('Backend failed to update post, applying local update.', err);
+                editPost(newPost.id, newPost.caption);
             }
             return;
         }
@@ -386,16 +255,15 @@ const Profile = () => {
                 content: newPost.caption,
                 mediaUrls: [newPost.postImage]
             });
-
             const p = response.data;
             const createdPost = {
                 id: p.id,
                 image: p.postImage || newPost.postImage,
                 caption: p.caption,
                 likes: p._count?.likes || 0,
-                createdAt: p.createdAt
+                createdAt: p.createdAt,
             };
-            setPosts([createdPost, ...posts]);
+            addPost(createdPost);
         } catch (err) {
             console.warn('Backend failed to create post, falling back to mock upload.', err);
             let progress = 0;
@@ -405,7 +273,7 @@ const Profile = () => {
                     progress = 100;
                     clearInterval(interval);
                     setTimeout(() => {
-                        setPosts([{ id: newPost.id, image: newPost.postImage, caption: newPost.caption }, ...posts]);
+                        addPost({ id: newPost.id, image: newPost.postImage, caption: newPost.caption });
                         setIsUploading(false);
                         setUploadProgress(0);
                     }, 800);
@@ -434,37 +302,19 @@ const Profile = () => {
 
     const handleDeletePost = async (id) => {
         if (window.confirm('Are you sure you want to delete this post?')) {
-            try {
-                await apiClient.delete(`/feed/${id}`);
-                setPosts(posts.filter(post => post.id !== id));
-            } catch (err) {
-                console.warn('Backend failed to delete post, falling back to local deletion.', err);
-                setPosts(posts.filter(post => post.id !== id));
-            }
+            await deletePost(id); // profileStore handles API + optimistic update
         }
     };
 
     const handleCancelDonation = async (id) => {
         if (window.confirm('Are you sure you want to cancel this autopay?')) {
-            try {
-                await apiClient.post(`/funding/subscriptions/${id}/cancel`);
-                setSubscriptions(subscriptions.map(s => s.id === id ? { ...s, status: 'CANCELLED' } : s));
-            } catch (err) {
-                console.warn('Backend failed to cancel subscription, falling back to local deletion.', err);
-                setSubscriptions(subscriptions.filter(d => d.id !== id));
-            }
+            await cancelSubscription(id); // profileStore handles API + optimistic update
         }
     };
 
     const handleDeleteDocument = async (id) => {
         if (window.confirm('Are you sure you want to delete this document?')) {
-            try {
-                await apiClient.delete(`/medical/documents/${id}`);
-                setDocuments(documents.filter(doc => doc.id !== id));
-            } catch (err) {
-                console.warn('Backend failed to delete document, falling back to local deletion.', err);
-                setDocuments(documents.filter(doc => doc.id !== id));
-            }
+            await deleteDocument(id); // profileStore handles API + optimistic update
         }
     };
 
@@ -487,39 +337,75 @@ const Profile = () => {
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64Content = reader.result;
-                try {
-                    const response = await apiClient.post('/medical/documents', {
-                        name: file.name,
-                        type: file.type.includes('pdf') ? 'Medical' : 'Other',
-                        fileData: base64Content
-                    });
-                    const d = response.data;
-                    const newDoc = {
-                        id: d.id,
-                        name: d.name,
-                        dateAdded: new Date(d.createdAt).toISOString().split('T')[0],
-                        type: d.type,
-                        fileData: d.fileData
-                    };
-                    setDocuments([newDoc, ...documents]);
-                    alert(`File "${file.name}" uploaded successfully!`);
-                } catch (err) {
-                    console.warn('Backend failed to upload document, falling back to mock upload.', err);
-                    const newDoc = {
-                        id: Date.now(),
-                        name: file.name,
-                        dateAdded: new Date().toISOString().split('T')[0],
-                        type: 'Uploaded'
-                    };
-                    setDocuments([...documents, newDoc]);
-                    alert(`File "${file.name}" uploaded successfully (offline mode)!`);
+        if (!file) return;
+
+        setPdfStatus('');
+        setUploadProgress(0);
+        e.target.value = null; // allow re-selecting same file
+        setIsProcessingPDF(true);
+
+        let result;
+        try {
+            // processPDF sets status: "Uploading..."
+            result = await processPDF(file, (status) => setPdfStatus(status));
+        } catch (err) {
+            // > 2 MB rejection
+            alert(err.message);
+            setPdfStatus('');
+            setIsProcessingPDF(false);
+            return;
+        }
+
+        // Give the bar an initial bump so the user sees immediate action
+        setUploadProgress(15);
+
+        try {
+            const response = await apiClient.post('/medical/documents', {
+                name: file.name,
+                type: 'Medical',
+                fileData: result.base64
+            }, {
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent.total) {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        // Hold at 95% until the server actually responds with success
+                        setUploadProgress(Math.min(percentCompleted, 95));
+                    }
                 }
-            };
-            reader.readAsDataURL(file);
+            });
+            const d = response.data;
+            addDocument({
+                id: d.id,
+                name: d.name,
+                dateAdded: new Date(d.createdAt).toISOString().split('T')[0],
+                type: d.type,
+                fileData: d.fileData
+            });
+            setUploadProgress(100);
+            setPdfStatus(`✓ Done — "${file.name}" saved`);
+            
+            // Clean up back to default state after 3 seconds
+            setTimeout(() => {
+                setPdfStatus('');
+                setUploadProgress(0);
+            }, 3000);
+        } catch (err) {
+            console.warn('Backend upload failed, using offline mode.', err);
+            addDocument({
+                id: Date.now(),
+                name: file.name,
+                dateAdded: new Date().toISOString().split('T')[0],
+                type: 'Uploaded'
+            });
+            setUploadProgress(100);
+            setPdfStatus(`✓ Done — "${file.name}" saved (offline mode)`);
+            
+            setTimeout(() => {
+                setPdfStatus('');
+                setUploadProgress(0);
+            }, 3000);
+        } finally {
+            setIsProcessingPDF(false);
         }
     };
 
@@ -724,14 +610,54 @@ const Profile = () => {
                                 <p className="empty-state">No documents uploaded.</p>
                             )}
                         </div>
-                        <div className="upload-area" onClick={handleMockUpload}>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                style={{ display: 'none' }}
-                                onChange={handleFileChange}
-                            />
-                            <p>Drag & drop files here, or click to select</p>
+                        <div
+                            className={`upload-area${isProcessingPDF ? ' uploading' : ''}`}
+                            onClick={!isProcessingPDF && !pdfStatus ? handleMockUpload : undefined}
+                            style={{ 
+                                cursor: isProcessingPDF || pdfStatus ? 'default' : 'pointer', 
+                                position: 'relative', 
+                                overflow: 'hidden',
+                                borderColor: pdfStatus.startsWith('✓') ? '#27ae60' : undefined 
+                            }}
+                        >
+                            {/* Animated background progress fill */}
+                            {(isProcessingPDF || pdfStatus) && !pdfStatus.startsWith('✓') && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    height: '100%',
+                                    width: `${uploadProgress}%`,
+                                    background: 'rgba(243, 156, 18, 0.15)', // light orange fill
+                                    transition: 'width 0.2s ease',
+                                    zIndex: 0
+                                }} />
+                            )}
+                            
+                            <div style={{ position: 'relative', zIndex: 1 }}>
+                                <input
+                                    type="file"
+                                    accept="application/pdf, .pdf"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileChange}
+                                />
+                                
+                                {pdfStatus ? (
+                                    <p style={{ 
+                                        fontWeight: 600, 
+                                        color: pdfStatus.startsWith('✓') ? '#27ae60' : '#f39c12',
+                                        margin: 0
+                                    }}>
+                                        {pdfStatus.startsWith('✓') ? pdfStatus : `Uploading... ${uploadProgress}%`}
+                                    </p>
+                                ) : (
+                                    <>
+                                        <p style={{ margin: '0 0 8px 0' }}>Drag & drop PDF here, or click to select</p>
+                                        <small style={{ color: '#888', fontSize: '0.75rem' }}>Max 2 MB • PDF files only</small>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 );
@@ -795,8 +721,8 @@ const Profile = () => {
             case 'rescues':
                 const filteredRescues = rescues.filter(r =>
                     rescueSubTab === 'active'
-                        ? (r.status === 'ASSIGNED' || r.status === 'RESCUED')
-                        : (r.status === 'TREATED' || r.status === 'ADOPTED')
+                        ? (r.status === 'ASSIGNED')
+                        : (r.status === 'RESCUED' || r.status === 'TREATED' || r.status === 'ADOPTED')
                 );
 
                 return (
@@ -838,7 +764,7 @@ const Profile = () => {
                                             </div>
                                             <div className="adoption-card-status">
                                                 <span className={`status-badge ${item.status.toLowerCase()}`}>
-                                                    {item.status}
+                                                    {item.status === 'RESCUED' ? 'Reached Clinic' : item.status}
                                                 </span>
                                                 <span className="adoption-date">Reported: {item.date}</span>
                                             </div>

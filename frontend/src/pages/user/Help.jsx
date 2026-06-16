@@ -10,9 +10,19 @@ import UserCampaignDetailModal from '../../components/user/UserCampaignDetailMod
 import UserCampaignCard from '../../components/user/UserCampaignCard';
 import { useAuthStore } from '../../store/authStore';
 import apiClient, { isActiveCampaign } from '../../services/api';
+import { useCampaignStore } from '../../store/campaignStore';
 
 function Help({ openAuthModal }) {
     const { isLoggedIn } = useAuthStore();
+    const {
+        campaigns,
+        highlights,
+        loadingCampaigns: isLoadingCampaigns,
+        loadingHighlights: isLoadingHighlights,
+        fetchCampaigns,
+        fetchHighlights,
+        handleDonation: storeDonation,
+    } = useCampaignStore();
     
     const [expandedCard, setExpandedCard] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -20,15 +30,7 @@ function Help({ openAuthModal }) {
     const [shouldAnimate, setShouldAnimate] = useState(true);
     const resetTimeoutRef = useRef(null);
 
-    // Campaigns list state
-    const [campaigns, setCampaigns] = useState([]);
-    const [highlights, setHighlights] = useState({
-        featuredCampaign: null,
-        badgeText: "LATEST CAMPAIGN",
-        topContributor: null
-    });
-    const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
-    const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
+    // Campaigns are now managed by useCampaignStore (cached)
 
     // Search & filter states
     const [searchQuery, setSearchQuery] = useState('');
@@ -72,38 +74,7 @@ function Help({ openAuthModal }) {
 
     const displayCards = [...cards, ...cards.slice(0, 3)];
 
-    // Fetch campaigns from backend
-    const fetchCampaigns = async () => {
-        setIsLoadingCampaigns(true);
-        try {
-            const response = await apiClient.get('/funding/campaigns');
-            if (response.data && response.data.status === 'success' && response.data.data && response.data.data.length > 0) {
-                setCampaigns(response.data.data);
-            } else {
-                setCampaigns([]);
-            }
-        } catch (err) {
-            console.warn('Backend offline, no campaigns loaded:', err);
-            setCampaigns([]);
-        } finally {
-            setIsLoadingCampaigns(false);
-        }
-    };
-
-    // Fetch highlights from backend
-    const fetchHighlights = async () => {
-        setIsLoadingHighlights(true);
-        try {
-            const response = await apiClient.get('/funding/campaigns/highlights');
-            if (response.data && response.data.status === 'success') {
-                setHighlights(response.data.data);
-            }
-        } catch (err) {
-            console.warn("Failed to fetch highlights:", err);
-        } finally {
-            setIsLoadingHighlights(false);
-        }
-    };
+    // fetchCampaigns & fetchHighlights are now from useCampaignStore
 
     // Check volunteering status from backend (with local mock fallback)
     const checkVolunteeringStatus = async () => {
@@ -251,45 +222,15 @@ function Help({ openAuthModal }) {
         }
     };
 
-    // Donation fulfillment logic (real API or mock simulation)
+    // Donation — delegated to campaignStore (optimistic update + cache invalidation)
     const handleCampaignDonation = async (campaignId, amount) => {
-        try {
-            await apiClient.post(`/funding/campaigns/${campaignId}/donate-mock`, { amount });
-            // Refresh campaigns and highlights to update stats
-            await fetchCampaigns();
-            await fetchHighlights();
-            return true;
-        } catch (err) {
-            // Simulate donation on frontend
-            setCampaigns(prev => prev.map(c => {
-                if (c.id === campaignId) {
-                    return {
-                        ...c,
-                        raisedAmount: (c.raisedAmount || 0) + Number(amount)
-                    };
-                }
-                return c;
-            }));
-            setHighlights(prev => {
-                if (prev.featuredCampaign && prev.featuredCampaign.id === campaignId) {
-                    return {
-                        ...prev,
-                        featuredCampaign: {
-                            ...prev.featuredCampaign,
-                            raisedAmount: (prev.featuredCampaign.raisedAmount || 0) + Number(amount)
-                        }
-                    };
-                }
-                return prev;
-            });
-            return true;
-        }
+        return await storeDonation(campaignId, amount);
     };
 
     useEffect(() => {
         fetchCampaigns();
         fetchHighlights();
-    }, []);
+    }, [fetchCampaigns, fetchHighlights]);
 
     useEffect(() => {
         checkVolunteeringStatus();

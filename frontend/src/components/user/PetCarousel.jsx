@@ -63,6 +63,12 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [hasPrev, hasNext, onPrev, onNext]);
 
+    const swipeOffset = isDragging && touchStart && touchEnd ? touchEnd - touchStart : 0;
+    const cardStyle = {
+        transform: isDragging ? `translateX(${swipeOffset}px)` : '',
+        transition: isDragging ? 'none' : 'all 0.4s ease'
+    };
+
     const currentPet = pets[currentIndex];
 
     return (
@@ -95,7 +101,7 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
                     </div>
                 )}
 
-                <div className={`pet-card pet-card-current ${isInterested ? 'interested-state' : ''}`} style={{ display: 'flex', flexDirection: 'row' }}>
+                <div className={`pet-card pet-card-current ${isInterested ? 'interested-state' : ''}`} style={cardStyle}>
                     <div className="pet-image-side">
                         <img src={currentPet.image} alt={currentPet.name} draggable="false" />
                     </div>

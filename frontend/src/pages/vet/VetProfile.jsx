@@ -24,8 +24,10 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetProfile.css';
-import { getProfile, getUserDocuments, uploadUserDocument, deleteUserDocument } from '../../services/api';
+import { uploadUserDocument } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
+import { useVetProfileStore } from '../../store/vetProfileStore';
+import { processPDF, formatFileSize } from '../../utils/pdfUtils';
 import hospitalImg from '../../assets/images/Hospital.webp';
 
 const circularLocationIcon = new L.DivIcon({ 
@@ -53,15 +55,26 @@ function MapEventsHandler({ onMapClick, center }) {
 
 const VetProfile = () => {
     const { user: authUser, logout, updateProfileAction, changePasswordAction } = useAuthStore();
+
+    // ── Vet Profile Store (cached) ────────────────────────────────────────────
+    const {
+        vetData,
+        documents,
+        loading: loadingProfile,
+        fetchVetProfile,
+        updateVetData,
+        addDocument,
+        removeDocument,
+    } = useVetProfileStore();
+
     const [activeTab, setActiveTab] = useState('clinic');
-    const [vetData, setVetData] = useState(null);
-    const [loadingProfile, setLoadingProfile] = useState(true);
-    const [documents, setDocuments] = useState([]);
-    
+
     // Upload document states
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [uploadForm, setUploadForm] = useState({ name: '', fileData: '', fileName: '' });
+    const [uploadForm, setUploadForm] = useState({ name: '', fileData: '', fileName: '', originalSize: '', finalSize: '' });
     const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+    const [pdfStatus, setPdfStatus] = useState('');  // live compression status message
+    const [isProcessingPDF, setIsProcessingPDF] = useState(false);
 
     // Avatar ref
     const avatarInputRef = useRef(null);
@@ -78,71 +91,9 @@ const VetProfile = () => {
     const [settingsError, setSettingsError] = useState('');
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
+    // Fetch on mount (TTL-aware — skips API if cache is fresh)
     useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const [profileData, docsData] = await Promise.all([
-                    getProfile(),
-                    getUserDocuments()
-                ]);
-
-                setVetData({
-                    name: profileData.user.name,
-                    email: profileData.user.email,
-                    phone: profileData.user.contact || profileData.user.phone || 'N/A',
-                    role: profileData.user.role,
-                    avatar: profileData.user.avatarUrl || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop',
-                    clinicName: profileData.user.partner?.name || profileData.user.clinic?.name || 'StrayCare Partner',
-                    licenseNo: profileData.registrationDetails?.registrationNumber || 'N/A',
-                    joined: new Date(profileData.user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
-                    location: profileData.user.partner?.address || profileData.user.clinic?.address || 'N/A',
-                    specialization: 'General Veterinary Care',
-                    experience: 'N/A',
-                    experienceFull: 'Board certified veterinary clinic staff.',
-                    totalRescues: profileData.stats?.totalRescues || 0,
-                    activeCampaigns: profileData.stats?.activeCampaigns || 0,
-                    successfulAdoptions: profileData.stats?.successfulAdoptions || 0,
-                    lat: profileData.user.partner?.lat || profileData.user.clinic?.lat || null,
-                    lng: profileData.user.partner?.lng || profileData.user.clinic?.lng || null,
-                    upiId: profileData.user.partner?.upiId || '',
-                    upiQrCode: profileData.user.partner?.upiQrCode || '',
-                    razorpayId: profileData.user.partner?.razorpayAccountId || ''
-                });
-
-                // Filter out registration document since we display registration details on main tab
-                const filteredDocs = (docsData || []).filter(d => d.type !== 'REGISTRATION');
-                setDocuments(filteredDocs);
-            } catch (err) {
-                console.error('Failed to load live profile, using mock:', err);
-                setVetData({
-                    name: authUser?.name || 'Dr. Arjun Mehta',
-                    email: authUser?.email || 'contact@healthypaws.com',
-                    phone: '+91 98765 43210',
-                    role: authUser?.role || 'clinic',
-                    avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop',
-                    clinicName: 'Healthy Paws Veterinary Clinic',
-                    licenseNo: 'VET-MH-2026-8842',
-                    joined: 'October 2025',
-                    location: 'Sector 45, Gurgaon, Haryana - 122003',
-                    specialization: 'Small Animal Surgery, Preventive Medicine',
-                    experience: '12 Years',
-                    experienceFull: 'Over a decade of experience in domestic animal care and surgical procedures.',
-                    totalRescues: 142,
-                    activeCampaigns: 2,
-                    successfulAdoptions: 89,
-                    lat: 30.7333,
-                    lng: 76.7794,
-                    upiId: '',
-                    upiQrCode: '',
-                    razorpayId: ''
-                });
-                setDocuments([]);
-            } finally {
-                setLoadingProfile(false);
-            }
-        };
-
-        fetchProfile();
+        fetchVetProfile(authUser);
     }, [authUser]);
 
     // Clinic coordinates update states
@@ -230,7 +181,7 @@ const VetProfile = () => {
             try {
                 const compressedBase64 = await compressImage(file);
                 await updateProfileAction(undefined, undefined, undefined, compressedBase64);
-                setVetData(prev => ({ ...prev, avatar: compressedBase64 }));
+                updateVetData({ avatar: compressedBase64 }); // optimistic store update
                 alert('Profile picture updated successfully!');
             } catch (err) {
                 alert(err.message || 'Failed to update profile picture');
@@ -251,7 +202,7 @@ const VetProfile = () => {
         setIsUpdatingProfile(true);
         try {
             await updateProfileAction(nameVal.trim());
-            setVetData(prev => ({ ...prev, name: nameVal.trim() }));
+            updateVetData({ name: nameVal.trim() }); // optimistic store update
             setSettingsSuccess('Profile details updated successfully!');
         } catch (err) {
             setSettingsError(err.message || 'Failed to update profile details.');
@@ -305,7 +256,7 @@ const VetProfile = () => {
         setIsUpdatingPayment(true);
         try {
             await updateProfileAction(undefined, undefined, undefined, undefined, undefined, undefined, upiIdVal, upiQrCodeVal, razorpayIdVal);
-            setVetData(prev => ({ ...prev, upiId: upiIdVal, upiQrCode: upiQrCodeVal, razorpayId: razorpayIdVal }));
+            updateVetData({ upiId: upiIdVal, upiQrCode: upiQrCodeVal, razorpayId: razorpayIdVal }); // optimistic store update
             setSettingsSuccess('Payment information updated successfully!');
         } catch (err) {
             setSettingsError(err.message || 'Failed to update payment details.');
@@ -370,8 +321,7 @@ const VetProfile = () => {
             return;
         }
         try {
-            await deleteUserDocument(id);
-            setDocuments(prev => prev.filter(d => d.id !== id));
+            await removeDocument(id); // store handles optimistic removal + API call
             alert('Certificate deleted successfully');
         } catch (error) {
             console.error('Failed to delete document:', error);
@@ -379,23 +329,29 @@ const VetProfile = () => {
         }
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.type !== 'application/pdf') {
-            alert('Please select a valid PDF file.');
-            e.target.value = null;
-            return;
-        }
-        const reader = new FileReader();
-        reader.onloadend = () => {
+
+        setPdfStatus('');
+        setIsProcessingPDF(true);
+
+        try {
+            // processPDF sets status: "Compressing..." → "Uploading..."
+            const result = await processPDF(file, (status) => setPdfStatus(status));
             setUploadForm(prev => ({
                 ...prev,
-                fileData: reader.result,
-                fileName: file.name
+                fileData: result.base64,
+                fileName: file.name,
             }));
-        };
-        reader.readAsDataURL(file);
+            // Status is already "Uploading..." from pdfUtils — keep it until submit
+        } catch (err) {
+            alert(err.message); // > 2 MB rejection
+            setPdfStatus('');
+            e.target.value = null;
+        } finally {
+            setIsProcessingPDF(false);
+        }
     };
 
     const handleUploadSubmit = async (e) => {
@@ -404,20 +360,30 @@ const VetProfile = () => {
             alert('Please select a PDF file first.');
             return;
         }
+        if (isProcessingPDF) {
+            alert('Still processing the file. Please wait.');
+            return;
+        }
         setIsUploadingDoc(true);
+        setPdfStatus('Uploading...');
         try {
             const data = await uploadUserDocument({
                 name: uploadForm.name,
                 type: 'Certificate',
                 fileData: uploadForm.fileData
             });
-            setDocuments(prev => [data, ...prev]);
-            setIsUploadModalOpen(false);
-            setUploadForm({ name: '', fileData: '', fileName: '' });
-            alert('Document uploaded successfully!');
+            addDocument(data);
+            setPdfStatus(`✓ Done — "${uploadForm.name}" uploaded`);
+            // Brief pause so user sees "Done" before modal closes
+            setTimeout(() => {
+                setIsUploadModalOpen(false);
+                setUploadForm({ name: '', fileData: '', fileName: '', originalSize: '', finalSize: '' });
+                setPdfStatus('');
+            }, 800);
         } catch (error) {
             console.error('Failed to upload document:', error);
-            alert('Failed to upload document');
+            setPdfStatus('');
+            alert('Failed to upload document. Please try again.');
         } finally {
             setIsUploadingDoc(false);
         }
@@ -766,11 +732,7 @@ const VetProfile = () => {
                                                     try {
                                                         const res = await updateProfileAction(undefined, undefined, undefined, undefined, clinicLatVal, clinicLngVal);
                                                         if (res.success) {
-                                                            setVetData(prev => ({
-                                                                ...prev,
-                                                                lat: clinicLatVal,
-                                                                lng: clinicLngVal
-                                                            }));
+                                                            updateVetData({ lat: clinicLatVal, lng: clinicLngVal }); // optimistic store update
                                                             setSettingsSuccess('Center location coordinates saved successfully!');
                                                         }
                                                     } catch (err) {
@@ -797,9 +759,12 @@ const VetProfile = () => {
         }
     };
 
-    if (loadingProfile || !vetData) {
+    // Only block render on true cold start (no cached vetData at all)
+    if (loadingProfile && !vetData) {
         return <ActionLoader message="Loading profile..." />;
     }
+
+    if (!vetData) return null;
 
     return (
         <>
@@ -883,22 +848,33 @@ const VetProfile = () => {
                                 <label style={{ fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>Select PDF File</label>
                                 <input 
                                     type="file" 
-                                    accept="application/pdf"
+                                    accept="application/pdf, .pdf"
                                     required 
                                     onChange={handleFileChange}
                                     style={{ padding: '8px 0', color: '#333' }}
                                 />
-                                {uploadForm.fileName && (
+                                <small style={{ color: '#888', fontSize: '0.75rem' }}>Max 2 MB • PDF files only</small>
+                                {pdfStatus && (
+                                    <span style={{
+                                        fontSize: '0.8rem',
+                                        color: pdfStatus.startsWith('✓') ? '#27ae60' : '#f39c12',
+                                        fontWeight: 600
+                                    }}>
+                                        {pdfStatus}
+                                    </span>
+                                )}
+                                {uploadForm.fileName && !pdfStatus && (
                                     <span style={{ fontSize: '0.8rem', color: '#666' }}>Selected: {uploadForm.fileName}</span>
                                 )}
                             </div>
                             <div className="modal-actions" style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <button type="submit" className="confirm-btn" style={{ background: '#ffd21e', color: '#000', fontWeight: 'bold', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} disabled={isUploadingDoc}>
-                                    {isUploadingDoc ? 'Uploading...' : 'Upload'}
+                                <button type="submit" className="confirm-btn" style={{ background: '#ffd21e', color: '#000', fontWeight: 'bold', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} disabled={isUploadingDoc || isProcessingPDF}>
+                                    {isProcessingPDF ? 'Processing...' : isUploadingDoc ? 'Uploading...' : 'Upload'}
                                 </button>
                                 <button type="button" className="cancel-btn" style={{ background: '#f5f5f5', color: '#333', border: '1px solid #ccc', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} onClick={() => {
                                     setIsUploadModalOpen(false);
-                                    setUploadForm({ name: '', fileData: '', fileName: '' });
+                                    setUploadForm({ name: '', fileData: '', fileName: '', originalSize: '', finalSize: '' });
+                                    setPdfStatus('');
                                 }}>
                                     Cancel
                                 </button>

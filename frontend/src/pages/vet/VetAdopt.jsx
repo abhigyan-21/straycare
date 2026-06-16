@@ -109,20 +109,27 @@ function VetAdopt() {
 
     const confirmAction = async () => {
         const { id, value } = showConfirm;
+        
+        // Optimistic UI update: Instantly remove it from the 'liveAdoptions' list
+        // since 'Remove' or 'Adopted' means it's no longer 'AVAILABLE'.
+        setData(prev => ({
+            ...prev,
+            liveAdoptions: prev.liveAdoptions.filter(p => p.id !== id)
+        }));
+        setShowConfirm(null); // Close modal instantly
+
         try {
             const statusMap = { 'Adopted': 'ADOPTED', 'Remove': 'REMOVED', 'up for adoption': 'AVAILABLE' };
             const apiStatus = statusMap[value] || value.toUpperCase().replace(' ', '_');
 
             await updatePet(id, { status: apiStatus });
+            // Background sync
             fetchData();
         } catch (error) {
-            console.error('API failed, mock confirm:', error);
-            setData(prev => ({
-                ...prev,
-                liveAdoptions: prev.liveAdoptions.map(p => p.id === id ? { ...p, status: value } : p)
-            }));
+            console.error('API failed:', error);
+            // Revert state if failed
+            fetchData();
         }
-        setShowConfirm(null);
     };
 
     const handleSetTime = (req) => {
@@ -151,24 +158,42 @@ function VetAdopt() {
     };
 
     const handleAcceptRequest = async (reqId) => {
+        // Optimistic UI update: instantly remove from screen
+        setData(prev => ({
+            ...prev,
+            currentRequests: prev.currentRequests.filter(r => r.id !== reqId),
+            newRequests: prev.newRequests.filter(r => r.id !== reqId)
+        }));
+
         try {
             await apiClient.patch(`/adoptions/requests/${reqId}`, {
                 status: 'APPROVED'
             });
+            // Background sync (optional, keeps other data fresh)
             fetchData();
         } catch (error) {
             console.error('Failed to accept request:', error);
+            fetchData(); // Revert on failure
         }
     };
 
     const handleRejectRequest = async (reqId) => {
+        // Optimistic UI update: instantly remove from screen
+        setData(prev => ({
+            ...prev,
+            currentRequests: prev.currentRequests.filter(r => r.id !== reqId),
+            newRequests: prev.newRequests.filter(r => r.id !== reqId)
+        }));
+
         try {
             await apiClient.patch(`/adoptions/requests/${reqId}`, {
                 status: 'REJECTED'
             });
+            // Background sync
             fetchData();
         } catch (error) {
             console.error('Failed to reject request:', error);
+            fetchData(); // Revert on failure
         }
     };
 

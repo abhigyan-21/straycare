@@ -192,6 +192,19 @@
 
 .pet-details-scrollable {
     flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.pet-details-scrollable::-webkit-scrollbar {
+    width: 4px;
+}
+.pet-details-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+.pet-details-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
 }
 
 .desktop-profile-title {
@@ -399,6 +412,16 @@
 
     .adopt-content {
         flex-direction: column;
+        align-items: center;
+    }
+
+    .pet-carousel-container {
+        justify-content: center;
+        touch-action: pan-y;
+    }
+
+    .carousel-nav {
+        display: none;
     }
 
     .carousel-view {
@@ -498,10 +521,6 @@
 
     .btn-interested-overlay:hover {
         background-color: #a5eb6c;
-    }
-
-    .pet-profile-side {
-        height: auto;
     }
 
     .pet-card-current.interested-state .pet-image-side {

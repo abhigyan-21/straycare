@@ -189,6 +189,29 @@ export const useAuthStore = create(
           refreshToken: null,
           isFirstLogin: false
         });
+        // Clear all cached store data on logout
+        // Dynamic imports prevent circular dependency issues
+        import('./postStore').then(({ usePostStore }) => {
+          usePostStore.getState().clearCache();
+        });
+        import('./adoptionStore').then(({ useAdoptionStore }) => {
+          useAdoptionStore.getState().clearCache();
+        });
+        import('./campaignStore').then(({ useCampaignStore }) => {
+          useCampaignStore.getState().clearCache();
+        });
+        // Profile stores are user-scoped (key: straycare_profile_<userId>, straycare_vet_profile_<userId>)
+        // so they are naturally isolated per user — no explicit clear needed
+        import('./vetProfileStore').then(({ getVetProfileStore }) => {
+          try {
+            const raw = localStorage.getItem('straycare_user');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              const userId = parsed?.state?.user?.id;
+              if (userId) getVetProfileStore(userId).getState().clearCache();
+            }
+          } catch (_) {}
+        });
       },
     }),
     {

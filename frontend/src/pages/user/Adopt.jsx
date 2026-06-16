@@ -1,15 +1,23 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import '../../styles/user/Adopt.css';
-import { getPets, submitAdoptionRequest, getUserAdoptionRequests, cancelAdoptionRequest } from '../../services/api';
 import PetCarousel from '../../components/user/PetCarousel';
 import FilterModal from '../../components/user/FilterModal';
+import ActionLoader from '../../components/ActionLoader';
+import { useAdoptionStore } from '../../store/adoptionStore';
 
 function Adopt() {
-    const [pets, setPets] = useState([]);
+    const {
+        pets,
+        loading,
+        fetchPetsAndRequests,
+        submitInterest,
+        cancelInterest,
+        isInterested,
+    } = useAdoptionStore();
+
     const [currentPetIndex, setCurrentPetIndex] = useState(0);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-    const [interestedPets, setInterestedPets] = useState(new Set());
     const [filters, setFilters] = useState({
         type: '',
         breed: '',
@@ -17,27 +25,8 @@ function Adopt() {
     });
 
     useEffect(() => {
-        const fetchPetsAndRequests = async () => {
-            try {
-                const [petsData, reqsData] = await Promise.all([
-                    getPets(),
-                    getUserAdoptionRequests()
-                ]);
-                setPets(petsData);
-                
-                // Initialize user's active requests
-                const activePetIds = new Set(
-                    reqsData
-                        .filter(r => r.status === 'PENDING' || r.status === 'INTERVIEW_SCHEDULED')
-                        .map(r => r.petId)
-                );
-                setInterestedPets(activePetIds);
-            } catch (err) {
-                console.error("Failed to load initial adoption data:", err);
-            }
-        };
         fetchPetsAndRequests();
-    }, []);
+    }, [fetchPetsAndRequests]);
 
     const filteredPets = useMemo(() => {
         return pets.filter(pet => {
@@ -72,38 +61,29 @@ function Adopt() {
     const handleApplyFilters = (newFilters) => {
         setFilters(newFilters);
         setIsFilterModalOpen(false);
-        setCurrentPetIndex(0); // reset index when filters change
+        setCurrentPetIndex(0);
     };
 
     const handleInterested = async (pet) => {
-        const isCurrentlyInterested = interestedPets.has(pet.id);
-        if (isCurrentlyInterested) {
+        if (isInterested(pet.id)) {
             try {
-                await cancelAdoptionRequest(pet.id);
-                setInterestedPets(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(pet.id);
-                    return newSet;
-                });
-            } catch (error) {
-                console.error('Failed to cancel adoption request:', error);
+                await cancelInterest(pet);
+            } catch {
                 alert('Failed to cancel adoption request. Please try again.');
             }
-            return;
-        }
-
-        try {
-            await submitAdoptionRequest(pet.id);
-            setInterestedPets(prev => {
-                const newSet = new Set(prev);
-                newSet.add(pet.id);
-                return newSet;
-            });
-        } catch (error) {
-            console.error('Failed to submit adoption request:', error);
-            alert('Failed to submit adoption request. Please try again.');
+        } else {
+            try {
+                await submitInterest(pet);
+            } catch {
+                alert('Failed to submit adoption request. Please try again.');
+            }
         }
     };
+
+    // Only show full loader on true cold start (no cached data at all)
+    if (loading && pets.length === 0) {
+        return <ActionLoader message="Loading pets..." />;
+    }
 
     return (
         <>
@@ -139,7 +119,7 @@ function Adopt() {
                             onNext={handleNext}
                             onPrev={handlePrev}
                             onInterested={handleInterested}
-                            isInterested={interestedPets.has(filteredPets[currentPetIndex].id)}
+                            isInterested={isInterested(filteredPets[currentPetIndex].id)}
                         />
                     ) : (
                         <div className="no-pets-message">
