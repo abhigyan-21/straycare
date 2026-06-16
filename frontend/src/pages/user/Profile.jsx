@@ -92,6 +92,7 @@ const Profile = () => {
     const [postToEdit, setPostToEdit] = useState(null);
     const [isEditingDetails, setIsEditingDetails] = useState(false);
     const [pdfStatus, setPdfStatus] = useState(''); // live compression status message
+    const [isUploading, setIsUploading] = useState(false);
     const [isProcessingPDF, setIsProcessingPDF] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
