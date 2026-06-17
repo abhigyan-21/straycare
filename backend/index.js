@@ -31,7 +31,8 @@ app.set('trust proxy', 1);
 // CORS allowed origins list (Vercel production and local dev)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'https://Furzo.vercel.app',
+  'https://furzo.vercel.app',
+  'https://Furzo.vercel.app', // keeping uppercase just in case
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:5000'
