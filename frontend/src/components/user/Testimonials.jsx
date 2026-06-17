@@ -47,7 +47,7 @@ function Testimonials() {
                 <div className="avatar">
                   <img
                     loading="lazy"
-                    src={item.profilePic || defaultAvatar}
+                    src={item.profilePic ? `/testimonialImages/${item.profilePic}` : defaultAvatar}
                     alt="Testimonial Avatar"
                     onError={(e) => {
                       e.target.src = defaultAvatar;

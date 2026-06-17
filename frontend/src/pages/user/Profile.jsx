@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import { 
-    User as UserIcon, 
-    FileText, 
-    ClipboardList, 
-    CreditCard, 
-    Folder, 
-    PawPrint, 
-    LifeBuoy, 
+import {
+    User as UserIcon,
+    FileText,
+    ClipboardList,
+    CreditCard,
+    Folder,
+    PawPrint,
+    LifeBuoy,
     LogOut,
     Edit2,
     Trash2,
@@ -35,7 +35,7 @@ const ReportAddress = ({ lat, lng }) => {
             setAddress('No location coordinates');
             return;
         }
-        
+
         let active = true;
         const fetchAddress = async () => {
             try {
@@ -152,8 +152,8 @@ const Profile = () => {
             name: authUser.name || 'John Doe',
             email: authUser.email || 'john.doe@example.com',
             phone: authUser.phone || authUser.contact || '+91 77887 87665',
-            joined: authUser.createdAt 
-                ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
+            joined: authUser.createdAt
+                ? new Date(authUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
                 : 'January 2026',
             avatar: authUser.avatarUrl || defaultAvatar,
         });
@@ -384,7 +384,7 @@ const Profile = () => {
             });
             setUploadProgress(100);
             setPdfStatus(`✓ Done — "${file.name}" saved`);
-            
+
             // Clean up back to default state after 3 seconds
             setTimeout(() => {
                 setPdfStatus('');
@@ -400,7 +400,7 @@ const Profile = () => {
             });
             setUploadProgress(100);
             setPdfStatus(`✓ Done — "${file.name}" saved (offline mode)`);
-            
+
             setTimeout(() => {
                 setPdfStatus('');
                 setUploadProgress(0);
@@ -505,15 +505,15 @@ const Profile = () => {
                     <div className="profile-section fade-in">
                         <div className="profile-section-header">
                             <h2>Manage Posts</h2>
-                            <button 
-                                className={`create-post-btn inline-btn ${isUploading ? 'uploading' : ''}`} 
+                            <button
+                                className={`create-post-btn inline-btn ${isUploading ? 'uploading' : ''}`}
                                 onClick={() => handleOpenCreateModal()}
                                 disabled={isUploading}
                             >
                                 {isUploading ? (
                                     <div className="button-progress-wrapper">
-                                        <div 
-                                            className="button-progress-fill" 
+                                        <div
+                                            className="button-progress-fill"
                                             style={{ width: `${uploadProgress}%` }}
                                         ></div>
                                         <div className="button-progress-content">
@@ -614,11 +614,11 @@ const Profile = () => {
                         <div
                             className={`upload-area${isProcessingPDF ? ' uploading' : ''}`}
                             onClick={!isProcessingPDF && !pdfStatus ? handleMockUpload : undefined}
-                            style={{ 
-                                cursor: isProcessingPDF || pdfStatus ? 'default' : 'pointer', 
-                                position: 'relative', 
+                            style={{
+                                cursor: isProcessingPDF || pdfStatus ? 'default' : 'pointer',
+                                position: 'relative',
                                 overflow: 'hidden',
-                                borderColor: pdfStatus.startsWith('✓') ? '#27ae60' : undefined 
+                                borderColor: pdfStatus.startsWith('✓') ? '#27ae60' : undefined
                             }}
                         >
                             {/* Animated background progress fill */}
@@ -634,7 +634,7 @@ const Profile = () => {
                                     zIndex: 0
                                 }} />
                             )}
-                            
+
                             <div style={{ position: 'relative', zIndex: 1 }}>
                                 <input
                                     type="file"
@@ -643,10 +643,10 @@ const Profile = () => {
                                     style={{ display: 'none' }}
                                     onChange={handleFileChange}
                                 />
-                                
+
                                 {pdfStatus ? (
-                                    <p style={{ 
-                                        fontWeight: 600, 
+                                    <p style={{
+                                        fontWeight: 600,
                                         color: pdfStatus.startsWith('✓') ? '#27ae60' : '#f39c12',
                                         margin: 0
                                     }}>
@@ -711,8 +711,8 @@ const Profile = () => {
                                 ))
                             ) : (
                                 <p className="empty-state">
-                                    {adoptionSubTab === 'interested' 
-                                        ? "You haven't applied for any pets yet." 
+                                    {adoptionSubTab === 'interested'
+                                        ? "You haven't applied for any pets yet."
                                         : "You haven't adopted any pets yet."}
                                 </p>
                             )}
@@ -774,8 +774,8 @@ const Profile = () => {
                                 ))
                             ) : (
                                 <p className="empty-state">
-                                    {rescueSubTab === 'active' 
-                                        ? "No active rescues assigned to you." 
+                                    {rescueSubTab === 'active'
+                                        ? "No active rescues assigned to you."
                                         : "No completed rescues found."}
                                 </p>
                             )}
@@ -795,9 +795,9 @@ const Profile = () => {
                                 Upgrade your account to a RESCUER. As a rescuer, you can actively pick up stray animals in distress, transport them to our partner clinics, and track their recovery progress. You will receive an OTP on your registered email to verify this upgrade.
                             </p>
                             {!isOtpSent ? (
-                                <button 
-                                    className="btn save-btn" 
-                                    style={{ padding: '12px 24px', fontSize: '1rem' }} 
+                                <button
+                                    className="btn save-btn"
+                                    style={{ padding: '12px 24px', fontSize: '1rem' }}
                                     onClick={handleRequestUpgradeOtp}
                                     disabled={isUpgrading}
                                 >
@@ -805,17 +805,17 @@ const Profile = () => {
                                 </button>
                             ) : (
                                 <div style={{ maxWidth: '300px', margin: '0 auto' }}>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Enter 6-digit OTP" 
+                                    <input
+                                        type="text"
+                                        placeholder="Enter 6-digit OTP"
                                         value={upgradeOtp}
                                         onChange={(e) => setUpgradeOtp(e.target.value)}
                                         className="edit-input"
                                         style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem', marginBottom: '16px' }}
                                     />
-                                    <button 
-                                        className="btn save-btn" 
-                                        style={{ padding: '12px 24px', fontSize: '1rem', width: '100%' }} 
+                                    <button
+                                        className="btn save-btn"
+                                        style={{ padding: '12px 24px', fontSize: '1rem', width: '100%' }}
                                         onClick={handleVerifyUpgradeOtp}
                                         disabled={isUpgrading}
                                     >
@@ -833,109 +833,109 @@ const Profile = () => {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo - My Profile</title>
-            <meta name="description" content="Manage your Furzo profile, view your rescue reports, adoption history, posts, donations, and pet documents." />
-        </Helmet>
-        <div className="profile-page">
-            <div className="profile-container">
+            <Helmet>
+                <title>Furzo - My Profile</title>
+                <meta name="description" content="Manage your Furzo profile, view your rescue reports, adoption history, posts, donations, and pet documents." />
+            </Helmet>
+            <div className="profile-page">
+                <div className="profile-container">
 
-                {/* Sidebar */}
-                <div className="profile-sidebar">
-                    <div className="user-info-header">
-                        <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture">
-                            <img src={user.avatar} alt="User Avatar" className="avatar" />
-                            <div className="avatar-overlay">
-                                <span className="camera-icon">📷</span>
+                    {/* Sidebar */}
+                    <div className="profile-sidebar">
+                        <div className="user-info-header">
+                            <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture">
+                                <img src={user.avatar} alt="User Avatar" className="avatar" />
+                                <div className="avatar-overlay">
+                                    <span className="camera-icon">📷</span>
+                                </div>
+                                <input
+                                    type="file"
+                                    ref={avatarInputRef}
+                                    onChange={handleAvatarChange}
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                />
                             </div>
-                            <input
-                                type="file"
-                                ref={avatarInputRef}
-                                onChange={handleAvatarChange}
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                            />
+                            <h2 className="user-name">{user.name}</h2>
+                            <p className="user-email">{user.email}</p>
                         </div>
-                        <h2 className="user-name">{user.name}</h2>
-                        <p className="user-email">{user.email}</p>
+
+                        <nav className="profile-nav">
+                            <button
+                                className={`nav-btn ${activeTab === 'personal' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('personal')}
+                            >
+                                <UserIcon className="icon" size={18} /> Personal Details
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'posts' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('posts')}
+                            >
+                                <FileText className="icon" size={18} /> Manage Posts
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'reports' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('reports')}
+                            >
+                                <ClipboardList className="icon" size={18} /> My Reports
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'donations' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('donations')}
+                            >
+                                <CreditCard className="icon" size={18} /> Donations & Autopays
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('documents')}
+                            >
+                                <Folder className="icon" size={18} /> Pet Documents
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'adoptions' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('adoptions')}
+                            >
+                                <PawPrint className="icon" size={18} /> Adoptions
+                            </button>
+                            {authUser?.role === 'RESCUER' && (
+                                <button
+                                    className={`nav-btn ${activeTab === 'rescues' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('rescues')}
+                                >
+                                    <LifeBuoy className="icon" size={18} /> Rescues
+                                </button>
+                            )}
+                            {authUser?.role === 'USER' && (
+                                <button
+                                    className={`nav-btn ${activeTab === 'upgrade' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('upgrade')}
+                                >
+                                    <Star className="icon" size={18} /> Become a Rescuer
+                                </button>
+                            )}
+                        </nav>
+
+                        <div className="sidebar-footer">
+                            <button className="logout-btn" onClick={logout}>
+                                <LogOut className="icon" size={18} /> Sign Out
+                            </button>
+                        </div>
                     </div>
 
-                    <nav className="profile-nav">
-                        <button
-                            className={`nav-btn ${activeTab === 'personal' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('personal')}
-                        >
-                            <UserIcon className="icon" size={18} /> Personal Details
-                        </button>
-                        <button
-                            className={`nav-btn ${activeTab === 'posts' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('posts')}
-                        >
-                            <FileText className="icon" size={18} /> Manage Posts
-                        </button>
-                        <button
-                            className={`nav-btn ${activeTab === 'reports' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('reports')}
-                        >
-                            <ClipboardList className="icon" size={18} /> My Reports
-                        </button>
-                        <button
-                            className={`nav-btn ${activeTab === 'donations' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('donations')}
-                        >
-                            <CreditCard className="icon" size={18} /> Donations & Autopays
-                        </button>
-                        <button
-                            className={`nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('documents')}
-                        >
-                            <Folder className="icon" size={18} /> Pet Documents
-                        </button>
-                        <button
-                            className={`nav-btn ${activeTab === 'adoptions' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('adoptions')}
-                        >
-                            <PawPrint className="icon" size={18} /> Adoptions
-                        </button>
-                        {authUser?.role === 'RESCUER' && (
-                            <button
-                                className={`nav-btn ${activeTab === 'rescues' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('rescues')}
-                            >
-                                <LifeBuoy className="icon" size={18} /> Rescues
-                            </button>
-                        )}
-                        {authUser?.role === 'USER' && (
-                            <button
-                                className={`nav-btn ${activeTab === 'upgrade' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('upgrade')}
-                            >
-                                <Star className="icon" size={18} /> Become a Rescuer
-                            </button>
-                        )}
-                    </nav>
-
-                    <div className="sidebar-footer">
-                        <button className="logout-btn" onClick={logout}>
-                            <LogOut className="icon" size={18} /> Sign Out
-                        </button>
+                    {/* Main Content Area */}
+                    <div className="profile-content">
+                        {renderContent()}
                     </div>
+
                 </div>
 
-                {/* Main Content Area */}
-                <div className="profile-content">
-                    {renderContent()}
-                </div>
-
+                <CreatePostModal
+                    isOpen={isCreateModalOpen}
+                    onClose={handleCloseCreateModal}
+                    onSubmit={handleCreatePostSubmit}
+                    initialPost={postToEdit}
+                />
             </div>
-
-            <CreatePostModal
-                isOpen={isCreateModalOpen}
-                onClose={handleCloseCreateModal}
-                onSubmit={handleCreatePostSubmit}
-                initialPost={postToEdit}
-            />
-        </div>
         </>
     );
 };

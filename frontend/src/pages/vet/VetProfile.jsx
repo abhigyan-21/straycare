@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { 
-    User, 
-    Building2, 
-    Stethoscope, 
-    Clock, 
-    Award, 
-    Settings, 
-    LogOut, 
-    Phone, 
-    Mail, 
-    MapPin, 
-    ShieldCheck, 
+import {
+    User,
+    Building2,
+    Stethoscope,
+    Clock,
+    Award,
+    Settings,
+    LogOut,
+    Phone,
+    Mail,
+    MapPin,
+    ShieldCheck,
     Calendar,
     ChevronRight,
     FileText,
@@ -30,7 +30,7 @@ import { useVetProfileStore } from '../../store/vetProfileStore';
 import { processPDF, formatFileSize } from '../../utils/pdfUtils';
 import hospitalImg from '../../assets/images/Hospital.webp';
 
-const circularLocationIcon = new L.DivIcon({ 
+const circularLocationIcon = new L.DivIcon({
     className: 'custom-circular-marker',
     html: `<div style="width: 16px; height: 16px; background-color: #346c02; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.45); position: relative;"><div class="marker-pulse-ring"></div></div>`,
     iconSize: [24, 24],
@@ -239,7 +239,7 @@ const VetProfile = () => {
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
+
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
                     setUpiQrCodeVal(compressedBase64);
                 };
@@ -395,7 +395,7 @@ const VetProfile = () => {
                 return (
                     <div className="profile-section fade-in">
                         <h2><Building2 size={28} /> Clinic Information</h2>
-                        
+
                         <div className="stats-row">
                             <div className="mini-stat-card">
                                 <span className="stat-value">{vetData.totalRescues}</span>
@@ -471,15 +471,15 @@ const VetProfile = () => {
                                         <h4>{doc.name}</h4>
                                         <span>{doc.type} • Uploaded {new Date(doc.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleDeleteDocument(doc.id);
                                         }}
-                                        style={{ 
-                                            background: 'transparent', 
-                                            border: 'none', 
-                                            color: '#ff4d4d', 
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: '#ff4d4d',
                                             cursor: 'pointer',
                                             marginLeft: 'auto',
                                             padding: '8px'
@@ -503,7 +503,7 @@ const VetProfile = () => {
                 return (
                     <div className="profile-section fade-in">
                         <h2><Settings size={28} /> Account Settings</h2>
-                        
+
                         {settingsSuccess && (
                             <div style={{ background: '#eafaf1', border: '1px solid #d1f2de', color: '#27ae60', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
                                 {settingsSuccess}
@@ -522,9 +522,9 @@ const VetProfile = () => {
                                 <form onSubmit={handleProfileUpdateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ fontWeight: '600', color: '#333' }}>Your Name</label>
-                                        <input 
-                                            type="text" 
-                                            required 
+                                        <input
+                                            type="text"
+                                            required
                                             value={nameVal}
                                             onChange={(e) => setNameVal(e.target.value)}
                                             style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
@@ -542,10 +542,10 @@ const VetProfile = () => {
                                 <form onSubmit={handlePasswordChangeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ fontWeight: '600', color: '#333' }}>Current Password</label>
-                                        <input 
-                                            type="password" 
-                                            required 
-                                            placeholder="••••••••" 
+                                        <input
+                                            type="password"
+                                            required
+                                            placeholder="••••••••"
                                             value={currentPassword}
                                             onChange={(e) => setCurrentPassword(e.target.value)}
                                             style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
@@ -553,10 +553,10 @@ const VetProfile = () => {
                                     </div>
                                     <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ fontWeight: '600', color: '#333' }}>New Password</label>
-                                        <input 
-                                            type="password" 
-                                            required 
-                                            placeholder="••••••••" 
+                                        <input
+                                            type="password"
+                                            required
+                                            placeholder="••••••••"
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
@@ -564,10 +564,10 @@ const VetProfile = () => {
                                     </div>
                                     <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ fontWeight: '600', color: '#333' }}>Confirm New Password</label>
-                                        <input 
-                                            type="password" 
-                                            required 
-                                            placeholder="••••••••" 
+                                        <input
+                                            type="password"
+                                            required
+                                            placeholder="••••••••"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
@@ -585,8 +585,8 @@ const VetProfile = () => {
                             <form onSubmit={handlePaymentUpdateSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <label style={{ fontWeight: '600', color: '#333' }}>UPI ID</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={upiIdVal}
                                         onChange={(e) => setUpiIdVal(e.target.value)}
                                         placeholder="yourname@upi"
@@ -595,8 +595,8 @@ const VetProfile = () => {
                                 </div>
                                 <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <label style={{ fontWeight: '600', color: '#333' }}>Razorpay ID (Optional)</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={razorpayIdVal}
                                         onChange={(e) => setRazorpayIdVal(e.target.value)}
                                         placeholder="rzp_live_123456789"
@@ -610,8 +610,8 @@ const VetProfile = () => {
                                             <img src={upiQrCodeVal} alt="UPI QR" style={{ height: '100px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '8px' }} />
                                         </div>
                                     )}
-                                    <input 
-                                        type="file" 
+                                    <input
+                                        type="file"
                                         accept="image/*"
                                         onChange={handleQrUploadSettings}
                                         style={{ padding: '8px 0', color: '#333' }}
@@ -631,13 +631,13 @@ const VetProfile = () => {
                                 <p>
                                     Pin the exact location of your center so that rescuers can navigate to it for emergency pick-ups and transfers.
                                 </p>
-                                
+
                                 <div className="coordinates-grid">
                                     {/* Map Container */}
                                     <div className="profile-map-wrapper">
-                                        <MapContainer 
-                                            center={profileMapCenter} 
-                                            zoom={14} 
+                                        <MapContainer
+                                            center={profileMapCenter}
+                                            zoom={14}
                                             scrollWheelZoom={false}
                                             className="leaflet-container-element"
                                         >
@@ -646,8 +646,8 @@ const VetProfile = () => {
                                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
                                             {clinicLatVal && clinicLngVal && (
-                                                <Marker 
-                                                    position={[clinicLatVal, clinicLngVal]} 
+                                                <Marker
+                                                    position={[clinicLatVal, clinicLngVal]}
                                                     icon={circularLocationIcon}
                                                     draggable={true}
                                                     eventHandlers={{
@@ -660,7 +660,7 @@ const VetProfile = () => {
                                                     }}
                                                 />
                                             )}
-                                            <MapEventsHandler 
+                                            <MapEventsHandler
                                                 onMapClick={(lat, lng) => {
                                                     setClinicLatVal(lat);
                                                     setClinicLngVal(lng);
@@ -669,7 +669,7 @@ const VetProfile = () => {
                                             />
                                         </MapContainer>
                                     </div>
-                                    
+
                                     {/* Coordinates & Actions */}
                                     <div className="coordinates-actions-card">
                                         <div>
@@ -686,10 +686,10 @@ const VetProfile = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="coordinates-buttons">
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={() => {
                                                     if (!("geolocation" in navigator)) {
                                                         alert("Geolocation is not supported by your browser");
@@ -718,9 +718,9 @@ const VetProfile = () => {
                                                 </svg>
                                                 Detect My Current Location
                                             </button>
-                                            
-                                            <button 
-                                                type="button" 
+
+                                            <button
+                                                type="button"
                                                 onClick={async () => {
                                                     setSettingsSuccess('');
                                                     setSettingsError('');
@@ -768,122 +768,122 @@ const VetProfile = () => {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Vet Portal - Profile</title>
-            <meta name="description" content="Manage your clinic's profile, certifications, settings, and center coordinates on the Furzo Vet Portal." />
-        </Helmet>
-        <div className="vet-profile-page">
-            <div className="profile-container">
-                {/* Sidebar */}
-                <div className="profile-sidebar">
-                    <div className="user-info-header">
-                        <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture">
-                            <div className="avatar-wrapper">
-                                <img src={vetData.avatar} alt="Vet Avatar" className="avatar" />
-                                <div className="avatar-overlay">
-                                    <span className="camera-icon">📷</span>
+            <Helmet>
+                <title>Furzo Vet Portal - Profile</title>
+                <meta name="description" content="Manage your clinic's profile, certifications, settings, and center coordinates on the Furzo Vet Portal." />
+            </Helmet>
+            <div className="vet-profile-page">
+                <div className="profile-container">
+                    {/* Sidebar */}
+                    <div className="profile-sidebar">
+                        <div className="user-info-header">
+                            <div className="avatar-container" onClick={handleAvatarClick} title="Click to upload custom profile picture">
+                                <div className="avatar-wrapper">
+                                    <img src={vetData.avatar} alt="Vet Avatar" className="avatar" />
+                                    <div className="avatar-overlay">
+                                        <span className="camera-icon">📷</span>
+                                    </div>
                                 </div>
+                                <input
+                                    type="file"
+                                    ref={avatarInputRef}
+                                    onChange={handleAvatarChange}
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                />
+                                <span className="role-badge" style={{ pointerEvents: 'none' }}>{vetData.role}</span>
                             </div>
-                            <input
-                                type="file"
-                                ref={avatarInputRef}
-                                onChange={handleAvatarChange}
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                            />
-                            <span className="role-badge" style={{ pointerEvents: 'none' }}>{vetData.role}</span>
+                            <h2 className="user-name">{vetData.name}</h2>
+                            <p className="user-email">{vetData.email}</p>
                         </div>
-                        <h2 className="user-name">{vetData.name}</h2>
-                        <p className="user-email">{vetData.email}</p>
+
+                        <nav className="profile-nav">
+                            <button
+                                className={`nav-btn ${activeTab === 'clinic' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('clinic')}
+                            >
+                                <Building2 size={20} /> Clinic Details
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'certs' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('certs')}
+                            >
+                                <Award size={20} /> Certifications
+                            </button>
+                            <button
+                                className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('settings')}
+                            >
+                                <Settings size={20} /> Settings
+                            </button>
+                        </nav>
                     </div>
 
-                    <nav className="profile-nav">
-                        <button 
-                            className={`nav-btn ${activeTab === 'clinic' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('clinic')}
-                        >
-                            <Building2 size={20} /> Clinic Details
-                        </button>
-                        <button 
-                            className={`nav-btn ${activeTab === 'certs' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('certs')}
-                        >
-                            <Award size={20} /> Certifications
-                        </button>
-                        <button 
-                            className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('settings')}
-                        >
-                            <Settings size={20} /> Settings
-                        </button>
-                    </nav>
+                    {/* Main Content Area */}
+                    <div className="profile-content">
+                        {renderContent()}
+                    </div>
                 </div>
 
-                {/* Main Content Area */}
-                <div className="profile-content">
-                    {renderContent()}
-                </div>
-            </div>
-
-            {/* Document Upload Modal */}
-            {isUploadModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '400px', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)' }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#000', marginBottom: '15px' }}>
-                            <Upload size={24} /> Upload PDF Document
-                        </h2>
-                        <form onSubmit={handleUploadSubmit}>
-                            <div className="form-group" style={{ marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <label style={{ fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>Document Name</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    placeholder="e.g. Advanced Surgical License" 
-                                    value={uploadForm.name} 
-                                    onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })}
-                                    style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <label style={{ fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>Select PDF File</label>
-                                <input 
-                                    type="file" 
-                                    accept="application/pdf, .pdf"
-                                    required 
-                                    onChange={handleFileChange}
-                                    style={{ padding: '8px 0', color: '#333' }}
-                                />
-                                <small style={{ color: '#888', fontSize: '0.75rem' }}>Max 2 MB • PDF files only</small>
-                                {pdfStatus && (
-                                    <span style={{
-                                        fontSize: '0.8rem',
-                                        color: pdfStatus.startsWith('✓') ? '#27ae60' : '#f39c12',
-                                        fontWeight: 600
+                {/* Document Upload Modal */}
+                {isUploadModalOpen && (
+                    <div className="modal-overlay">
+                        <div className="modal-content" style={{ maxWidth: '400px', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)' }}>
+                            <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#000', marginBottom: '15px' }}>
+                                <Upload size={24} /> Upload PDF Document
+                            </h2>
+                            <form onSubmit={handleUploadSubmit}>
+                                <div className="form-group" style={{ marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>Document Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Advanced Surgical License"
+                                        value={uploadForm.name}
+                                        onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })}
+                                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', background: '#fff', color: '#000' }}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontWeight: '600', color: '#333', fontSize: '0.9rem' }}>Select PDF File</label>
+                                    <input
+                                        type="file"
+                                        accept="application/pdf, .pdf"
+                                        required
+                                        onChange={handleFileChange}
+                                        style={{ padding: '8px 0', color: '#333' }}
+                                    />
+                                    <small style={{ color: '#888', fontSize: '0.75rem' }}>Max 2 MB • PDF files only</small>
+                                    {pdfStatus && (
+                                        <span style={{
+                                            fontSize: '0.8rem',
+                                            color: pdfStatus.startsWith('✓') ? '#27ae60' : '#f39c12',
+                                            fontWeight: 600
+                                        }}>
+                                            {pdfStatus}
+                                        </span>
+                                    )}
+                                    {uploadForm.fileName && !pdfStatus && (
+                                        <span style={{ fontSize: '0.8rem', color: '#666' }}>Selected: {uploadForm.fileName}</span>
+                                    )}
+                                </div>
+                                <div className="modal-actions" style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                    <button type="submit" className="confirm-btn" style={{ background: '#ffd21e', color: '#000', fontWeight: 'bold', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} disabled={isUploadingDoc || isProcessingPDF}>
+                                        {isProcessingPDF ? 'Processing...' : isUploadingDoc ? 'Uploading...' : 'Upload'}
+                                    </button>
+                                    <button type="button" className="cancel-btn" style={{ background: '#f5f5f5', color: '#333', border: '1px solid #ccc', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} onClick={() => {
+                                        setIsUploadModalOpen(false);
+                                        setUploadForm({ name: '', fileData: '', fileName: '', originalSize: '', finalSize: '' });
+                                        setPdfStatus('');
                                     }}>
-                                        {pdfStatus}
-                                    </span>
-                                )}
-                                {uploadForm.fileName && !pdfStatus && (
-                                    <span style={{ fontSize: '0.8rem', color: '#666' }}>Selected: {uploadForm.fileName}</span>
-                                )}
-                            </div>
-                            <div className="modal-actions" style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <button type="submit" className="confirm-btn" style={{ background: '#ffd21e', color: '#000', fontWeight: 'bold', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} disabled={isUploadingDoc || isProcessingPDF}>
-                                    {isProcessingPDF ? 'Processing...' : isUploadingDoc ? 'Uploading...' : 'Upload'}
-                                </button>
-                                <button type="button" className="cancel-btn" style={{ background: '#f5f5f5', color: '#333', border: '1px solid #ccc', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer' }} onClick={() => {
-                                    setIsUploadModalOpen(false);
-                                    setUploadForm({ name: '', fileData: '', fileName: '', originalSize: '', finalSize: '' });
-                                    setPdfStatus('');
-                                }}>
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
         </>
     );
 };

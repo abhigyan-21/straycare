@@ -7,4 +7,4 @@ Disallow: /vet/
 Disallow: /profile/
 Disallow: /rescuer/
 
-Sitemap: https://furzo.vercel.app/sitemap.xml
+Sitemap: https://Furzo.vercel.app/sitemap.xml

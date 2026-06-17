@@ -57,78 +57,78 @@ const AdminContent = () => {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Admin - Content Moderation</title>
-            <meta name="description" content="Review, approve, flag, and delete community posts to maintain platform safety." />
-        </Helmet>
-        <div className="fade-in">
-            <AdminPageHeader 
-                title="Content Moderation" 
-                subtitle="Review and moderate community posts to maintain a safe environment."
-            />
+            <Helmet>
+                <title>Furzo Admin - Content Moderation</title>
+                <meta name="description" content="Review, approve, flag, and delete community posts to maintain platform safety." />
+            </Helmet>
+            <div className="fade-in">
+                <AdminPageHeader
+                    title="Content Moderation"
+                    subtitle="Review and moderate community posts to maintain a safe environment."
+                />
 
-            <div className="admin-mb-32 admin-tabs">
-                <button className={`admin-tab ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>All Posts</button>
-                <button className={`admin-tab ${activeFilter === 'reported' ? 'active' : ''}`} onClick={() => setActiveFilter('reported')}>Reported</button>
-                <button className={`admin-tab ${activeFilter === 'pending' ? 'active' : ''}`} onClick={() => setActiveFilter('pending')}>Pending</button>
-            </div>
+                <div className="admin-mb-32 admin-tabs">
+                    <button className={`admin-tab ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>All Posts</button>
+                    <button className={`admin-tab ${activeFilter === 'reported' ? 'active' : ''}`} onClick={() => setActiveFilter('reported')}>Reported</button>
+                    <button className={`admin-tab ${activeFilter === 'pending' ? 'active' : ''}`} onClick={() => setActiveFilter('pending')}>Pending</button>
+                </div>
 
-            <div className="admin-moderation-list">
-                {filteredPosts.map(post => (
-                    <div key={post.id} className={`admin-post-card ${post.status === 'Reported' ? 'reported' : ''}`}>
-                        <div className="admin-post-header">
-                            <div className="admin-flex-row">
-                                <img src={post.authorAvatar} alt={post.author} className="admin-avatar-small" />
-                                <div>
-                                    <h4 className="admin-author-name">{post.author}</h4>
-                                    <span className="admin-post-time">{post.date}</span>
+                <div className="admin-moderation-list">
+                    {filteredPosts.map(post => (
+                        <div key={post.id} className={`admin-post-card ${post.status === 'Reported' ? 'reported' : ''}`}>
+                            <div className="admin-post-header">
+                                <div className="admin-flex-row">
+                                    <img src={post.authorAvatar} alt={post.author} className="admin-avatar-small" />
+                                    <div>
+                                        <h4 className="admin-author-name">{post.author}</h4>
+                                        <span className="admin-post-time">{post.date}</span>
+                                    </div>
+                                </div>
+                                <div className="admin-flex-row">
+                                    {post.reports > 0 && (
+                                        <AdminBadge color="red">
+                                            <Flag size={12} /> {post.reports} Reports
+                                        </AdminBadge>
+                                    )}
+                                    <AdminBadge color={post.status === 'Published' ? 'green' : post.status === 'Reported' ? 'red' : 'light'}>
+                                        {post.status}
+                                    </AdminBadge>
                                 </div>
                             </div>
-                            <div className="admin-flex-row">
-                                {post.reports > 0 && (
-                                    <AdminBadge color="red">
-                                        <Flag size={12} /> {post.reports} Reports
-                                    </AdminBadge>
-                                )}
-                                <AdminBadge color={post.status === 'Published' ? 'green' : post.status === 'Reported' ? 'red' : 'light'}>
-                                    {post.status}
-                                </AdminBadge>
-                            </div>
-                        </div>
 
-                        <div className="admin-post-body">
-                            <p>"{post.content}"</p>
-                        </div>
-
-                        <div className="admin-post-footer admin-flex-between">
-                            <div className="admin-flex-row" style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem' }}>
-                                <MessageSquare size={16} /> 0 Comments
+                            <div className="admin-post-body">
+                                <p>"{post.content}"</p>
                             </div>
-                            <div className="admin-flex-row">
-                                {post.status !== 'Published' && (
-                                    <button className="admin-btn-action green" onClick={() => handleAction(post.id, 'approve')}>
-                                        <CheckCircle size={18} /> Approve
+
+                            <div className="admin-post-footer admin-flex-between">
+                                <div className="admin-flex-row" style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem' }}>
+                                    <MessageSquare size={16} /> 0 Comments
+                                </div>
+                                <div className="admin-flex-row">
+                                    {post.status !== 'Published' && (
+                                        <button className="admin-btn-action green" onClick={() => handleAction(post.id, 'approve')}>
+                                            <CheckCircle size={18} /> Approve
+                                        </button>
+                                    )}
+                                    <button className="admin-btn-action secondary" onClick={() => handleAction(post.id, 'flag')}>
+                                        <AlertTriangle size={18} /> Flag
                                     </button>
-                                )}
-                                <button className="admin-btn-action secondary" onClick={() => handleAction(post.id, 'flag')}>
-                                    <AlertTriangle size={18} /> Flag
-                                </button>
-                                <button className="admin-btn-action danger-flex" onClick={() => handleAction(post.id, 'delete')}>
-                                    <Trash2 size={18} /> Delete
-                                </button>
+                                    <button className="admin-btn-action danger-flex" onClick={() => handleAction(post.id, 'delete')}>
+                                        <Trash2 size={18} /> Delete
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-                {filteredPosts.length === 0 && (
-                    <div className="admin-card center" style={{ padding: '60px' }}>
-                        <ShieldAlert size={48} color="var(--admin-accent)" style={{ marginBottom: '16px', opacity: 0.5 }} />
-                        <h3 className="admin-card-title">Everything is clean!</h3>
-                        <p className="admin-page-subtitle">No posts match the current filter.</p>
-                    </div>
-                )}
+                    ))}
+                    {filteredPosts.length === 0 && (
+                        <div className="admin-card center" style={{ padding: '60px' }}>
+                            <ShieldAlert size={48} color="var(--admin-accent)" style={{ marginBottom: '16px', opacity: 0.5 }} />
+                            <h3 className="admin-card-title">Everything is clean!</h3>
+                            <p className="admin-page-subtitle">No posts match the current filter.</p>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
         </>
     );
 };

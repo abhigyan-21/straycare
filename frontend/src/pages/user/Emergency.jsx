@@ -165,85 +165,85 @@ function Emergency({ openAuthModal }) {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo - Report an Emergency</title>
-            <meta name="description" content="Report an injured or distressed stray animal in your area. Upload photos, share location, and connect with nearby rescuers instantly." />
-        </Helmet>
-        <p className="emergency-title">Report for adoption or rescue</p>
-        <div className="emergency-page">
-            <div className={`emergency-left ${imagePreview ? 'has-image' : ''}`}>
-                {imagePreview ? (
-                    <img src={imagePreview} alt="Emergency Upload" className="uploaded-image" />
-                ) : (
-                    <Plus className="upload-icon" strokeWidth={1} />
-                )}
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="upload-input"
-                    onChange={handleImageChange}
-                    aria-label="Upload emergency picture"
-                />
-            </div>
-
-            <div className="emergency-right">
-                <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                    {errorMessage && (
-                        <div className="emergency-error-message" style={{ color: '#e74c3c', padding: '12px 16px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '12px', fontWeight: '600', textAlign: 'center', fontSize: '0.95rem' }}>
-                            ⚠️ {errorMessage}
-                        </div>
+            <Helmet>
+                <title>Furzo - Report an Emergency</title>
+                <meta name="description" content="Report an injured or distressed stray animal in your area. Upload photos, share location, and connect with nearby rescuers instantly." />
+            </Helmet>
+            <p className="emergency-title">Report for adoption or rescue</p>
+            <div className="emergency-page">
+                <div className={`emergency-left ${imagePreview ? 'has-image' : ''}`}>
+                    {imagePreview ? (
+                        <img src={imagePreview} alt="Emergency Upload" className="uploaded-image" />
+                    ) : (
+                        <Plus className="upload-icon" strokeWidth={1} />
                     )}
-                    <div className="description-box">
-                        <textarea
-                            placeholder="Describe the emergency in brief"
-                            aria-label="Emergency description"
-                            required
-                        ></textarea>
-                    </div>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="upload-input"
+                        onChange={handleImageChange}
+                        aria-label="Upload emergency picture"
+                    />
+                </div>
 
-                    <div className="details-form">
-                        <div className="input-group">
-                            <span className="input-label">name<span className="required-star">*</span>:</span>
-                            <input 
-                                type="text" 
-                                required 
-                                value={reporterName} 
-                                onChange={(e) => setReporterName(e.target.value)} 
-                            />
+                <div className="emergency-right">
+                    <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        {errorMessage && (
+                            <div className="emergency-error-message" style={{ color: '#e74c3c', padding: '12px 16px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '12px', fontWeight: '600', textAlign: 'center', fontSize: '0.95rem' }}>
+                                ⚠️ {errorMessage}
+                            </div>
+                        )}
+                        <div className="description-box">
+                            <textarea
+                                placeholder="Describe the emergency in brief"
+                                aria-label="Emergency description"
+                                required
+                            ></textarea>
                         </div>
 
-                        <div className="input-group">
-                            <span className="input-label">phone<span className="required-star">*</span>:</span>
-                            <input 
-                                type="tel" 
-                                required 
-                                maxLength="10" 
-                                value={reporterPhone} 
-                                onChange={(e) => setReporterPhone(e.target.value)} 
-                            />
+                        <div className="details-form">
+                            <div className="input-group">
+                                <span className="input-label">name<span className="required-star">*</span>:</span>
+                                <input
+                                    type="text"
+                                    required
+                                    value={reporterName}
+                                    onChange={(e) => setReporterName(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <span className="input-label">phone<span className="required-star">*</span>:</span>
+                                <input
+                                    type="tel"
+                                    required
+                                    maxLength="10"
+                                    value={reporterPhone}
+                                    onChange={(e) => setReporterPhone(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <span className="input-label">email:</span>
+                                <input
+                                    type="email"
+                                    value={reporterEmail}
+                                    onChange={(e) => setReporterEmail(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <span className="input-label">location:</span>
+                                <input type="text" value={location} readOnly title="Location auto-fetched from device" />
+                            </div>
                         </div>
 
-                        <div className="input-group">
-                            <span className="input-label">email:</span>
-                            <input 
-                                type="email" 
-                                value={reporterEmail} 
-                                onChange={(e) => setReporterEmail(e.target.value)} 
-                            />
+                        <div className="report-button-container">
+                            <button type="submit" className="report-btn">report</button>
                         </div>
-
-                        <div className="input-group">
-                            <span className="input-label">location:</span>
-                            <input type="text" value={location} readOnly title="Location auto-fetched from device" />
-                        </div>
-                    </div>
-
-                    <div className="report-button-container">
-                        <button type="submit" className="report-btn">report</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
         </>
     );
 }

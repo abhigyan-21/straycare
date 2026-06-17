@@ -85,7 +85,7 @@ const PublicPartner = () => {
                         <div className="stat-value">{stats.totalCreated}</div>
                         <div className="stat-label">Requests Created</div>
                     </div>
-                    
+
                     <div className="stat-card completed">
                         <div className="stat-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -96,7 +96,7 @@ const PublicPartner = () => {
                         <div className="stat-value">{stats.totalCompleted}</div>
                         <div className="stat-label">Requests Completed</div>
                     </div>
-                    
+
                     <div className="stat-card funds">
                         <div className="stat-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -111,13 +111,13 @@ const PublicPartner = () => {
 
                 {/* Campaigns & Support Requests */}
                 <div className="campaigns-tabs">
-                    <button 
+                    <button
                         className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
                         onClick={() => setActiveTab('active')}
                     >
                         Active ({campaigns.active.length})
                     </button>
-                    <button 
+                    <button
                         className={`tab-btn ${activeTab === 'completed' ? 'active' : ''}`}
                         onClick={() => setActiveTab('completed')}
                     >
@@ -138,16 +138,16 @@ const PublicPartner = () => {
 
                             return (
                                 <Link to={`/funding/${campaign.id}`} key={campaign.id} className="campaign-card">
-                                    <img 
-                                        src={campaign.banner || campaign.image || 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800'} 
-                                        alt={campaign.title} 
+                                    <img
+                                        src={campaign.banner || campaign.image || 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800'}
+                                        alt={campaign.title}
                                         className="campaign-card-img"
                                     />
                                     <div className="campaign-card-body">
                                         <span className="campaign-type">{campaign.requestType}</span>
                                         <h3 className="campaign-title">{campaign.title}</h3>
                                         <p className="campaign-desc">{campaign.description}</p>
-                                        
+
                                         <div className="campaign-progress-bar">
                                             <div className="campaign-progress-fill" style={{ width: `${percent}%` }}></div>
                                         </div>

@@ -88,24 +88,24 @@ function VetDashboard() {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Vet Portal - Dashboard</title>
-            <meta name="description" content="Overview of rescue operations, adoption stats, and campaign activity for your clinic on the Furzo Vet Portal." />
-        </Helmet>
-        <div className="vet-dashboard">
-            <LiveStatusView rescues={rescues} />
+            <Helmet>
+                <title>Furzo Vet Portal - Dashboard</title>
+                <meta name="description" content="Overview of rescue operations, adoption stats, and campaign activity for your clinic on the Furzo Vet Portal." />
+            </Helmet>
+            <div className="vet-dashboard">
+                <LiveStatusView rescues={rescues} />
 
-            <div className="stats-grid">
-                <VetStatCard label="Live adoptions" value={stats.liveAdoptions} />
-                <VetStatCard label="New Requests" value={stats.newRequests} />
-                <VetStatCard label="Live Requests" value={stats.liveRequests} />
-                <VetStatCard 
-                    label="Campaign" 
-                    date={stats.latestCampaign.date} 
-                    campaignTitle={stats.latestCampaign.title} 
-                />
+                <div className="stats-grid">
+                    <VetStatCard label="Live adoptions" value={stats.liveAdoptions} />
+                    <VetStatCard label="New Requests" value={stats.newRequests} />
+                    <VetStatCard label="Live Requests" value={stats.liveRequests} />
+                    <VetStatCard
+                        label="Campaign"
+                        date={stats.latestCampaign.date}
+                        campaignTitle={stats.latestCampaign.title}
+                    />
+                </div>
             </div>
-        </div>
         </>
     );
 }

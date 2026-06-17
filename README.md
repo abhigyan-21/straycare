@@ -99,7 +99,7 @@ Furzo/
 2. **Backend Configuration**:
    - Create `backend/.env`:
      ```env
-     DATABASE_URL="postgresql://user:pass@localhost:5432/furzo"
+     DATABASE_URL="postgresql://user:pass@localhost:5432/Furzo"
      JWT_SECRET="your_secret_key"
      ```
    ```bash

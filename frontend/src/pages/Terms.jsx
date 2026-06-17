@@ -67,13 +67,13 @@ function Terms() {
         <meta name="description" content="Review Furzo's Terms of Service governing the use of our animal rescue, adoption, and veterinary assistance platform." />
         <meta property="og:title" content="Furzo - Terms of Service" />
         <meta property="og:description" content="Review Furzo's Terms of Service governing the use of our animal rescue, adoption, and veterinary assistance platform." />
-        <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-        <meta property="og:url" content="https://furzo.vercel.app/terms" />
+        <meta property="og:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
+        <meta property="og:url" content="https://Furzo.vercel.app/terms" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Furzo - Terms of Service" />
         <meta name="twitter:description" content="Review Furzo's Terms of Service governing the use of our animal rescue, adoption, and veterinary assistance platform." />
-        <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
+        <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
       </Helmet>
       <div className="policy-container">
         <aside className="policy-sidebar">
@@ -167,7 +167,7 @@ function Terms() {
             <h3>3.3 Account Responsibility</h3>
             <p>
               You are solely responsible for all activities that occur under your account. You must notify us
-              immediately at <a href="mailto:support@furzo.in">support@furzo.in</a> of any unauthorized use or
+              immediately at <a href="mailto:support@Furzo.in">support@Furzo.in</a> of any unauthorized use or
               security breach. We are not liable for any loss resulting from unauthorized use of your account.
             </p>
 
@@ -320,7 +320,7 @@ function Terms() {
             <p>For questions, concerns, or grievances regarding these Terms, please contact:</p>
             <div className="policy-highlight-box">
               <p><strong>Furzo (StrayCare)</strong></p>
-              <p>Email: <a href="mailto:furzo.app@gmail.com">furzo.app@gmail.com</a></p>
+              <p>Email: <a href="mailto:Furzo.app@gmail.com">Furzo.app@gmail.com</a></p>
             </div>
           </section>
         </main>

@@ -35,11 +35,11 @@ const config = {
   brevoApiKey: process.env.BREVO_API_KEY || null,
 
   smtp: {
-    host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-    port:   parseInt(process.env.SMTP_PORT || '587', 10),
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
     secure: process.env.SMTP_SECURE === 'true', // true = port 465, false = STARTTLS on 587
-    user:   process.env.SMTP_USER   || process.env.EMAIL_USER || null,
-    pass:   process.env.SMTP_PASS   || process.env.EMAIL_PASS || null,
+    user: process.env.SMTP_USER || process.env.EMAIL_USER || null,
+    pass: process.env.SMTP_PASS || process.env.EMAIL_PASS || null,
   },
 
   // Sender address.
@@ -47,7 +47,7 @@ const config = {
   // - If using Resend with a verified domain: set FROM_EMAIL=you@yourdomain.com
   // - If using SMTP: defaults to the SMTP auth user
   fromEmail: process.env.FROM_EMAIL || null,
-  fromName:  process.env.FROM_NAME  || 'Furzo',
+  fromName: process.env.FROM_NAME || 'Furzo',
 
   // Retry configuration for transient failures
   retry: {
@@ -69,13 +69,13 @@ if (!config.fromEmail) {
 // 3. Transport selection — determined once at startup.
 // ---------------------------------------------------------------------------
 let activeTransport = 'none'; // 'brevo' | 'smtp' | 'none'
-let brevoClient     = null;
+let brevoClient = null;
 let smtpTransporter = null;
 
 function initializeTransport() {
   if (config.brevoApiKey) {
     // ── Brevo (recommended for PaaS) ────────────────────────────────────
-    brevoClient    = new BrevoClient({ apiKey: config.brevoApiKey });
+    brevoClient = new BrevoClient({ apiKey: config.brevoApiKey });
     activeTransport = 'brevo';
     log('info', 'Transport: Brevo HTTP API (port 443). SMTP ports are not used.');
 
@@ -85,8 +85,8 @@ function initializeTransport() {
     // the network level. SMTP will always time out on these platforms.
     // Use Brevo instead by setting BREVO_API_KEY in your environment.
     smtpTransporter = nodemailer.createTransport({
-      host:   config.smtp.host,
-      port:   config.smtp.port,
+      host: config.smtp.host,
+      port: config.smtp.port,
       secure: config.smtp.secure,
       family: 4, // Explicitly use IPv4 socket; prevents ENETUNREACH on dual-stack
       auth: {
@@ -100,15 +100,15 @@ function initializeTransport() {
       // Aggressive timeouts: fail fast rather than hanging indefinitely.
       // ETIMEDOUT on a PaaS means the port is firewall-blocked — retrying
       // forever won't help; surface the error immediately.
-      connectionTimeout:  8000,  // TCP connect timeout (ms)
-      greetingTimeout:    8000,  // SMTP EHLO/HELO response timeout (ms)
-      socketTimeout:      10000, // Idle socket timeout (ms)
+      connectionTimeout: 8000,  // TCP connect timeout (ms)
+      greetingTimeout: 8000,  // SMTP EHLO/HELO response timeout (ms)
+      socketTimeout: 10000, // Idle socket timeout (ms)
     });
 
     activeTransport = 'smtp';
     log('info', `Transport: SMTP (${config.smtp.host}:${config.smtp.port}, IPv4-forced)`);
     log('warn', 'SMTP note: Port 587 is blocked on Render/Vercel/Railway/Fly.io. ' +
-                'If you see ETIMEDOUT, set BREVO_API_KEY instead.');
+      'If you see ETIMEDOUT, set BREVO_API_KEY instead.');
 
     // Verify SMTP credentials asynchronously; don't block startup.
     smtpTransporter.verify((err) => {
@@ -116,7 +116,7 @@ function initializeTransport() {
         log('error', `SMTP verify failed: [${err.code || '?'}] ${err.message}`);
         if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
           log('error', 'This is a network-level block (not a credentials error). ' +
-                       'Check if your host allows outbound port 587.');
+            'Check if your host allows outbound port 587.');
         }
       } else {
         log('info', `SMTP authenticated successfully as ${config.smtp.user}`);
@@ -198,12 +198,12 @@ async function sendViaBrevo({ to, subject, html, text, replyTo }) {
   const payload = {
     sender: {
       email: config.fromEmail,
-      name:  config.fromName,
+      name: config.fromName,
     },
     to: recipients,
     subject,
     htmlContent: html,
-    ...(text    && { textContent: text }),
+    ...(text && { textContent: text }),
     ...(replyTo && { replyTo: { email: replyTo } }),
   };
 
@@ -219,11 +219,11 @@ async function sendViaSmtp({ to, subject, html, text, replyTo }) {
   log('info', `[SMTP] Sending to ${to} via ${config.smtp.host}:${config.smtp.port}`);
 
   const info = await smtpTransporter.sendMail({
-    from:    `"${config.fromName}" <${config.fromEmail}>`,
+    from: `"${config.fromName}" <${config.fromEmail}>`,
     to,
     subject,
     html,
-    ...(text    && { text }),
+    ...(text && { text }),
     ...(replyTo && { replyTo }),
   });
 

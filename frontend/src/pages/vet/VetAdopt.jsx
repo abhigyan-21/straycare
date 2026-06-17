@@ -109,7 +109,7 @@ function VetAdopt() {
 
     const confirmAction = async () => {
         const { id, value } = showConfirm;
-        
+
         // Optimistic UI update: Instantly remove it from the 'liveAdoptions' list
         // since 'Remove' or 'Adopted' means it's no longer 'AVAILABLE'.
         setData(prev => ({
@@ -219,136 +219,136 @@ function VetAdopt() {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Vet Portal - Adoptions</title>
-            <meta name="description" content="Manage live adoption listings, review adoption requests, and schedule interviews from your Furzo clinic portal." />
-        </Helmet>
-        <div className="vet-dashboard vet-adopt-page">
-            {error && (
-                <div className="error-banner" style={{ padding: '12px 20px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}>
-                    <AlertTriangle size={20} />
-                    <span>{error}</span>
-                </div>
-            )}
-            <div className="main-rescue-section adopt-interview-section">
-                <div className="section-header">
-                    <h1 className="section-title">Todays Interview</h1>
-                </div>
-                <div className="rescues-scroll-wrapper">
-                    <div className="rescues-container">
-                        {data.todaysInterviews.map((interview) => (
-                            <InterviewCard key={interview.id} interview={interview} />
-                        ))}
-                        {data.todaysInterviews.length === 0 && (
-                            <div className="rescue-card-white" style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '15px', width: '100%' }}>
-                                <Calendar size={48} color="#999" style={{ strokeWidth: 1.5 }} />
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                                    <div style={{ fontSize: '1.4rem', color: '#333', fontWeight: '700' }}>
-                                        No interviews today
-                                    </div>
-                                    <div style={{ fontSize: '1rem', color: '#888', fontWeight: '400' }}>
-                                        There are no rescue adoption interviews scheduled for today.
+            <Helmet>
+                <title>Furzo Vet Portal - Adoptions</title>
+                <meta name="description" content="Manage live adoption listings, review adoption requests, and schedule interviews from your Furzo clinic portal." />
+            </Helmet>
+            <div className="vet-dashboard vet-adopt-page">
+                {error && (
+                    <div className="error-banner" style={{ padding: '12px 20px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}>
+                        <AlertTriangle size={20} />
+                        <span>{error}</span>
+                    </div>
+                )}
+                <div className="main-rescue-section adopt-interview-section">
+                    <div className="section-header">
+                        <h1 className="section-title">Todays Interview</h1>
+                    </div>
+                    <div className="rescues-scroll-wrapper">
+                        <div className="rescues-container">
+                            {data.todaysInterviews.map((interview) => (
+                                <InterviewCard key={interview.id} interview={interview} />
+                            ))}
+                            {data.todaysInterviews.length === 0 && (
+                                <div className="rescue-card-white" style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '15px', width: '100%' }}>
+                                    <Calendar size={48} color="#999" style={{ strokeWidth: 1.5 }} />
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                                        <div style={{ fontSize: '1.4rem', color: '#333', fontWeight: '700' }}>
+                                            No interviews today
+                                        </div>
+                                        <div style={{ fontSize: '1rem', color: '#888', fontWeight: '400' }}>
+                                            There are no rescue adoption interviews scheduled for today.
+                                        </div>
                                     </div>
                                 </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <VetTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
+                <div className="adopt-list-container">
+                    {isLoading ? <ActionLoader message="Fetching adoption data..." /> : (
+                        <>
+                            {activeTab === 'live' && data.liveAdoptions.map(pet => (
+                                <VetStatusCard
+                                    key={pet.id}
+                                    id={pet.id}
+                                    name={pet.petName}
+                                    status={pet.status}
+                                    onChange={(val) => handleStatusChange(pet.id, val)}
+                                    options={ADOPT_STATUS_OPTIONS}
+                                    image={pet.image}
+                                />
+                            ))}
+
+                            {activeTab === 'current' && data.currentRequests.map(req => (
+                                <VetRequestCard
+                                    key={req.id}
+                                    req={req}
+                                    onAccept={() => handleAcceptRequest(req.id)}
+                                    onReject={() => handleRejectRequest(req.id)}
+                                />
+                            ))}
+
+                            {activeTab === 'new' && data.newRequests.map(req => (
+                                <VetRequestCard
+                                    key={req.id}
+                                    req={req}
+                                    isNew={true}
+                                    onSetTime={handleSetTime}
+                                    onAccept={() => handleAcceptRequest(req.id)}
+                                    onReject={() => handleRejectRequest(req.id)}
+                                />
+                            ))}
+                            {activeTab === 'live' && data.liveAdoptions.length === 0 && <p className="no-data">No live adoptions</p>}
+                            {activeTab === 'current' && data.currentRequests.length === 0 && <p className="no-data">No current requests</p>}
+                            {activeTab === 'new' && data.newRequests.length === 0 && <p className="no-data">No new requests</p>}
+                        </>
+                    )}
+                </div>
+
+                {showConfirm && (
+                    <div className="modal-overlay">
+                        <div className="modal-content confirmation">
+                            <AlertTriangle className="modal-icon warning" size={48} />
+                            <h2>Confirm Action</h2>
+                            <p>Are you sure you want to change the status to <strong>{showConfirm.value}</strong>?</p>
+                            <div className="modal-actions">
+                                <button className="confirm-btn" onClick={confirmAction}>Confirm</button>
+                                <button className="cancel-btn" onClick={() => setShowConfirm(null)}>Cancel</button>
                             </div>
-                        )}
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <VetTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-
-            <div className="adopt-list-container">
-                {isLoading ? <ActionLoader message="Fetching adoption data..." /> : (
-                    <>
-                        {activeTab === 'live' && data.liveAdoptions.map(pet => (
-                            <VetStatusCard 
-                                key={pet.id}
-                                id={pet.id}
-                                name={pet.petName}
-                                status={pet.status}
-                                onChange={(val) => handleStatusChange(pet.id, val)}
-                                options={ADOPT_STATUS_OPTIONS}
-                                image={pet.image}
-                            />
-                        ))}
-
-                        {activeTab === 'current' && data.currentRequests.map(req => (
-                            <VetRequestCard 
-                                key={req.id} 
-                                req={req} 
-                                onAccept={() => handleAcceptRequest(req.id)}
-                                onReject={() => handleRejectRequest(req.id)}
-                            />
-                        ))}
-
-                        {activeTab === 'new' && data.newRequests.map(req => (
-                            <VetRequestCard 
-                                key={req.id} 
-                                req={req} 
-                                isNew={true}
-                                onSetTime={handleSetTime}
-                                onAccept={() => handleAcceptRequest(req.id)}
-                                onReject={() => handleRejectRequest(req.id)}
-                            />
-                        ))}
-                        {activeTab === 'live' && data.liveAdoptions.length === 0 && <p className="no-data">No live adoptions</p>}
-                        {activeTab === 'current' && data.currentRequests.length === 0 && <p className="no-data">No current requests</p>}
-                        {activeTab === 'new' && data.newRequests.length === 0 && <p className="no-data">No new requests</p>}
-                    </>
                 )}
+
+                {showTimePicker && (
+                    <div className="modal-overlay">
+                        <div className="modal-content time-picker">
+                            <Calendar className="modal-icon info" size={48} />
+                            <h2>Schedule Interview</h2>
+                            <p>Select date and time for <strong>{showTimePicker.name}</strong></p>
+                            <div className="input-group">
+                                <label>Date</label>
+                                <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+                            </div>
+                            <div className="input-group">
+                                <label>Time</label>
+                                <input type="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} />
+                            </div>
+                            <div className="modal-actions">
+                                <button className="confirm-btn" onClick={saveTime}>Save Schedule</button>
+                                <button className="cancel-btn" onClick={() => setShowTimePicker(null)}>Discard</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <button
+                    className="floating-create-btn"
+                    onClick={() => setShowCreateModal(true)}
+                >
+                    <Plus size={24} />
+                    <span>Create Adoption</span>
+                </button>
+
+                <CreateAdoptionModal
+                    isOpen={showCreateModal}
+                    onClose={() => setShowCreateModal(false)}
+                    onPublish={handlePublishAdoption}
+                />
             </div>
-
-            {showConfirm && (
-                <div className="modal-overlay">
-                    <div className="modal-content confirmation">
-                        <AlertTriangle className="modal-icon warning" size={48} />
-                        <h2>Confirm Action</h2>
-                        <p>Are you sure you want to change the status to <strong>{showConfirm.value}</strong>?</p>
-                        <div className="modal-actions">
-                            <button className="confirm-btn" onClick={confirmAction}>Confirm</button>
-                            <button className="cancel-btn" onClick={() => setShowConfirm(null)}>Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showTimePicker && (
-                <div className="modal-overlay">
-                    <div className="modal-content time-picker">
-                        <Calendar className="modal-icon info" size={48} />
-                        <h2>Schedule Interview</h2>
-                        <p>Select date and time for <strong>{showTimePicker.name}</strong></p>
-                        <div className="input-group">
-                            <label>Date</label>
-                            <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
-                        </div>
-                        <div className="input-group">
-                            <label>Time</label>
-                            <input type="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} />
-                        </div>
-                        <div className="modal-actions">
-                            <button className="confirm-btn" onClick={saveTime}>Save Schedule</button>
-                            <button className="cancel-btn" onClick={() => setShowTimePicker(null)}>Discard</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <button 
-                className="floating-create-btn"
-                onClick={() => setShowCreateModal(true)}
-            >
-                <Plus size={24} />
-                <span>Create Adoption</span>
-            </button>
-
-            <CreateAdoptionModal 
-                isOpen={showCreateModal} 
-                onClose={() => setShowCreateModal(false)}
-                onPublish={handlePublishAdoption}
-            />
-        </div>
         </>
     );
 }

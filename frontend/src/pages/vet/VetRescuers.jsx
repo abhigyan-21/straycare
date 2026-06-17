@@ -11,7 +11,7 @@ const VetRescuers = () => {
     const [rescuers, setRescuers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     const [formData, setFormData] = useState({
         email: '',
         contact: ''
@@ -89,90 +89,90 @@ const VetRescuers = () => {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Vet Portal - Rescuers</title>
-            <meta name="description" content="Manage your clinic's rescue staff, assign rescuer privileges, and coordinate field operations on the Furzo Vet Portal." />
-        </Helmet>
-        <div className="vet-rescuers-page">
-            <div className="rescuers-header">
-                <h1>Rescuer Management</h1>
-                <p>Manage your clinic's rescue staff and assign privileges.</p>
-            </div>
+            <Helmet>
+                <title>Furzo Vet Portal - Rescuers</title>
+                <meta name="description" content="Manage your clinic's rescue staff, assign rescuer privileges, and coordinate field operations on the Furzo Vet Portal." />
+            </Helmet>
+            <div className="vet-rescuers-page">
+                <div className="rescuers-header">
+                    <h1>Rescuer Management</h1>
+                    <p>Manage your clinic's rescue staff and assign privileges.</p>
+                </div>
 
-            {/* Add Rescuer Form */}
-            <div className="add-rescuer-card">
-                <h2><UserPlus size={24} /> Promote User to Rescuer</h2>
-                <form className="rescuer-form" onSubmit={handleAddRescuer}>
-                    <div className="form-group">
-                        <label>User Email</label>
-                        <input 
-                            type="email" 
-                            name="email"
-                            placeholder="staff@example.com" 
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required 
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Contact Number</label>
-                        <input 
-                            type="tel" 
-                            name="contact"
-                            placeholder="+91 XXXXX XXXXX" 
-                            value={formData.contact}
-                            onChange={handleInputChange}
-                            required 
-                        />
-                    </div>
-                    <button type="submit" className="add-btn" disabled={isSubmitting}>
-                        {isSubmitting ? 'Processing...' : 'Add Rescuer'}
-                    </button>
-                </form>
-            </div>
+                {/* Add Rescuer Form */}
+                <div className="add-rescuer-card">
+                    <h2><UserPlus size={24} /> Promote User to Rescuer</h2>
+                    <form className="rescuer-form" onSubmit={handleAddRescuer}>
+                        <div className="form-group">
+                            <label>User Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="staff@example.com"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Contact Number</label>
+                            <input
+                                type="tel"
+                                name="contact"
+                                placeholder="+91 XXXXX XXXXX"
+                                value={formData.contact}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="add-btn" disabled={isSubmitting}>
+                            {isSubmitting ? 'Processing...' : 'Add Rescuer'}
+                        </button>
+                    </form>
+                </div>
 
-            {/* Rescuers List */}
-            <div className="rescuers-list-section">
-                <h2><Users size={24} style={{ verticalAlign: 'middle', marginRight: '10px' }} /> Your Rescuer Team </h2>
-                
-                {isLoading ? (
-                    <ActionLoader message="Syncing rescuer data..." />
-                ) : (
-                    <div className="rescuers-grid">
-                        {rescuers.length > 0 ? (
-                            rescuers.map(rescuer => (
-                                <div key={rescuer.id} className="rescuer-card">
-                                    <div className="rescuer-avatar">
-                                        {rescuer.avatarUrl ? (
-                                            <img src={rescuer.avatarUrl} alt={rescuer.name} />
-                                        ) : (
-                                            <Shield size={30} color="#80ff1eff" />
-                                        )}
+                {/* Rescuers List */}
+                <div className="rescuers-list-section">
+                    <h2><Users size={24} style={{ verticalAlign: 'middle', marginRight: '10px' }} /> Your Rescuer Team </h2>
+
+                    {isLoading ? (
+                        <ActionLoader message="Syncing rescuer data..." />
+                    ) : (
+                        <div className="rescuers-grid">
+                            {rescuers.length > 0 ? (
+                                rescuers.map(rescuer => (
+                                    <div key={rescuer.id} className="rescuer-card">
+                                        <div className="rescuer-avatar">
+                                            {rescuer.avatarUrl ? (
+                                                <img src={rescuer.avatarUrl} alt={rescuer.name} />
+                                            ) : (
+                                                <Shield size={30} color="#80ff1eff" />
+                                            )}
+                                        </div>
+                                        <div className="rescuer-info">
+                                            <h3>{rescuer.name}</h3>
+                                            <p><Mail size={14} style={{ marginRight: '5px' }} /> {rescuer.email}</p>
+                                            <p><Phone size={14} style={{ marginRight: '5px' }} /> {rescuer.contact}</p>
+                                            <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>ID: {rescuer.id}</p>
+                                        </div>
+                                        <button
+                                            className="remove-btn"
+                                            onClick={() => handleRemoveRescuer(rescuer.id)}
+                                            title="Remove Privileges"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
                                     </div>
-                                    <div className="rescuer-info">
-                                        <h3>{rescuer.name}</h3>
-                                        <p><Mail size={14} style={{ marginRight: '5px' }} /> {rescuer.email}</p>
-                                        <p><Phone size={14} style={{ marginRight: '5px' }} /> {rescuer.contact}</p>
-                                        <p style={{ fontSize: '0.75rem', color: '#aaa', marginTop: '4px' }}>ID: {rescuer.id}</p>
-                                    </div>
-                                    <button 
-                                        className="remove-btn" 
-                                        onClick={() => handleRemoveRescuer(rescuer.id)}
-                                        title="Remove Privileges"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                ))
+                            ) : (
+                                <div className="empty-state">
+                                    <p>No rescuers added yet. Use the form above to add your staff.</p>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="empty-state">
-                                <p>No rescuers added yet. Use the form above to add your staff.</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
         </>
     );
 };

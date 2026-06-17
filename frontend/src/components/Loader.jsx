@@ -43,7 +43,7 @@ const Loader = () => {
                 <span>F</span>
                 <span>U</span>
                 <span>R</span>
-                <span>Z</span>
+                <span>G</span>
                 <span className="loader-logo-o">
                     <svg viewBox="0 0 100 100" className="loader-paw-svg">
                         <circle cx="50" cy="50" r="46" fill="currentColor" />

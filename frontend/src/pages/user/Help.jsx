@@ -23,7 +23,7 @@ function Help({ openAuthModal }) {
         fetchHighlights,
         handleDonation: storeDonation,
     } = useCampaignStore();
-    
+
     const [expandedCard, setExpandedCard] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
@@ -137,7 +137,7 @@ function Help({ openAuthModal }) {
         if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
         let secondsLeft = duration;
         setCooldownRemaining(secondsLeft);
-        
+
         countdownIntervalRef.current = setInterval(() => {
             secondsLeft -= 1;
             setCooldownRemaining(secondsLeft);
@@ -318,205 +318,205 @@ function Help({ openAuthModal }) {
 
     // Filter campaigns based on search query and category
     const activeCampaignsList = campaigns.filter(isActiveCampaign);
-    
+
     const filteredCampaigns = activeCampaignsList.filter(camp => {
-        const matchesSearch = searchQuery.trim() === '' || 
-            (camp.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        const matchesSearch = searchQuery.trim() === '' ||
+            (camp.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (camp.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (camp.location || '').toLowerCase().includes(searchQuery.toLowerCase());
-            
+
         const category = getCampaignCategory(camp);
         const matchesCategory = selectedFilter === 'all' || category === selectedFilter;
-        
+
         return matchesSearch && matchesCategory;
     });
 
     return (
         <>
-        <Helmet>
-            <title>Furzo - Support & Campaigns</title>
-            <meta name="description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
-            <meta property="og:title" content="Furzo - Support & Campaigns" />
-            <meta property="og:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
-            <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-            <meta property="og:url" content="https://furzo.vercel.app/help" />
-            <meta property="og:type" content="website" />
-            <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" content="Furzo - Support & Campaigns" />
-            <meta name="twitter:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
-            <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-        </Helmet>
-        <div className="help-page">
-            <div className="help-content-wrapper">
-                <SupportCarousel 
-                    displayCards={displayCards}
-                    currentIndex={currentIndex}
-                    shouldAnimate={shouldAnimate}
-                    setIsPaused={setIsPaused}
-                    handleCardClick={handleCardClick}
-                />
+            <Helmet>
+                <title>Furzo - Support & Campaigns</title>
+                <meta name="description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
+                <meta property="og:title" content="Furzo - Support & Campaigns" />
+                <meta property="og:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
+                <meta property="og:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
+                <meta property="og:url" content="https://Furzo.vercel.app/help" />
+                <meta property="og:type" content="website" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Furzo - Support & Campaigns" />
+                <meta name="twitter:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
+                <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
+            </Helmet>
+            <div className="help-page">
+                <div className="help-content-wrapper">
+                    <SupportCarousel
+                        displayCards={displayCards}
+                        currentIndex={currentIndex}
+                        shouldAnimate={shouldAnimate}
+                        setIsPaused={setIsPaused}
+                        handleCardClick={handleCardClick}
+                    />
 
-                <div className="carousel-dots">
-                    {cards.map((_, index) => (
-                        <button
-                            key={index}
-                            className={`carousel-dot ${index === (currentIndex % 4) ? 'active' : ''}`}
-                            onClick={() => handleDotClick(index)}
-                        />
-                    ))}
-                </div>
-
-                {/* Search, Filter, and Campaign List Widget */}
-                <div className="campaign-search-section">
-                    <div className="search-filter-container">
-                        <div className="search-bar-wrapper">
-                            <Search className="search-icon" size={20} />
-                            <input
-                                type="text"
-                                className="campaign-search-input"
-                                placeholder="search a campaign"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                    <div className="carousel-dots">
+                        {cards.map((_, index) => (
+                            <button
+                                key={index}
+                                className={`carousel-dot ${index === (currentIndex % 4) ? 'active' : ''}`}
+                                onClick={() => handleDotClick(index)}
                             />
-                            {searchQuery && (
-                                <button className="clear-search-btn" onClick={() => setSearchQuery('')}>×</button>
+                        ))}
+                    </div>
+
+                    {/* Search, Filter, and Campaign List Widget */}
+                    <div className="campaign-search-section">
+                        <div className="search-filter-container">
+                            <div className="search-bar-wrapper">
+                                <Search className="search-icon" size={20} />
+                                <input
+                                    type="text"
+                                    className="campaign-search-input"
+                                    placeholder="search a campaign"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button className="clear-search-btn" onClick={() => setSearchQuery('')}>×</button>
+                                )}
+                            </div>
+
+                            <div className="category-filters">
+                                {[
+                                    { id: 'all', label: 'All Campaigns' },
+                                    { id: 'food', label: 'Food & Nutrition' },
+                                    { id: 'shelter', label: 'Safe Shelter' },
+                                    { id: 'treatment', label: 'Medical Treatment' },
+                                    { id: 'other', label: 'Other Support' }
+                                ].map((filterItem) => (
+                                    <button
+                                        key={filterItem.id}
+                                        className={`filter-pill ${filterItem.id} ${selectedFilter === filterItem.id ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setSelectedFilter(filterItem.id);
+                                            setIsExpanded(false);
+                                        }}
+                                    >
+                                        {filterItem.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="campaigns-grid-wrapper">
+                            {filteredCampaigns.length === 0 ? (
+                                <div className="no-campaigns-found">
+                                    <p>No active campaigns match your search and filter criteria.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="campaigns-grid">
+                                        {filteredCampaigns.slice(0, isExpanded ? undefined : 5).map((camp) => {
+                                            const progress = camp.goalAmount > 0
+                                                ? Math.min(100, Math.round(((camp.raisedAmount || 0) / camp.goalAmount) * 100))
+                                                : 0;
+                                            const category = getCampaignCategory(camp);
+
+                                            return (
+                                                <UserCampaignCard
+                                                    key={camp.id}
+                                                    campaign={camp}
+                                                    category={category}
+                                                    progress={progress}
+                                                    onDonate={(selected) => {
+                                                        setSelectedDirectCampaign(selected);
+                                                        setExpandedCard(4);
+                                                    }}
+                                                    onDetails={(selected) => {
+                                                        setShowDetailCampaign(selected);
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+
+                                    {filteredCampaigns.length > 5 && (
+                                        <div className="view-more-container">
+                                            <button
+                                                className="view-more-toggle-btn"
+                                                onClick={() => setIsExpanded(!isExpanded)}
+                                            >
+                                                {isExpanded ? 'Show Less' : 'View More'}
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
-                        
-                        <div className="category-filters">
-                            {[
-                                { id: 'all', label: 'All Campaigns' },
-                                { id: 'food', label: 'Food & Nutrition' },
-                                { id: 'shelter', label: 'Safe Shelter' },
-                                { id: 'treatment', label: 'Medical Treatment' },
-                                { id: 'other', label: 'Other Support' }
-                            ].map((filterItem) => (
-                                <button
-                                    key={filterItem.id}
-                                    className={`filter-pill ${filterItem.id} ${selectedFilter === filterItem.id ? 'active' : ''}`}
-                                    onClick={() => {
-                                        setSelectedFilter(filterItem.id);
-                                        setIsExpanded(false);
-                                    }}
-                                >
-                                    {filterItem.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="campaigns-grid-wrapper">
-                        {filteredCampaigns.length === 0 ? (
-                            <div className="no-campaigns-found">
-                                <p>No active campaigns match your search and filter criteria.</p>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="campaigns-grid">
-                                    {filteredCampaigns.slice(0, isExpanded ? undefined : 5).map((camp) => {
-                                        const progress = camp.goalAmount > 0
-                                            ? Math.min(100, Math.round(((camp.raisedAmount || 0) / camp.goalAmount) * 100))
-                                            : 0;
-                                        const category = getCampaignCategory(camp);
-
-                                        return (
-                                            <UserCampaignCard
-                                                key={camp.id}
-                                                campaign={camp}
-                                                category={category}
-                                                progress={progress}
-                                                onDonate={(selected) => {
-                                                    setSelectedDirectCampaign(selected);
-                                                    setExpandedCard(4);
-                                                }}
-                                                onDetails={(selected) => {
-                                                    setShowDetailCampaign(selected);
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </div>
-
-                                {filteredCampaigns.length > 5 && (
-                                    <div className="view-more-container">
-                                        <button 
-                                            className="view-more-toggle-btn"
-                                            onClick={() => setIsExpanded(!isExpanded)}
-                                        >
-                                            {isExpanded ? 'Show Less' : 'View More'}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
                     </div>
                 </div>
-            </div>
 
-            {(highlights.featuredCampaign || highlights.topContributor) && (
-                <section className="highlights-section">
-                    <div className="highlights-header">
-                        <h2>Community Highlights</h2>
-                        <p>Celebrating our latest efforts and the heroes who make them possible.</p>
-                    </div>
+                {(highlights.featuredCampaign || highlights.topContributor) && (
+                    <section className="highlights-section">
+                        <div className="highlights-header">
+                            <h2>Community Highlights</h2>
+                            <p>Celebrating our latest efforts and the heroes who make them possible.</p>
+                        </div>
 
-                    <div 
-                        className="highlights-container"
-                        style={{ gridTemplateColumns: highlights.featuredCampaign ? '2fr 1fr' : '1fr' }}
-                    >
-                        {highlights.featuredCampaign && (
-                            <HighlightCard 
-                                type="campaign" 
-                                campaign={highlights.featuredCampaign} 
-                                badgeText={highlights.badgeText}
-                                onDonate={(selected) => {
-                                    setSelectedDirectCampaign(selected);
-                                    setExpandedCard(4);
-                                }}
-                                onDetails={(selected) => {
-                                    setShowDetailCampaign(selected);
-                                }}
+                        <div
+                            className="highlights-container"
+                            style={{ gridTemplateColumns: highlights.featuredCampaign ? '2fr 1fr' : '1fr' }}
+                        >
+                            {highlights.featuredCampaign && (
+                                <HighlightCard
+                                    type="campaign"
+                                    campaign={highlights.featuredCampaign}
+                                    badgeText={highlights.badgeText}
+                                    onDonate={(selected) => {
+                                        setSelectedDirectCampaign(selected);
+                                        setExpandedCard(4);
+                                    }}
+                                    onDetails={(selected) => {
+                                        setShowDetailCampaign(selected);
+                                    }}
+                                />
+                            )}
+                            <HighlightCard
+                                type="supporter"
+                                contributor={highlights.topContributor}
                             />
-                        )}
-                        <HighlightCard 
-                            type="supporter" 
-                            contributor={highlights.topContributor} 
-                        />
-                    </div>
-                </section>
-            )}
+                        </div>
+                    </section>
+                )}
 
-            <SupportModal 
-                key={expandedCard ? `modal-${expandedCard}-${selectedDirectCampaign?.id || 'none'}` : 'modal-closed'}
-                card={cards.find(c => c.id === expandedCard)}
-                onClose={closeExpanded}
-                isLoggedIn={isLoggedIn}
-                hasVolunteered={hasVolunteered}
-                volunteerPending={volunteerPending}
-                cooldownRemaining={cooldownRemaining}
-                onVolunteerRegister={handleVolunteerRegister}
-                onVolunteerCancel={handleVolunteerCancel}
-                campaigns={campaigns}
-                isLoadingCampaigns={isLoadingCampaigns}
-                onDonate={handleCampaignDonation}
-                getBackgroundImage={getBackgroundImage}
-                openAuthModal={openAuthModal}
-                initialViewMode={selectedDirectCampaign ? 'payment' : 'main'}
-                initialSelectedCampaign={selectedDirectCampaign}
-            />
-
-            {showDetailCampaign && (
-                <UserCampaignDetailModal 
-                    campaign={showDetailCampaign}
-                    onClose={() => setShowDetailCampaign(null)}
-                    onDonate={(camp) => {
-                        setShowDetailCampaign(null);
-                        setSelectedDirectCampaign(camp);
-                        setExpandedCard(4);
-                    }}
+                <SupportModal
+                    key={expandedCard ? `modal-${expandedCard}-${selectedDirectCampaign?.id || 'none'}` : 'modal-closed'}
+                    card={cards.find(c => c.id === expandedCard)}
+                    onClose={closeExpanded}
+                    isLoggedIn={isLoggedIn}
+                    hasVolunteered={hasVolunteered}
+                    volunteerPending={volunteerPending}
+                    cooldownRemaining={cooldownRemaining}
+                    onVolunteerRegister={handleVolunteerRegister}
+                    onVolunteerCancel={handleVolunteerCancel}
+                    campaigns={campaigns}
+                    isLoadingCampaigns={isLoadingCampaigns}
+                    onDonate={handleCampaignDonation}
+                    getBackgroundImage={getBackgroundImage}
+                    openAuthModal={openAuthModal}
+                    initialViewMode={selectedDirectCampaign ? 'payment' : 'main'}
+                    initialSelectedCampaign={selectedDirectCampaign}
                 />
-            )}
-        </div>
+
+                {showDetailCampaign && (
+                    <UserCampaignDetailModal
+                        campaign={showDetailCampaign}
+                        onClose={() => setShowDetailCampaign(null)}
+                        onDonate={(camp) => {
+                            setShowDetailCampaign(null);
+                            setSelectedDirectCampaign(camp);
+                            setExpandedCard(4);
+                        }}
+                    />
+                )}
+            </div>
         </>
     );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Heart, MessageCircle, Share2, MapPin } from 'lucide-react';
 
 const formatTimeAgo = (timestamp) => {
@@ -18,6 +18,8 @@ const formatTimeAgo = (timestamp) => {
 };
 
 const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSubmitComment, newComment }) => {
+    const [showAllComments, setShowAllComments] = useState(false);
+    const commentInputRef = useRef(null);
     const isLiked = post.likes?.some(like => like.userId === currentUserId);
     const likeCount = post.likes?.length || 0;
     const authorName = post.author?.name || 'Unknown User';
@@ -57,7 +59,7 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                     </div>
 
                     <div className="post-comments">
-                        {post.comments?.map(comment => {
+                        {(showAllComments ? post.comments : post.comments?.slice(0, 3))?.map(comment => {
                             const commenterName = comment.user?.name || 'Unknown';
                             const commenterImage = comment.user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenterName)}&background=random`;
                             return (
@@ -71,6 +73,15 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                                 </div>
                             );
                         })}
+                        {!showAllComments && post.comments?.length > 3 && (
+                            <button
+                                className="view-all-comments-btn"
+                                onClick={() => setShowAllComments(true)}
+                                style={{ background: 'none', border: 'none', color: '#8e8e8e', cursor: 'pointer', padding: '4px 0', textAlign: 'left', fontSize: '0.9rem', width: 'fit-content' }}
+                            >
+                                View all {post.comments.length} comments
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -89,7 +100,14 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                                 strokeWidth={2.5}
                             />
                         </button>
-                        <button className="post-action-btn comment-btn" title="Comment">
+                        <button 
+                            className="post-action-btn comment-btn" 
+                            title="Comment"
+                            onClick={() => {
+                                setShowAllComments(!showAllComments);
+                                commentInputRef.current?.focus();
+                            }}
+                        >
                             <MessageCircle size={22} color="#262626" strokeWidth={2.5} />
                         </button>
                         <button className="post-action-btn share-btn" onClick={() => onShare(post)} title="Share">
@@ -103,6 +121,7 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                     <div className="post-add-comment">
                         <form onSubmit={(e) => onSubmitComment(e, post.id)}>
                             <input
+                                ref={commentInputRef}
                                 type="text"
                                 placeholder="Add a comment..."
                                 value={newComment || ''}

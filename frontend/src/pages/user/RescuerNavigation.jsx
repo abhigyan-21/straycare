@@ -98,7 +98,7 @@ function RescuerNavigation() {
   }, []);
 
   // Compute location arrays safely
-  const reportLocation = report 
+  const reportLocation = report
     ? (report.location || [report.locationLat, report.locationLng])
     : null;
 
@@ -108,10 +108,10 @@ function RescuerNavigation() {
   const assignedHospitalLocation = rescuerPartner?.lat && rescuerPartner?.lng
     ? [rescuerPartner.lat, rescuerPartner.lng]
     : userPartner?.lat && userPartner?.lng
-    ? [userPartner.lat, userPartner.lng]
-    : reportPartner?.lat && reportPartner?.lng
-    ? [reportPartner.lat, reportPartner.lng]
-    : null;
+      ? [userPartner.lat, userPartner.lng]
+      : reportPartner?.lat && reportPartner?.lng
+        ? [reportPartner.lat, reportPartner.lng]
+        : null;
 
   const hospitalLocation = assignedHospitalLocation || (nearestClinic ? [nearestClinic.lat, nearestClinic.lng] : null);
 
@@ -198,18 +198,18 @@ function RescuerNavigation() {
   // Fetch Route from OSRM (using static initial position to avoid rate limits)
   useEffect(() => {
     if (!reportLocation || !initialPos) return;
-    
+
     const fetchRoute = async () => {
       const start = initialPos;
       const end = stage === 'TO_STRAY' ? reportLocation : hospitalLocation;
-      
+
       if (!start || !end) return;
 
       try {
         const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
         const res = await fetch(url);
         const data = await res.json();
-        
+
         if (data.routes && data.routes[0]) {
           const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
           setRoute(coords);
@@ -232,7 +232,7 @@ function RescuerNavigation() {
   const handleOpenGoogleMaps = () => {
     const destination = stage === 'TO_STRAY' ? reportLocation : hospitalLocation;
     if (!destination) return;
-    
+
     const url = `https://www.google.com/maps/dir/?api=1&origin=${rescuerPos[0]},${rescuerPos[1]}&destination=${destination[0]},${destination[1]}&travelmode=driving`;
     window.open(url, '_blank');
   };
@@ -266,84 +266,84 @@ function RescuerNavigation() {
 
   return (
     <>
-    <Helmet>
-      <title>Furzo - Rescuer Navigation</title>
-      <meta name="description" content="Navigate to the animal's location and transport it safely to the clinic with Furzo's real-time rescuer navigation." />
-    </Helmet>
-    <div className="rescuer-nav-page">
-      <div className="patient-panel">
-        <h2>Patient Details</h2>
-        <div className="patient-pic-large">
-          {report.mediaUrls && report.mediaUrls[0] ? (
-            <img src={report.mediaUrls[0]} alt="pet preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
-          ) : (
-            'pet pic'
-          )}
+      <Helmet>
+        <title>Furzo - Rescuer Navigation</title>
+        <meta name="description" content="Navigate to the animal's location and transport it safely to the clinic with Furzo's real-time rescuer navigation." />
+      </Helmet>
+      <div className="rescuer-nav-page">
+        <div className="patient-panel">
+          <h2>Patient Details</h2>
+          <div className="patient-pic-large">
+            {report.mediaUrls && report.mediaUrls[0] ? (
+              <img src={report.mediaUrls[0]} alt="pet preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+            ) : (
+              'pet pic'
+            )}
+          </div>
+
+          <div className="patient-info-list">
+            <div className="detail-block">
+              <strong>Reported By:</strong>
+              <p>{report.reporter?.name || 'Anonymous'}</p>
+            </div>
+            <div className="detail-block">
+              <strong>Report:</strong>
+              <p>{report.type ? `${report.type}: ` : ''}{report.description}</p>
+            </div>
+            <div className="detail-block">
+              <strong>Location:</strong>
+              <p>{resolvedAddress}</p>
+            </div>
+            <div className="detail-block">
+              <strong>Contact:</strong>
+              <p>{report.reporter?.phone || 'N/A'}</p>
+            </div>
+          </div>
+
+          <div className="nav-actions">
+            {stage === 'TO_STRAY' ? (
+              <button className="confirm-pickup-btn" onClick={handleConfirmPickup}>
+                Confirm Pickup
+              </button>
+            ) : (
+              <button className="confirm-pickup-btn" style={{ background: '#2196F3' }} onClick={handleRescueCompleted}>
+                Rescue Completed
+              </button>
+            )}
+            <button className="google-maps-btn" onClick={handleOpenGoogleMaps}>
+              Navigate with Google Maps
+            </button>
+          </div>
         </div>
 
-        <div className="patient-info-list">
-          <div className="detail-block">
-            <strong>Reported By:</strong>
-            <p>{report.reporter?.name || 'Anonymous'}</p>
-          </div>
-          <div className="detail-block">
-            <strong>Report:</strong>
-            <p>{report.type ? `${report.type}: ` : ''}{report.description}</p>
-          </div>
-          <div className="detail-block">
-            <strong>Location:</strong>
-            <p>{resolvedAddress}</p>
-          </div>
-          <div className="detail-block">
-            <strong>Contact:</strong>
-            <p>{report.reporter?.phone || 'N/A'}</p>
-          </div>
-        </div>
+        <div className="nav-map-container">
+          {reportLocation && (
+            <MapContainer center={rescuerPos} zoom={15} style={{ height: '100%', width: '100%' }}>
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                attribution='&copy; CARTO'
+              />
 
-        <div className="nav-actions">
-          {stage === 'TO_STRAY' ? (
-            <button className="confirm-pickup-btn" onClick={handleConfirmPickup}>
-              Confirm Pickup
-            </button>
-          ) : (
-            <button className="confirm-pickup-btn" style={{background: '#2196F3'}} onClick={handleRescueCompleted}>
-              Rescue Completed
-            </button>
+              {route.length > 0 && (
+                <Polyline positions={route} color={stage === 'TO_STRAY' ? '#2196F3' : '#3eba11'} weight={6} />
+              )}
+
+              <Marker position={reportLocation} icon={strayIcon}><Popup>Stray Animal</Popup></Marker>
+              {hospitalLocation && (
+                <Marker position={hospitalLocation} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
+              )}
+              <Marker position={rescuerPos} icon={ambulanceIcon} zIndexOffset={1000}><Popup>Your Location</Popup></Marker>
+
+              <MapRecenter center={rescuerPos} />
+            </MapContainer>
           )}
-          <button className="google-maps-btn" onClick={handleOpenGoogleMaps}>
-            Navigate with Google Maps
-          </button>
+
+          <div className="map-overlay-info">
+            <div>Next Step: <strong>{stage === 'TO_STRAY' ? 'Reach the Animal' : 'Head to Hospital'}</strong></div>
+            <div>Stage: <strong>{stage === 'TO_STRAY' ? 'To Stray' : 'To Clinic'}</strong></div>
+          </div>
         </div>
       </div>
-
-      <div className="nav-map-container">
-        {reportLocation && (
-          <MapContainer center={rescuerPos} zoom={15} style={{ height: '100%', width: '100%' }}>
-            <TileLayer 
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              attribution='&copy; CARTO'
-            />
-            
-            {route.length > 0 && (
-              <Polyline positions={route} color={stage === 'TO_STRAY' ? '#2196F3' : '#3eba11'} weight={6} />
-            )}
-
-            <Marker position={reportLocation} icon={strayIcon}><Popup>Stray Animal</Popup></Marker>
-            {hospitalLocation && (
-              <Marker position={hospitalLocation} icon={hospitalIcon}><Popup>Clinic</Popup></Marker>
-            )}
-            <Marker position={rescuerPos} icon={ambulanceIcon} zIndexOffset={1000}><Popup>Your Location</Popup></Marker>
-            
-            <MapRecenter center={rescuerPos} />
-          </MapContainer>
-        )}
-
-        <div className="map-overlay-info">
-          <div>Next Step: <strong>{stage === 'TO_STRAY' ? 'Reach the Animal' : 'Head to Hospital'}</strong></div>
-          <div>Stage: <strong>{stage === 'TO_STRAY' ? 'To Stray' : 'To Clinic'}</strong></div>
-        </div>
-      </div>
-    </div>
     </>
   );
 }

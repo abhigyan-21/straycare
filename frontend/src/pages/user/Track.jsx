@@ -169,13 +169,13 @@ function Track() {
                 <meta name="description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
                 <meta property="og:title" content="Furzo - Track a Rescue" />
                 <meta property="og:description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
-                <meta property="og:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
-                <meta property="og:url" content="https://furzo.vercel.app/track" />
+                <meta property="og:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
+                <meta property="og:url" content="https://Furzo.vercel.app/track" />
                 <meta property="og:type" content="website" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="Furzo - Track a Rescue" />
                 <meta name="twitter:description" content="Track the rescue progress of a reported stray animal through Furzo's real-time rescue tracking system." />
-                <meta name="twitter:image" content="https://furzo.vercel.app/FurzoBanner.jpg" />
+                <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
             </Helmet>
             <div className="track-page">
                 <div className="search-section">

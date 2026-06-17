@@ -41,7 +41,7 @@ const SupportModal = ({
     const [donationAmount, setDonationAmount] = useState('1000');
     const [customAmount, setCustomAmount] = useState('');
     const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-    
+
     // Razorpay Integration States
     const [paymentMode, setPaymentMode] = useState('one-time'); // 'one-time' | 'autopay'
     const [splitRecommendation, setSplitRecommendation] = useState([]);
@@ -177,12 +177,12 @@ const SupportModal = ({
             }
 
             const rzp = new window.Razorpay(options);
-            
-            rzp.on('payment.failed', function (response){
+
+            rzp.on('payment.failed', function (response) {
                 setIsPaymentProcessing(false);
                 alert('Payment failed: ' + response.error.description);
             });
-            
+
             rzp.open();
 
         } catch (err) {
@@ -398,30 +398,30 @@ const SupportModal = ({
                             {card.id === 4 ? (() => {
                                 const partner = getPartner(selectedCampaign);
                                 return (
-                                <div className="manual-upi-section" style={{ marginTop: '0', padding: '10px', backgroundColor: '#f9fbf7', borderRadius: '12px', textAlign: 'center', border: '1px solid #e0e0e0', maxWidth: '320px', margin: '0 auto', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                                    <h4 style={{ margin: '0 0 2px 0', color: '#1a1a1a', fontSize: '1rem' }}>Direct UPI Transfer</h4>
-                                    <p style={{ fontSize: '0.8rem', color: '#555', marginBottom: '4px', lineHeight: '1.2' }}>
-                                        Transfer your donation using any UPI app to the details below, then click "I have paid".
-                                    </p>
-                                    
-                                    {partner?.upiQrCode ? (
-                                        <div style={{ marginBottom: '6px' }}>
-                                            <img src={partner.upiQrCode} alt="UPI QR Code" style={{ width: '150px', height: '150px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '8px', padding: '5px', background: '#fff' }} />
+                                    <div className="manual-upi-section" style={{ marginTop: '0', padding: '10px', backgroundColor: '#f9fbf7', borderRadius: '12px', textAlign: 'center', border: '1px solid #e0e0e0', maxWidth: '320px', margin: '0 auto', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                                        <h4 style={{ margin: '0 0 2px 0', color: '#1a1a1a', fontSize: '1rem' }}>Direct UPI Transfer</h4>
+                                        <p style={{ fontSize: '0.8rem', color: '#555', marginBottom: '4px', lineHeight: '1.2' }}>
+                                            Transfer your donation using any UPI app to the details below, then click "I have paid".
+                                        </p>
+
+                                        {partner?.upiQrCode ? (
+                                            <div style={{ marginBottom: '6px' }}>
+                                                <img src={partner.upiQrCode} alt="UPI QR Code" style={{ width: '150px', height: '150px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '8px', padding: '5px', background: '#fff' }} />
+                                            </div>
+                                        ) : (
+                                            <div style={{ marginBottom: '6px', padding: '8px', background: '#f5f5f5', borderRadius: '8px', border: '1px dashed #ccc' }}>
+                                                <p style={{ color: '#888', margin: 0, fontSize: '0.8rem' }}>QR Code not available</p>
+                                            </div>
+                                        )}
+
+                                        <div style={{ background: '#fff', padding: '4px 8px', borderRadius: '6px', border: '1px solid #ddd', display: 'inline-block', marginBottom: '8px' }}>
+                                            <strong style={{ color: '#333', fontSize: '0.85rem' }}>UPI ID:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', marginLeft: '5px' }}>{partner?.upiId || 'Not provided'}</span>
                                         </div>
-                                    ) : (
-                                        <div style={{ marginBottom: '6px', padding: '8px', background: '#f5f5f5', borderRadius: '8px', border: '1px dashed #ccc' }}>
-                                            <p style={{ color: '#888', margin: 0, fontSize: '0.8rem' }}>QR Code not available</p>
-                                        </div>
-                                    )}
-                                    
-                                    <div style={{ background: '#fff', padding: '4px 8px', borderRadius: '6px', border: '1px solid #ddd', display: 'inline-block', marginBottom: '8px' }}>
-                                        <strong style={{ color: '#333', fontSize: '0.85rem' }}>UPI ID:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', marginLeft: '5px' }}>{partner?.upiId || 'Not provided'}</span>
+
+                                        <button type="submit" className="action-btn proceed-pay-btn" style={{ width: '100%', background: '#346c02', color: '#fff', padding: '8px', fontSize: '0.95rem' }} disabled={!partner?.upiId && !partner?.upiQrCode}>
+                                            I have Paid ₹{isNaN(amount) ? '0' : amount.toLocaleString()}
+                                        </button>
                                     </div>
-                                    
-                                    <button type="submit" className="action-btn proceed-pay-btn" style={{ width: '100%', background: '#346c02', color: '#fff', padding: '8px', fontSize: '0.95rem' }} disabled={!partner?.upiId && !partner?.upiQrCode}>
-                                        I have Paid ₹{isNaN(amount) ? '0' : amount.toLocaleString()}
-                                    </button>
-                                </div>
                                 );
                             })() : (
                                 <>
@@ -433,7 +433,7 @@ const SupportModal = ({
                                             <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#444' }}>
                                                 {splitRecommendation.map((split, i) => (
                                                     <li key={i} style={{ marginBottom: '4px' }}>
-                                                        <strong>₹{split.amount}</strong> to support request #{split.campaignId.substring(0,6)}...
+                                                        <strong>₹{split.amount}</strong> to support request #{split.campaignId.substring(0, 6)}...
                                                     </li>
                                                 ))}
                                             </ul>

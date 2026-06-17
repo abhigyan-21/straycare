@@ -20,7 +20,7 @@ const strayIcon = new L.Icon({ iconUrl: pickupImg, iconSize: [45, 45], iconAncho
 function VetTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [report, setReport] = useState(null);
   const [rescuerPos, setRescuerPos] = useState([30.7200, 76.7600]);
   const [hospitalPos, setHospitalPos] = useState([30.7500, 76.8000]);
@@ -48,7 +48,7 @@ function VetTracking() {
         if (data.rescuerLat && data.rescuerLng) {
           setRescuerPos([data.rescuerLat, data.rescuerLng]);
         }
-        
+
         if (partner?.lat && partner?.lng) {
           setHospitalPos([partner.lat, partner.lng]);
         }
@@ -63,7 +63,7 @@ function VetTracking() {
 
   useEffect(() => {
     if (!report) return;
-    
+
     const fetchRoute = async () => {
       const start = rescuerPos;
       const end = report.location;
@@ -109,115 +109,115 @@ function VetTracking() {
 
   return (
     <>
-    <Helmet>
-      <title>Furzo Vet Portal - Live Tracking</title>
-      <meta name="description" content="Monitor the live GPS location of rescuers transporting animals to your clinic on the Furzo Vet Portal." />
-    </Helmet>
-    <div className="vet-tracking-page">
-      <div className="tracking-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <ArrowLeft size={20} />
-          <span>Back to Dashboard</span>
-        </button>
-        <h1>Rescue Tracking: {report.id}</h1>
-      </div>
-
-      <div className="tracking-container">
-        {/* Sidebar Info */}
-        <div className="tracking-sidebar">
-          <div className="eta-card">
-            <span className="eta-label">Estimated Time to Arrival</span>
-            <span className="eta-value">{eta} mins</span>
-          </div>
-          <div className="tracking-card">
-            <h3 className="card-title"><Ambulance size={18} /> Driver Details</h3>
-            <div className="driver-info">
-              <div className="info-row">
-                <User size={16} />
-                <div>
-                  <span className="label">Rescuer Name</span>
-                  <span className="value">{driver.name}</span>
-                </div>
-              </div>
-              <div className="info-row">
-                <Phone size={16} />
-                <div>
-                  <span className="label">Contact</span>
-                  <span className="value">{driver.phone}</span>
-                </div>
-              </div>
-              <div className="info-row">
-                <Info size={16} />
-                <div>
-                  <span className="label">Vehicle</span>
-                  <span className="value">{driver.vehicle}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="tracking-card">
-            <h3 className="card-title"><MapPin size={18} /> Stray Details</h3>
-            <div className="stray-info">
-              <div className="info-row">
-                <Info size={16} />
-                <div>
-                  <span className="label">Type</span>
-                  <span className="value">{report.type}</span>
-                </div>
-              </div>
-              <div className="info-row">
-                <FileText size={16} />
-                <div>
-                  <span className="label">Description</span>
-                  <span className="value">{report.description}</span>
-                </div>
-              </div>
-              <div className="info-row">
-                <User size={16} />
-                <div>
-                  <span className="label">Reporter</span>
-                  <span className="value">{report.reporter}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <Helmet>
+        <title>Furzo Vet Portal - Live Tracking</title>
+        <meta name="description" content="Monitor the live GPS location of rescuers transporting animals to your clinic on the Furzo Vet Portal." />
+      </Helmet>
+      <div className="vet-tracking-page">
+        <div className="tracking-header">
+          <button className="back-btn" onClick={() => navigate(-1)}>
+            <ArrowLeft size={20} />
+            <span>Back to Dashboard</span>
+          </button>
+          <h1>Rescue Tracking: {report.id}</h1>
         </div>
 
-        {/* Map View */}
-        <div className="map-wrapper">
-          <MapContainer center={rescuerPos} zoom={14} style={{ height: '100%', width: '100%' }}>
-            <TileLayer 
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              attribution='&copy; CARTO'
-            />
-            
-            {route.length > 0 && (
-              <Polyline positions={route} color="#2196F3" weight={6} dashArray="1, 10" />
-            )}
+        <div className="tracking-container">
+          {/* Sidebar Info */}
+          <div className="tracking-sidebar">
+            <div className="eta-card">
+              <span className="eta-label">Estimated Time to Arrival</span>
+              <span className="eta-value">{eta} mins</span>
+            </div>
+            <div className="tracking-card">
+              <h3 className="card-title"><Ambulance size={18} /> Driver Details</h3>
+              <div className="driver-info">
+                <div className="info-row">
+                  <User size={16} />
+                  <div>
+                    <span className="label">Rescuer Name</span>
+                    <span className="value">{driver.name}</span>
+                  </div>
+                </div>
+                <div className="info-row">
+                  <Phone size={16} />
+                  <div>
+                    <span className="label">Contact</span>
+                    <span className="value">{driver.phone}</span>
+                  </div>
+                </div>
+                <div className="info-row">
+                  <Info size={16} />
+                  <div>
+                    <span className="label">Vehicle</span>
+                    <span className="value">{driver.vehicle}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-            <Marker position={report.location} icon={strayIcon}>
+            <div className="tracking-card">
+              <h3 className="card-title"><MapPin size={18} /> Stray Details</h3>
+              <div className="stray-info">
+                <div className="info-row">
+                  <Info size={16} />
+                  <div>
+                    <span className="label">Type</span>
+                    <span className="value">{report.type}</span>
+                  </div>
+                </div>
+                <div className="info-row">
+                  <FileText size={16} />
+                  <div>
+                    <span className="label">Description</span>
+                    <span className="value">{report.description}</span>
+                  </div>
+                </div>
+                <div className="info-row">
+                  <User size={16} />
+                  <div>
+                    <span className="label">Reporter</span>
+                    <span className="value">{report.reporter}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Map View */}
+          <div className="map-wrapper">
+            <MapContainer center={rescuerPos} zoom={14} style={{ height: '100%', width: '100%' }}>
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                attribution='&copy; CARTO'
+              />
+
+              {route.length > 0 && (
+                <Polyline positions={route} color="#2196F3" weight={6} dashArray="1, 10" />
+              )}
+
+              <Marker position={report.location} icon={strayIcon}>
                 <Popup>Stray Animal Location</Popup>
-            </Marker>
-            <Marker position={hospitalPos} icon={hospitalIcon}>
+              </Marker>
+              <Marker position={hospitalPos} icon={hospitalIcon}>
                 <Popup>Your Clinic</Popup>
-            </Marker>
-            <Marker position={rescuerPos} icon={ambulanceIcon}>
+              </Marker>
+              <Marker position={rescuerPos} icon={ambulanceIcon}>
                 <Popup>Driver Location</Popup>
-            </Marker>
-            
-            <MapRecenter center={rescuerPos} />
-          </MapContainer>
+              </Marker>
+
+              <MapRecenter center={rescuerPos} />
+            </MapContainer>
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }
 
 function MapRecenter({ center }) {
   const map = useMap();
-  
+
   useEffect(() => {
     setTimeout(() => {
       map.invalidateSize();
@@ -227,7 +227,7 @@ function MapRecenter({ center }) {
   useEffect(() => {
     map.panTo(center, { animate: true, duration: 0.5 });
   }, [center, map]);
-  
+
   return null;
 }
 

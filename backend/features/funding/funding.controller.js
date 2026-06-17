@@ -24,7 +24,7 @@ const fundingService = require('./funding.service');
 const getHubs = async (req, res) => {
   try {
     const { category } = req.params;
-    
+
     // Validate category
     const validCategories = ['FOOD', 'TREATMENT', 'SHELTER'];
     if (!validCategories.includes(category.toUpperCase())) {
@@ -66,7 +66,7 @@ const getHubs = async (req, res) => {
 const splitDonate = async (req, res) => {
   try {
     const { amount, category } = req.body;
-    
+
     if (!amount || amount <= 0) return res.status(400).json({ error: 'Valid amount is required' });
     if (!category) return res.status(400).json({ error: 'Category is required' });
 
@@ -128,9 +128,9 @@ const confirmSplit = async (req, res) => {
       }
 
       if (!partner || !partner.razorpayAccountId) {
-         console.warn(`Campaign ${split.campaignId} (Partner ${split.partnerId}) does not have a linked Razorpay account. Skipping transfer for this split.`);
-         // In production, we might throw an error or handle fallback. For MVP, we skip or route to platform.
-         // Let's assume MVP has it.
+        console.warn(`Campaign ${split.campaignId} (Partner ${split.partnerId}) does not have a linked Razorpay account. Skipping transfer for this split.`);
+        // In production, we might throw an error or handle fallback. For MVP, we skip or route to platform.
+        // Let's assume MVP has it.
       } else {
         transfers.push({
           account: partner.razorpayAccountId,
@@ -149,7 +149,7 @@ const confirmSplit = async (req, res) => {
     // For MVP/Test Mode, if no partners have real linked accounts, we still generate the order
     // so the checkout flow works and the DB records the splits.
     // Razorpay receipt max length is 40 characters.
-    const receiptStr = `sp_${userId.substring(0,8)}_${Date.now()}`;
+    const receiptStr = `sp_${userId.substring(0, 8)}_${Date.now()}`;
     const orderOptions = {
       amount: Math.round(calculatedTotal * 100),
       currency: 'INR',
@@ -164,7 +164,7 @@ const confirmSplit = async (req, res) => {
     const order = await razorpay.orders.create(orderOptions);
 
     // Create Donation records for each split linked to the same order ID
-    const donationOperations = splits.map(split => 
+    const donationOperations = splits.map(split =>
       prisma.donation.create({
         data: {
           userId,
@@ -463,7 +463,7 @@ const handleRazorpayWebhook = async (req, res) => {
             where: { id: split.partnerId },
             select: { razorpayAccountId: true }
           });
-          
+
           if (partner && partner.razorpayAccountId) {
             transfers.push({
               account: partner.razorpayAccountId,
@@ -542,13 +542,13 @@ const createCampaign = async (req, res) => {
     let finalImage = image;
 
     if (req.file) {
-        const result = await uploadToCloudinary(req.file.buffer);
-        finalBanner = result.secure_url;
-        finalImage = result.secure_url; // Use banner for image thumbnail as well if uploaded
+      const result = await uploadToCloudinary(req.file.buffer);
+      finalBanner = result.secure_url;
+      finalImage = result.secure_url; // Use banner for image thumbnail as well if uploaded
     }
 
     if (!finalBanner || !finalImage) {
-        return res.status(400).json({ error: 'Banner image is required.' });
+      return res.status(400).json({ error: 'Banner image is required.' });
     }
 
     const campaign = await prisma.campaign.create({
@@ -1002,18 +1002,18 @@ const mockDonateCampaign = async (req, res) => {
 
         if (fallbackCampaign) {
           await prisma.donation.create({
-          data: {
-            userId,
-            partnerId: fallbackCampaign.partnerId,
-            campaignId: fallbackCampaign.id,
-            grossAmount: Number(amount),
-            razorpayPaymentLinkId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            razorpayPaymentId: null,
-            status: 'WEBHOOK_VERIFIED',
-            platformFee: 0,
-            platformFeePercentage: 0,
-            netAmount: Number(amount)
-          }
+            data: {
+              userId,
+              partnerId: fallbackCampaign.partnerId,
+              campaignId: fallbackCampaign.id,
+              grossAmount: Number(amount),
+              razorpayPaymentLinkId: `mock-intent-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              razorpayPaymentId: null,
+              status: 'WEBHOOK_VERIFIED',
+              platformFee: 0,
+              platformFeePercentage: 0,
+              netAmount: Number(amount)
+            }
           });
         }
         console.log(`💵 Mock donation successful: user ${userId} donated ₹${amount} to general fund type ${type}`);
@@ -1521,7 +1521,7 @@ const updateCampaignProgress = async (req, res) => {
     if (raisedAmount !== undefined) {
       dataToUpdate.raisedAmount = parseFloat(raisedAmount);
     }
-    
+
     if (newUpdate) {
       dataToUpdate.progressUpdates = {
         push: newUpdate

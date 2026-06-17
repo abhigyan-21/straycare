@@ -2,55 +2,55 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Main Pages -->
   <url>
-    <loc>https://furzo.vercel.app/</loc>
+    <loc>https://Furzo.vercel.app/</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/about</loc>
+    <loc>https://Furzo.vercel.app/about</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/adopt</loc>
+    <loc>https://Furzo.vercel.app/adopt</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/guide</loc>
+    <loc>https://Furzo.vercel.app/guide</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/faq</loc>
+    <loc>https://Furzo.vercel.app/faq</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/track</loc>
+    <loc>https://Furzo.vercel.app/track</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/register</loc>
+    <loc>https://Furzo.vercel.app/register</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/privacy</loc>
+    <loc>https://Furzo.vercel.app/privacy</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://furzo.vercel.app/terms</loc>
+    <loc>https://Furzo.vercel.app/terms</loc>
     <lastmod>2026-06-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

@@ -138,7 +138,7 @@ function VetStatus() {
                 ...formData,
                 reportId: selectedReportId
             });
-            
+
             // Mark the report status to TREATED
             await apiClient.patch(`/reports/${selectedReportId}/status`, {
                 status: 'TREATED'
@@ -158,60 +158,60 @@ function VetStatus() {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Vet Portal - Status</title>
-            <meta name="description" content="Track and update treatment statuses of rescued animals at your clinic on the Furzo Vet Portal." />
-        </Helmet>
-        <div className="vet-dashboard vet-status-page">
-            {error && (
-                <div className="error-banner" style={{ padding: '12px 20px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}>
-                    <AlertTriangle size={20} />
-                    <span>{error}</span>
+            <Helmet>
+                <title>Furzo Vet Portal - Status</title>
+                <meta name="description" content="Track and update treatment statuses of rescued animals at your clinic on the Furzo Vet Portal." />
+            </Helmet>
+            <div className="vet-dashboard vet-status-page">
+                {error && (
+                    <div className="error-banner" style={{ padding: '12px 20px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '500' }}>
+                        <AlertTriangle size={20} />
+                        <span>{error}</span>
+                    </div>
+                )}
+                <LiveStatusView rescues={currentRescues} />
+
+                {/* List Section */}
+                <div className="status-page-list">
+                    {treatmentList.map(item => (
+                        <VetStatusCard
+                            key={item.id}
+                            id={item.displayId}
+                            name={item.name}
+                            status={item.status}
+                            onChange={(val) => handleStatusChange(item, val)}
+                            options={item.isReport ? REPORT_STATUS_OPTIONS : PET_STATUS_OPTIONS}
+                            image={item.image}
+                        />
+                    ))}
+                    {treatmentList.length === 0 && <p className="no-data">No pets currently in treatment</p>}
                 </div>
-            )}
-            <LiveStatusView rescues={currentRescues} />
 
-            {/* List Section */}
-            <div className="status-page-list">
-                {treatmentList.map(item => (
-                    <VetStatusCard
-                        key={item.id}
-                        id={item.displayId}
-                        name={item.name}
-                        status={item.status}
-                        onChange={(val) => handleStatusChange(item, val)}
-                        options={item.isReport ? REPORT_STATUS_OPTIONS : PET_STATUS_OPTIONS}
-                        image={item.image}
-                    />
-                ))}
-                {treatmentList.length === 0 && <p className="no-data">No pets currently in treatment</p>}
-            </div>
-
-            {/* Confirmation Modal */}
-            {showConfirm && (
-                <div className="modal-overlay">
-                    <div className="modal-content confirmation">
-                        <AlertTriangle className="modal-icon warning" size={48} />
-                        <h2>Create Adoption Post</h2>
-                        <p>Are you sure you want to list this pet for adoption? This will open the adoption profile form.</p>
-                        <div className="modal-actions">
-                            <button className="confirm-btn" onClick={confirmAction}>Yes, create profile</button>
-                            <button className="cancel-btn" onClick={() => setShowConfirm(null)}>Cancel</button>
+                {/* Confirmation Modal */}
+                {showConfirm && (
+                    <div className="modal-overlay">
+                        <div className="modal-content confirmation">
+                            <AlertTriangle className="modal-icon warning" size={48} />
+                            <h2>Create Adoption Post</h2>
+                            <p>Are you sure you want to list this pet for adoption? This will open the adoption profile form.</p>
+                            <div className="modal-actions">
+                                <button className="confirm-btn" onClick={confirmAction}>Yes, create profile</button>
+                                <button className="cancel-btn" onClick={() => setShowConfirm(null)}>Cancel</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Create Adoption Post Modal */}
-            <CreateAdoptionModal 
-                isOpen={showCreateModal}
-                onClose={() => {
-                    setShowCreateModal(false);
-                    setSelectedReportId(null);
-                }}
-                onPublish={handlePublishAdoption}
-            />
-        </div>
+                {/* Create Adoption Post Modal */}
+                <CreateAdoptionModal
+                    isOpen={showCreateModal}
+                    onClose={() => {
+                        setShowCreateModal(false);
+                        setSelectedReportId(null);
+                    }}
+                    onPublish={handlePublishAdoption}
+                />
+            </div>
         </>
     );
 }

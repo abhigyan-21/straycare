@@ -80,8 +80,8 @@ const AdminUsers = () => {
 
     const filteredUsers = users.filter(user => {
         const matchesTab = activeTab === 'all' || user.role === activeTab;
-        const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             user.email.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesTab && matchesSearch;
     });
 
@@ -94,117 +94,117 @@ const AdminUsers = () => {
 
     return (
         <>
-        <Helmet>
-            <title>Furzo Admin - Users</title>
-            <meta name="description" content="Manage Furzo users, NGOs, and partner clinics. Approve, suspend, or remove accounts." />
-        </Helmet>
-        <div>
-            <AdminPageHeader 
-                title="Manage Users & Partners" 
-                actionLabel="+ Invite Partner / NGO" 
-                onAction={() => console.log('Invite clicked')}
-            />
+            <Helmet>
+                <title>Furzo Admin - Users</title>
+                <meta name="description" content="Manage Furzo users, NGOs, and partner clinics. Approve, suspend, or remove accounts." />
+            </Helmet>
+            <div>
+                <AdminPageHeader
+                    title="Manage Users & Partners"
+                    actionLabel="+ Invite Partner / NGO"
+                    onAction={() => console.log('Invite clicked')}
+                />
 
-            <div className="admin-mb-24 admin-flex-between">
-                <div className="admin-tabs">
-                    <button 
-                        className={`admin-tab ${activeTab === 'all' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('all')}
-                    >
-                        All Members
-                    </button>
-                    <button 
-                        className={`admin-tab ${activeTab === 'user' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('user')}
-                    >
-                        Users
-                    </button>
-                    <button 
-                        className={`admin-tab ${activeTab === 'ngo' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('ngo')}
-                    >
-                        NGOs
-                    </button>
-                    <button 
-                        className={`admin-tab ${activeTab === 'partner' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('partner')}
-                    >
-                        Clinics
-                    </button>
+                <div className="admin-mb-24 admin-flex-between">
+                    <div className="admin-tabs">
+                        <button
+                            className={`admin-tab ${activeTab === 'all' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('all')}
+                        >
+                            All Members
+                        </button>
+                        <button
+                            className={`admin-tab ${activeTab === 'user' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('user')}
+                        >
+                            Users
+                        </button>
+                        <button
+                            className={`admin-tab ${activeTab === 'ngo' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('ngo')}
+                        >
+                            NGOs
+                        </button>
+                        <button
+                            className={`admin-tab ${activeTab === 'partner' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('partner')}
+                        >
+                            Clinics
+                        </button>
+                    </div>
+
+                    <div className="admin-search-wrapper">
+                        <Search className="admin-search-icon" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search by name or email..."
+                            className="admin-search-input"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </div>
 
-                <div className="admin-search-wrapper">
-                    <Search className="admin-search-icon" size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by name or email..." 
-                        className="admin-search-input"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+                <AdminTable headers={tableHeaders}>
+                    {filteredUsers.map(user => (
+                        <tr key={user.id}>
+                            <td>
+                                <div className="admin-text-primary" style={{ fontWeight: 600 }}>{user.name}</div>
+                                <div className="admin-text-secondary" style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>{user.email}</div>
+                            </td>
+                            <td>
+                                <AdminBadge rounded color={user.role === 'user' ? 'light' : 'primary'}>
+                                    {user.role === 'partner' ? 'Clinic' : user.role.toUpperCase()}
+                                </AdminBadge>
+                            </td>
+                            <td>
+                                <AdminBadge
+                                    color={user.status === 'Active' ? 'green' : user.status === 'Pending' ? 'light' : 'red'}
+                                    icon={user.status === 'Active' ? CheckCircle : user.status === 'Pending' ? Clock : UserX}
+                                >
+                                    {user.status}
+                                </AdminBadge>
+                            </td>
+                            <td className="center">
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+                                    {user.actualRole !== 'ADMIN' && (
+                                        <select
+                                            value={user.actualRole || 'USER'}
+                                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                            style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.8rem' }}
+                                        >
+                                            <option value="USER">USER</option>
+                                            <option value="RESCUER">RESCUER</option>
+                                            <option value="VET">VET</option>
+                                            <option value="NGO">NGO</option>
+                                        </select>
+                                    )}
+                                    {user.status === 'Pending' && (
+                                        <button onClick={() => approveUser(user.id)} className="admin-btn-action primary-flex">
+                                            Approve
+                                        </button>
+                                    )}
+                                    {user.status !== 'Pending' && (
+                                        <button onClick={() => toggleStatus(user.id, user.status)} className={`admin-btn-action ${user.status === 'Active' ? 'danger-flex' : 'primary-flex'}`}>
+                                            {user.status === 'Active' ? 'Suspend' : 'Reactivate'}
+                                        </button>
+                                    )}
+                                    <button onClick={() => handleDeleteUser(user.id)} className="admin-btn-action danger-flex" style={{ background: '#e0645c', color: 'white' }}>
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                    {filteredUsers.length === 0 && (
+                        <tr>
+                            <td colSpan="4" className="center admin-empty-text">
+                                No users found matching your criteria.
+                            </td>
+                        </tr>
+                    )}
+                </AdminTable>
             </div>
-
-            <AdminTable headers={tableHeaders}>
-                {filteredUsers.map(user => (
-                    <tr key={user.id}>
-                        <td>
-                            <div className="admin-text-primary" style={{ fontWeight: 600 }}>{user.name}</div>
-                            <div className="admin-text-secondary" style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>{user.email}</div>
-                        </td>
-                        <td>
-                            <AdminBadge rounded color={user.role === 'user' ? 'light' : 'primary'}>
-                                {user.role === 'partner' ? 'Clinic' : user.role.toUpperCase()}
-                            </AdminBadge>
-                        </td>
-                        <td>
-                            <AdminBadge 
-                                color={user.status === 'Active' ? 'green' : user.status === 'Pending' ? 'light' : 'red'}
-                                icon={user.status === 'Active' ? CheckCircle : user.status === 'Pending' ? Clock : UserX}
-                            >
-                                {user.status}
-                            </AdminBadge>
-                        </td>
-                        <td className="center">
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
-                                {user.actualRole !== 'ADMIN' && (
-                                    <select 
-                                        value={user.actualRole || 'USER'} 
-                                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                        style={{ padding: '4px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.8rem' }}
-                                    >
-                                        <option value="USER">USER</option>
-                                        <option value="RESCUER">RESCUER</option>
-                                        <option value="VET">VET</option>
-                                        <option value="NGO">NGO</option>
-                                    </select>
-                                )}
-                                {user.status === 'Pending' && (
-                                    <button onClick={() => approveUser(user.id)} className="admin-btn-action primary-flex">
-                                        Approve
-                                    </button>
-                                )}
-                                {user.status !== 'Pending' && (
-                                    <button onClick={() => toggleStatus(user.id, user.status)} className={`admin-btn-action ${user.status === 'Active' ? 'danger-flex' : 'primary-flex'}`}>
-                                        {user.status === 'Active' ? 'Suspend' : 'Reactivate'}
-                                    </button>
-                                )}
-                                <button onClick={() => handleDeleteUser(user.id)} className="admin-btn-action danger-flex" style={{ background: '#e0645c', color: 'white' }}>
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                ))}
-                {filteredUsers.length === 0 && (
-                    <tr>
-                        <td colSpan="4" className="center admin-empty-text">
-                            No users found matching your criteria.
-                        </td>
-                    </tr>
-                )}
-            </AdminTable>
-        </div>
         </>
     );
 };
