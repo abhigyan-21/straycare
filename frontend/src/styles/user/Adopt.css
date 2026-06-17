@@ -455,13 +455,14 @@
 
     .pet-image-side {
         width: 100%;
-        height: 52%;
+        height: 55%;
         position: relative;
+        transition: height 0.4s ease;
     }
 
     .pet-profile-side {
         width: 100%;
-        height: 48%; /* or auto if we merge height: auto from below */
+        height: 45%;
         position: relative;
         background: rgba(255, 255, 255, 0.45);
         backdrop-filter: blur(15px);
@@ -471,14 +472,15 @@
         border-top: 1px solid rgba(255, 255, 255, 0.7);
         border-radius: 0 0 20px 20px;
         box-shadow: none;
+        transition: height 0.4s ease;
     }
 
-    .pet-card-current:hover .pet-profile-side {
-        height: 60%;
+    .pet-card-current.expanded .pet-profile-side {
+        height: 65%;
     }
     
-    .pet-card-current:hover .pet-image-side {
-        height: 40%;
+    .pet-card-current.expanded .pet-image-side {
+        height: 35%;
     }
 
     .desktop-profile-title {

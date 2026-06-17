@@ -20,26 +20,43 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    useEffect(() => {
+        setIsExpanded(false);
+    }, [currentIndex]);
 
     const minSwipeDistance = 50;
 
     const onTouchStart = (e) => {
         setTouchEnd(null);
-        setTouchStart(e.targetTouches ? e.targetTouches[0].clientX : e.clientX);
+        const clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+        const clientY = e.targetTouches ? e.targetTouches[0].clientY : e.clientY;
+        setTouchStart({ x: clientX, y: clientY });
         setIsDragging(true);
     };
 
     const onTouchMove = (e) => {
         if (!isDragging && !e.targetTouches) return;
-        setTouchEnd(e.targetTouches ? e.targetTouches[0].clientX : e.clientX);
+        const clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+        const clientY = e.targetTouches ? e.targetTouches[0].clientY : e.clientY;
+        setTouchEnd({ x: clientX, y: clientY });
     };
 
     const onTouchEndHandler = () => {
         setIsDragging(false);
         if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
+        
+        const deltaX = touchStart.x - touchEnd.x;
+        const deltaY = touchStart.y - touchEnd.y;
+        
+        // Ignore if mostly vertical scrolling
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            return;
+        }
+
+        const isLeftSwipe = deltaX > minSwipeDistance;
+        const isRightSwipe = deltaX < -minSwipeDistance;
 
         if (isLeftSwipe && hasNext) {
             onNext();
@@ -63,7 +80,14 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [hasPrev, hasNext, onPrev, onNext]);
 
-    const swipeOffset = isDragging && touchStart && touchEnd ? touchEnd - touchStart : 0;
+    let swipeOffset = 0;
+    if (isDragging && touchStart && touchEnd) {
+        const deltaX = touchEnd.x - touchStart.x;
+        const deltaY = touchEnd.y - touchStart.y;
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            swipeOffset = deltaX;
+        }
+    }
     const cardStyle = {
         transform: isDragging ? `translateX(${swipeOffset}px)` : '',
         transition: isDragging ? 'none' : 'all 0.4s ease'
@@ -101,7 +125,7 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
                     </div>
                 )}
 
-                <div className={`pet-card pet-card-current ${isInterested ? 'interested-state' : ''}`} style={cardStyle}>
+                <div className={`pet-card pet-card-current ${isInterested ? 'interested-state' : ''} ${isExpanded ? 'expanded' : ''}`} style={cardStyle}>
                     <div className="pet-image-side">
                         <img src={currentPet.image} alt={currentPet.name} draggable="false" />
                     </div>
@@ -118,7 +142,13 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
                                 <>
                                     <h3 className="desktop-profile-title">Profile</h3>
 
-                                    <h2 className="pet-name mobile-only-item">{currentPet.name}</h2>
+                                    <h2 
+                                        className="pet-name mobile-only-item" 
+                                        onClick={() => setIsExpanded(!isExpanded)} 
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        {currentPet.name}
+                                    </h2>
                                     <div className="pet-detail-row desktop-only-item">
                                         <span className="detail-label">Name:</span> {currentPet.name}
                                     </div>
