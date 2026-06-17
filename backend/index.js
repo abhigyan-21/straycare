@@ -28,15 +28,10 @@ const app = express();
 // Trust reverse proxy (Render load balancer) for rate limiting and client IP detection
 app.set('trust proxy', 1);
 
-// CORS allowed origins list (Vercel production and local dev)
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'https://furzo.vercel.app',
-  'https://Furzo.vercel.app', // keeping uppercase just in case
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5000'
-].filter(Boolean);
+// CORS allowed origins list (from environment variables)
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : [];
 
 const server = http.createServer(app);
 const io = new Server(server, {
