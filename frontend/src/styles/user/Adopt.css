@@ -7,11 +7,50 @@
     overflow-x: hidden;
 }
 
-/* .adopt-toolbar {
+.adopt-toolbar {
     display: flex;
     justify-content: flex-start;
     margin-bottom: 1rem;
-} */
+}
+
+.adopt-action-header {
+    position: fixed;
+    right: 40px;
+    bottom: 40px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.refresh-btn-common {
+    background-color: #e2e8f0;
+    color: #333;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-width: auto;
+    transition: none; /* No hover effect per user request */
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.icon-spin {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
 
 .btn-filter {
     background-color: #d4feb2;
@@ -404,6 +443,15 @@
         padding: 0.5rem 5% 1.5rem;
         gap: 0.5rem;
         min-height: auto;
+    }
+
+    .desktop-only-refresh {
+        display: none !important;
+    }
+
+    .adopt-action-header {
+        right: 20px;
+        bottom: 100px; /* Float above the bottom nav pill */
     }
 
     .adopt-toolbar {

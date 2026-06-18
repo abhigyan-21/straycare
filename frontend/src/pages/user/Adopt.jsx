@@ -5,6 +5,7 @@ import PetCarousel from '../../components/user/PetCarousel';
 import FilterModal from '../../components/user/FilterModal';
 import ActionLoader from '../../components/ActionLoader';
 import { useAdoptionStore } from '../../store/adoptionStore';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 function Adopt() {
     const {
@@ -14,6 +15,7 @@ function Adopt() {
         submitInterest,
         cancelInterest,
         isInterested,
+        invalidateCache,
     } = useAdoptionStore();
 
     const [currentPetIndex, setCurrentPetIndex] = useState(0);
@@ -23,6 +25,7 @@ function Adopt() {
         breed: '',
         ageGroup: ''
     });
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         fetchPetsAndRequests();
@@ -64,6 +67,13 @@ function Adopt() {
         setCurrentPetIndex(0);
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        invalidateCache();
+        await fetchPetsAndRequests();
+        setIsRefreshing(false);
+    };
+
     const handleInterested = async (pet) => {
         if (isInterested(pet.id)) {
             try {
@@ -100,15 +110,29 @@ function Adopt() {
                 <meta name="twitter:description" content="Browse rescued animals available for adoption. Find your perfect furry companion through Furzo's pet adoption platform." />
                 <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
             </Helmet>
-            <div className="adopt-page">
-                <div className="adopt-toolbar">
-                    <button
-                        className="btn-filter"
-                        onClick={() => setIsFilterModalOpen(true)}
-                    >
-                        Filters
-                    </button>
-                </div>
+            <PullToRefresh onRefresh={handleRefresh} pullingContent="" >
+                <div className="adopt-page">
+                    <div className="adopt-toolbar">
+                        <button
+                            className="btn-filter"
+                            onClick={() => setIsFilterModalOpen(true)}
+                        >
+                            Filters
+                        </button>
+                    </div>
+                    <div className="adopt-action-header">
+                        <button
+                            className="refresh-btn-common desktop-only-refresh"
+                            onClick={handleRefresh}
+                            disabled={loading || isRefreshing}
+                        >
+                            {isRefreshing ? (
+                                <><span className="icon-spin">↻</span> Refreshing...</>
+                            ) : (
+                                '↻ Refresh'
+                            )}
+                        </button>
+                    </div>
 
                 <div className="adopt-content">
                     <div className="carousel-section">
@@ -128,6 +152,8 @@ function Adopt() {
                         )}
                     </div>
                 </div>
+                </div>
+            </PullToRefresh>
 
                 <FilterModal
                     isOpen={isFilterModalOpen}
@@ -135,7 +161,6 @@ function Adopt() {
                     onApply={handleApplyFilters}
                     currentFilters={filters}
                 />
-            </div>
         </>
     );
 }

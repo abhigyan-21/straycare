@@ -7,13 +7,15 @@ import { usePostStore } from '../../store/postStore';
 import PostCard from '../../components/user/PostCard';
 import MiniLoader from '../../components/user/MiniLoader';
 import ActionLoader from '../../components/ActionLoader';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 
 function Post({ openAuthModal }) {
     const { isLoggedIn, user: authUser } = useAuthStore();
-    const { posts, loading, fetchPosts, createPost, toggleLike, addComment, page, hasMore } = usePostStore();
+    const { posts, loading, fetchPosts, createPost, toggleLike, addComment, page, hasMore, invalidateCache } = usePostStore();
     const [newComment, setNewComment] = useState({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         fetchPosts(1);
@@ -103,14 +105,22 @@ function Post({ openAuthModal }) {
         setNewComment({ ...newComment, [postId]: '' });
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        invalidateCache();
+        await fetchPosts(1);
+        setIsRefreshing(false);
+    };
+
     return (
         <>
             <Helmet>
                 <title>Furzo - Community Feed</title>
                 <meta name="description" content="Share animal rescue stories, adoption successes, and connect with the Furzo animal welfare community." />
             </Helmet>
-            <div className="posts-container">
-                <div className="create-post-header">
+            <PullToRefresh onRefresh={handleRefresh} pullingContent="" >
+                <div className="posts-container">
+                    <div className="create-post-header">
                     <button
                         className={`create-post-btn ${isUploading ? 'uploading' : ''}`}
                         onClick={handleOpenCreateModal}
@@ -128,6 +138,17 @@ function Post({ openAuthModal }) {
                             <>
                                 <span className="plus-icon">+</span> Create a Post
                             </>
+                        )}
+                    </button>
+                    <button
+                        className="refresh-btn-common desktop-only-refresh"
+                        onClick={handleRefresh}
+                        disabled={loading || isRefreshing}
+                    >
+                        {isRefreshing ? (
+                            <><span className="icon-spin">↻</span> Refreshing...</>
+                        ) : (
+                            '↻ Refresh'
                         )}
                     </button>
                 </div>
@@ -162,7 +183,8 @@ function Post({ openAuthModal }) {
                     onClose={handleCloseCreateModal}
                     onSubmit={handleCreatePostSubmit}
                 />
-            </div>
+                </div>
+            </PullToRefresh>
         </>
     );
 }

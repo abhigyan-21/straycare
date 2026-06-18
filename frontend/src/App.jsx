@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/user/Home";
@@ -39,6 +39,30 @@ import catRun2 from "./assets/loader/cat_run2.webp";
 import dogImg from "./assets/dogImg.webp";
 import catImg from "./assets/catImg.webp";
 import sparrowImg from "./assets/sparrow.png";
+
+// Component to scroll to top on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Scroll window
+    window.scrollTo(0, 0);
+    
+    // Scroll body (since html is overflow: hidden and body is overflow-y: auto in global.css)
+    if (document.body) {
+      document.body.scrollTop = 0;
+      document.body.scrollTo(0, 0);
+    }
+    
+    // Scroll documentElement as fallback
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0;
+      document.documentElement.scrollTo(0, 0);
+    }
+  }, [pathname]);
+
+  return null;
+}
 
 // Layout for the main user-facing application
 const UserLayout = ({ openAuthModal }) => (
@@ -144,6 +168,7 @@ function App() {
       <SpeedInsights />
       {appLoading && <Loader />}
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* Portals - These have their own internal Layouts and Navbars */}
           <Route path="/admin/*" element={<Suspense fallback={<Loader />}><AdminApp /></Suspense>} />

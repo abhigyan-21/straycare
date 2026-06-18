@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Search } from 'lucide-react';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 import '../../styles/user/Help.css';
 import { mockPets } from '../../data/mockPets';
 import SupportCarousel from '../../components/user/SupportCarousel';
@@ -222,9 +223,15 @@ function Help({ openAuthModal }) {
         }
     };
 
-    // Donation — delegated to campaignStore (optimistic update + cache invalidation)
     const handleCampaignDonation = async (campaignId, amount) => {
         return await storeDonation(campaignId, amount);
+    };
+
+    const handleRefresh = async () => {
+        await Promise.all([
+            fetchCampaigns(),
+            fetchHighlights()
+        ]);
     };
 
     useEffect(() => {
@@ -346,6 +353,7 @@ function Help({ openAuthModal }) {
                 <meta name="twitter:description" content="Support animal welfare campaigns, volunteer for rescues, and donate to help stray animals through Furzo's community platform." />
                 <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
             </Helmet>
+            <PullToRefresh onRefresh={handleRefresh} pullingContent="">
             <div className="help-page">
                 <div className="help-content-wrapper">
                     <SupportCarousel
@@ -517,6 +525,7 @@ function Help({ openAuthModal }) {
                     />
                 )}
             </div>
+            </PullToRefresh>
         </>
     );
 }
