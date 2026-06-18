@@ -696,6 +696,58 @@ const updatePet = async (req, res) => {
       return res.status(403).json({ status: 'error', message: 'Unauthorized to update this pet' });
     }
 
+    if (status === 'REMOVED') {
+      // Find pending/scheduled requests to send cancellation emails
+      const pendingRequests = await prisma.adoptionRequest.findMany({
+        where: {
+          petId: id,
+          status: { in: ['PENDING', 'INTERVIEW_SCHEDULED'] },
+        },
+        include: {
+          user: { select: { name: true, email: true } },
+        },
+      });
+
+      // Send cancellation emails
+      for (const reqObj of pendingRequests) {
+        if (reqObj.user && reqObj.user.email) {
+          sendEmail({
+            to: reqObj.user.email,
+            subject: `Adoption Listing Removed - ${pet.name || 'Unnamed Pet'}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <h2 style="color: #c53030; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Adoption Listing Update</h2>
+                <p>Dear ${reqObj.user.name},</p>
+                <p>We are writing to inform you that the adoption listing for <strong>${pet.name || 'Unnamed Pet'}</strong> is no longer available, and the pet has been removed from the platform.</p>
+                <p>As a result, your adoption application has been automatically cancelled. We apologize for any inconvenience this may cause and encourage you to explore other pets that are still looking for a loving home.</p>
+                <p style="margin-top: 20px; font-weight: bold; color: #4a5568;">Best regards,<br/>The Furzo Team</p>
+              </div>
+            `
+          }).catch(err => console.error('Error sending removal email:', err));
+        }
+      }
+
+      // Delete associated adoption requests
+      await prisma.adoptionRequest.deleteMany({
+        where: { petId: id },
+      });
+
+      // Revert AnimalReport status to 'TREATED' if applicable
+      if (pet.reportId) {
+        await prisma.animalReport.update({
+          where: { id: pet.reportId },
+          data: { status: 'TREATED' },
+        });
+      }
+
+      // Finally, delete the pet
+      const deletedPet = await prisma.pet.delete({
+        where: { id },
+      });
+
+      return res.json({ status: 'success', message: 'Pet and associated data removed successfully', data: deletedPet });
+    }
+
     const updatedPet = await prisma.pet.update({
       where: { id },
       data: {
