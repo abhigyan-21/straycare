@@ -93,11 +93,11 @@ const getAllPublicPartners = async (req, res) => {
         partnerType: true,
         city: true,
         state: true,
+        address: true,
         users: {
           select: {
             avatarUrl: true
-          },
-          take: 1
+          }
         }
       },
       orderBy: {
@@ -105,13 +105,19 @@ const getAllPublicPartners = async (req, res) => {
       }
     });
 
-    const formattedPartners = partners.map(p => ({
-      id: p.id,
-      name: p.name,
-      type: p.partnerType,
-      location: p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || "Location Unspecified"),
-      logo: p.users[0]?.avatarUrl || 'https://via.placeholder.com/200x200.png?text=Partner'
-    }));
+    const formattedPartners = partners.map(p => {
+      // Find a user with an avatar, or fallback
+      const userWithAvatar = p.users.find(u => u.avatarUrl && u.avatarUrl.length > 10);
+      const avatar = userWithAvatar ? userWithAvatar.avatarUrl : null;
+      
+      return {
+        id: p.id,
+        name: p.name,
+        type: p.partnerType,
+        location: p.city && p.state ? `${p.city}, ${p.state}` : (p.address || "Location Unspecified"),
+        logo: avatar || 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=200&h=200&q=80'
+      };
+    });
 
     res.json(formattedPartners);
   } catch (error) {

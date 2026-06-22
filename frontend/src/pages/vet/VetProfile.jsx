@@ -28,6 +28,7 @@ import { uploadUserDocument } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
 import { useVetProfileStore } from '../../store/vetProfileStore';
 import { processPDF, formatFileSize } from '../../utils/pdfUtils';
+import { fetchLocationName, fetchLocationDetails } from '../../utils/mapUtils';
 import hospitalImg from '../../assets/images/Hospital.webp';
 
 const circularLocationIcon = new L.DivIcon({
@@ -81,6 +82,7 @@ const VetProfile = () => {
 
     // Profile update states
     const [nameVal, setNameVal] = useState('');
+    const [addressVal, setAddressVal] = useState('');
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
     // Password change states
@@ -99,6 +101,9 @@ const VetProfile = () => {
     // Clinic coordinates update states
     const [clinicLatVal, setClinicLatVal] = useState(null);
     const [clinicLngVal, setClinicLngVal] = useState(null);
+    const [clinicLocationName, setClinicLocationName] = useState('');
+    const [clinicCity, setClinicCity] = useState('');
+    const [clinicState, setClinicState] = useState('');
     const [profileMapCenter, setProfileMapCenter] = useState([30.7333, 76.7794]);
     const [isSavingLocation, setIsSavingLocation] = useState(false);
 
@@ -111,6 +116,7 @@ const VetProfile = () => {
     useEffect(() => {
         if (vetData) {
             setNameVal(vetData.name);
+            setAddressVal(vetData.location && vetData.location !== 'N/A' && vetData.location !== 'Location Unspecified' ? vetData.location : '');
             setClinicLatVal(vetData.lat);
             setClinicLngVal(vetData.lng);
             setUpiIdVal(vetData.upiId || '');
@@ -118,6 +124,11 @@ const VetProfile = () => {
             setUpiQrCodeVal(vetData.upiQrCode || '');
             if (vetData.lat && vetData.lng) {
                 setProfileMapCenter([vetData.lat, vetData.lng]);
+                fetchLocationDetails(vetData.lat, vetData.lng).then(details => {
+                    setClinicLocationName(details.name);
+                    setClinicCity(details.city);
+                    setClinicState(details.state);
+                });
             }
         }
     }, [vetData]);
@@ -201,7 +212,7 @@ const VetProfile = () => {
 
         setIsUpdatingProfile(true);
         try {
-            await updateProfileAction(nameVal.trim());
+            await updateProfileAction(nameVal.trim(), undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
             updateVetData({ name: nameVal.trim() }); // optimistic store update
             setSettingsSuccess('Profile details updated successfully!');
         } catch (err) {
@@ -531,7 +542,7 @@ const VetProfile = () => {
                                         />
                                     </div>
                                     <button className="btn" type="submit" style={{ background: '#1a1a1a', color: '#fff', fontWeight: 'bold', border: 'none', padding: '10px 15px', borderRadius: '6px', cursor: 'pointer', alignSelf: 'flex-start' }} disabled={isUpdatingProfile}>
-                                        {isUpdatingProfile ? 'Updating...' : 'Save Profile Details'}
+                                        {isUpdatingProfile ? 'Updating Name...' : 'Update Name'}
                                     </button>
                                 </form>
                             </div>
@@ -651,19 +662,29 @@ const VetProfile = () => {
                                                     icon={circularLocationIcon}
                                                     draggable={true}
                                                     eventHandlers={{
-                                                        dragend: (e) => {
+                                                        dragend: async (e) => {
                                                             const marker = e.target;
                                                             const position = marker.getLatLng();
                                                             setClinicLatVal(position.lat);
                                                             setClinicLngVal(position.lng);
+                                                            const details = await fetchLocationDetails(position.lat, position.lng);
+                                                            setClinicLocationName(details.name);
+                                                            setClinicCity(details.city);
+                                                            setClinicState(details.state);
+                                                            setAddressVal(details.name);
                                                         }
                                                     }}
                                                 />
                                             )}
                                             <MapEventsHandler
-                                                onMapClick={(lat, lng) => {
+                                                onMapClick={async (lat, lng) => {
                                                     setClinicLatVal(lat);
                                                     setClinicLngVal(lng);
+                                                    const details = await fetchLocationDetails(lat, lng);
+                                                    setClinicLocationName(details.name);
+                                                    setClinicCity(details.city);
+                                                    setClinicState(details.state);
+                                                    setAddressVal(details.name);
                                                 }}
                                                 center={profileMapCenter}
                                             />
@@ -672,18 +693,15 @@ const VetProfile = () => {
 
                                     {/* Coordinates & Actions */}
                                     <div className="coordinates-actions-card">
-                                        <div>
-                                            <div className="coordinate-field-group">
-                                                <label>Latitude</label>
-                                                <div className="coordinate-value-box">
-                                                    {clinicLatVal ? clinicLatVal.toFixed(6) : 'Not Set'}
-                                                </div>
-                                            </div>
-                                            <div className="coordinate-field-group last">
-                                                <label>Longitude</label>
-                                                <div className="coordinate-value-box">
-                                                    {clinicLngVal ? clinicLngVal.toFixed(6) : 'Not Set'}
-                                                </div>
+                                        <div style={{ display: 'flex', width: '100%' }}>
+                                            <div className="coordinate-field-group" style={{ flex: 1, borderRight: 'none', borderRadius: '12px', padding: '15px' }}>
+                                                <label style={{ fontWeight: '600', color: '#333', marginBottom: '8px', display: 'block' }}>Complete Address</label>
+                                                <textarea
+                                                    placeholder="Enter your clinic's full address (this will be shown to the public)"
+                                                    value={addressVal}
+                                                    onChange={(e) => setAddressVal(e.target.value)}
+                                                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', background: '#fff', color: '#000', resize: 'vertical', minHeight: '100px', fontSize: '0.95rem' }}
+                                                />
                                             </div>
                                         </div>
 
@@ -701,6 +719,12 @@ const VetProfile = () => {
                                                             setClinicLatVal(latitude);
                                                             setClinicLngVal(longitude);
                                                             setProfileMapCenter([latitude, longitude]);
+                                                            fetchLocationDetails(latitude, longitude).then(details => {
+                                                                setClinicLocationName(details.name);
+                                                                setClinicCity(details.city);
+                                                                setClinicState(details.state);
+                                                                setAddressVal(details.name);
+                                                            });
                                                         },
                                                         (error) => {
                                                             alert("Failed to detect current location. Please pick it manually on the map.");
@@ -730,9 +754,9 @@ const VetProfile = () => {
                                                     }
                                                     setIsSavingLocation(true);
                                                     try {
-                                                        const res = await updateProfileAction(undefined, undefined, undefined, undefined, clinicLatVal, clinicLngVal);
+                                                        const res = await updateProfileAction(undefined, undefined, undefined, undefined, clinicLatVal, clinicLngVal, undefined, undefined, undefined, addressVal.trim(), clinicCity, clinicState);
                                                         if (res.success) {
-                                                            updateVetData({ lat: clinicLatVal, lng: clinicLngVal }); // optimistic store update
+                                                            updateVetData({ lat: clinicLatVal, lng: clinicLngVal, location: addressVal.trim(), city: clinicCity, state: clinicState }); // optimistic store update
                                                             setSettingsSuccess('Center location coordinates saved successfully!');
                                                         }
                                                     } catch (err) {

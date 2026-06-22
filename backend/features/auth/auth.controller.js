@@ -256,7 +256,7 @@ const verifyRegistrationOtp = async (req, res) => {
  */
 const registerPartner = async (req, res) => {
   try {
-    const { organizationName, organizationType, email, phone, registrationNumber, address, password, registerToken, razorpayId, lat, lng, upiId, upiQrCode } = req.body;
+    const { organizationName, organizationType, email, phone, registrationNumber, address, city, state, password, registerToken, razorpayId, lat, lng, upiId, upiQrCode } = req.body;
 
     if (!organizationName || !organizationType || !email || !phone || !registrationNumber || !address || !password || !upiId || !upiQrCode) {
       return res.status(400).json({ error: 'All required fields must be provided, including UPI details' });
@@ -321,7 +321,9 @@ const registerPartner = async (req, res) => {
           upiId,
           upiQrCode,
           lat: lat ? parseFloat(lat) : null,
-          lng: lng ? parseFloat(lng) : null
+          lng: lng ? parseFloat(lng) : null,
+          city: city || null,
+          state: state || null
         }
       });
       partnerId = partner.id;
@@ -619,9 +621,9 @@ const requestEmailOtp = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, email, phone, avatarUrl, clinicLat, clinicLng, upiId, upiQrCode, razorpayId } = req.body;
+    const { name, email, phone, avatarUrl, clinicLat, clinicLng, upiId, upiQrCode, razorpayId, address, city, state } = req.body;
 
-    if (!name && !email && !phone && avatarUrl === undefined && clinicLat === undefined && clinicLng === undefined && upiId === undefined && upiQrCode === undefined && razorpayId === undefined) {
+    if (!name && !email && !phone && avatarUrl === undefined && clinicLat === undefined && clinicLng === undefined && upiId === undefined && upiQrCode === undefined && razorpayId === undefined && address === undefined && city === undefined && state === undefined) {
       return res.status(400).json({ error: 'At least one field is required to update.' });
     }
 
@@ -655,10 +657,13 @@ const updateProfile = async (req, res) => {
     });
 
     if (currentUser && (currentUser.role === 'VET' || currentUser.role === 'NGO') && currentUser.partnerId) {
-      if (clinicLat !== undefined || clinicLng !== undefined || upiId !== undefined || upiQrCode !== undefined || razorpayId !== undefined) {
+      if (address !== undefined || clinicLat !== undefined || clinicLng !== undefined || upiId !== undefined || upiQrCode !== undefined || razorpayId !== undefined || city !== undefined || state !== undefined) {
         await prisma.partner.update({
           where: { id: currentUser.partnerId },
           data: {
+            ...(address !== undefined && { address: address || null }),
+            ...(city !== undefined && { city: city || null }),
+            ...(state !== undefined && { state: state || null }),
             ...(clinicLat !== undefined && { lat: clinicLat !== null ? parseFloat(clinicLat) : null }),
             ...(clinicLng !== undefined && { lng: clinicLng !== null ? parseFloat(clinicLng) : null }),
             ...(upiId !== undefined && { upiId: upiId || null }),

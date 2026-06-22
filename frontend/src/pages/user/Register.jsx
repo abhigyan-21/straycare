@@ -8,6 +8,7 @@ import '../../styles/user/Register.css';
 import hospitalImg from '../../assets/images/Hospital.webp';
 import PartnersSection from '../../components/user/PartnersSection';
 import WhyPartnerSection from '../../components/user/WhyPartnerSection';
+import { fetchLocationDetails } from '../../utils/mapUtils';
 
 const circularLocationIcon = new L.DivIcon({
     className: 'custom-circular-marker',
@@ -43,6 +44,8 @@ const Register = () => {
         phone: '',
         registrationNumber: '',
         address: '',
+        city: '',
+        state: '',
         password: '',
         confirmPassword: '',
         razorpayId: '',
@@ -63,13 +66,18 @@ const Register = () => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                setFormData(prev => ({
-                    ...prev,
-                    lat: latitude,
-                    lng: longitude
-                }));
                 setMapCenter([latitude, longitude]);
                 setShowMap(true);
+                fetchLocationDetails(latitude, longitude).then(details => {
+                    setFormData(prev => ({
+                        ...prev,
+                        lat: latitude,
+                        lng: longitude,
+                        address: details.name,
+                        city: details.city,
+                        state: details.state
+                    }));
+                });
             },
             (error) => {
                 console.error("GPS detection error:", error);
@@ -247,6 +255,8 @@ const Register = () => {
                 phone: formData.phone,
                 registrationNumber: formData.registrationNumber,
                 address: formData.address,
+                city: formData.city,
+                state: formData.state,
                 password: formData.password,
                 registerToken: registerToken,
                 razorpayId: formData.razorpayId,
@@ -463,21 +473,33 @@ const Register = () => {
                                                 icon={circularLocationIcon}
                                                 draggable={true}
                                                 eventHandlers={{
-                                                    dragend: (e) => {
+                                                    dragend: async (e) => {
                                                         const marker = e.target;
                                                         const position = marker.getLatLng();
+                                                        const details = await fetchLocationDetails(position.lat, position.lng);
                                                         setFormData(prev => ({
                                                             ...prev,
                                                             lat: position.lat,
-                                                            lng: position.lng
+                                                            lng: position.lng,
+                                                            address: details.name,
+                                                            city: details.city,
+                                                            state: details.state
                                                         }));
                                                     }
                                                 }}
                                             />
                                         )}
                                         <MapEventsHandler
-                                            onMapClick={(lat, lng) => {
-                                                setFormData(prev => ({ ...prev, lat, lng }));
+                                            onMapClick={async (lat, lng) => {
+                                                const details = await fetchLocationDetails(lat, lng);
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    lat,
+                                                    lng,
+                                                    address: details.name,
+                                                    city: details.city,
+                                                    state: details.state
+                                                }));
                                             }}
                                             center={mapCenter}
                                         />
@@ -492,7 +514,7 @@ const Register = () => {
                                             <line x1="1" x2="5" y1="12" y2="12"></line>
                                             <line x1="19" x2="23" y1="12" y2="12"></line>
                                         </svg>
-                                        Pinned Coordinates: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
+                                        Pinned Location: {formData.address || `${formData.lat.toFixed(6)}, ${formData.lng.toFixed(6)}`}
                                     </div>
                                 )}
                             </div>
@@ -509,6 +531,13 @@ const Register = () => {
                                         onChange={handleChange}
                                         placeholder="Create a strong password"
                                         required
+                                        style={{
+                                            borderColor: formData.confirmPassword.length > 0 
+                                                ? (formData.password === formData.confirmPassword ? '#a4e565' : undefined)
+                                                : undefined,
+                                            borderWidth: formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword ? '2px' : '1px',
+                                            outline: 'none'
+                                        }}
                                     />
                                     <button
                                         type="button"
@@ -534,6 +563,13 @@ const Register = () => {
                                         onChange={handleChange}
                                         placeholder="Confirm your password"
                                         required
+                                        style={{
+                                            borderColor: formData.confirmPassword.length > 0 
+                                                ? (formData.password === formData.confirmPassword ? '#a4e565' : '#e0645c') 
+                                                : undefined,
+                                            borderWidth: formData.confirmPassword.length > 0 ? '2px' : '1px',
+                                            outline: 'none'
+                                        }}
                                     />
                                     <button
                                         type="button"
@@ -548,6 +584,11 @@ const Register = () => {
                                         )}
                                     </button>
                                 </div>
+                                {formData.confirmPassword.length > 0 && formData.password !== formData.confirmPassword && (
+                                    <div style={{ color: '#e0645c', fontSize: '0.8rem', marginTop: '2px' }}>
+                                        Passwords do not match
+                                    </div>
+                                )}
                             </div>
                         </div>
 
