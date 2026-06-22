@@ -24,10 +24,11 @@
 
 .partners-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  justify-content: center;
 }
 
 .partner-card {
@@ -97,6 +98,44 @@
   color: #718096;
   font-size: 0.9rem;
   line-height: 1.5;
+}
+
+.partner-location {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-top: 10px;
+  color: #4a5568 !important;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+}
+
+.view-all-partners-container {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.view-all-partners-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  background-color: #346c02;
+  color: white;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(52, 108, 2, 0.2);
+}
+
+.view-all-partners-btn:hover {
+  background-color: #2a5601;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(52, 108, 2, 0.3);
+  text-decoration: none;
+  color: white;
 }
 
 @media (max-width: 768px) {
