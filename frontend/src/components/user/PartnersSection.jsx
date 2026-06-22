@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import '../../styles/user/PartnersSection.css';
 
@@ -93,7 +94,7 @@ const PartnersSection = () => {
         ))}
       </div>
       <div className="view-all-partners-container">
-        <a href="/partners" className="view-all-partners-btn">View All Partners</a>
+        <Link to="/partners" className="view-all-partners-btn">View All Partners</Link>
       </div>
     </section>
   );
