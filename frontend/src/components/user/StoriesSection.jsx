@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import '../../styles/user/StoriesSection.css';
 import { storiesData } from '../../data/storiesData';
 
 const StoriesSection = () => {
+    const sectionRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                window.dispatchEvent(new Event('preload-partners'));
+                observer.disconnect();
+            }
+        });
+
+        if (sectionRef.current) {
+            observer.observe(sectionRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
-        <section className="stories-section">
+        <section className="stories-section" ref={sectionRef}>
             <div className="stories-header">
                 <h2>Our Journey & Impact</h2>
                 <p>Every small contribution writes a big story of survival and hope.</p>

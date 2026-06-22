@@ -6,6 +6,8 @@ import L from 'leaflet';
 import { registerPartner, sendRegistrationOtp, verifyRegistrationOtp } from '../../services/api';
 import '../../styles/user/Register.css';
 import hospitalImg from '../../assets/images/Hospital.webp';
+import PartnersSection from '../../components/user/PartnersSection';
+import WhyPartnerSection from '../../components/user/WhyPartnerSection';
 
 const circularLocationIcon = new L.DivIcon({
     className: 'custom-circular-marker',
@@ -79,6 +81,7 @@ const Register = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
+    const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
     // OTP Verification State
     const [showOtpModal, setShowOtpModal] = useState(false);
@@ -253,9 +256,7 @@ const Register = () => {
                 lng: formData.lng
             });
 
-            alert("Partner registration application submitted successfully for review!");
-            setShowOtpModal(false);
-            navigate('/');
+            setRegistrationSuccess(true);
         } catch (err) {
             console.error(err);
             setOtpError(err.response?.data?.error || err.message || "Verification or registration failed.");
@@ -279,6 +280,9 @@ const Register = () => {
                 <meta name="twitter:description" content="Register your veterinary clinic, hospital, or NGO as a Furzo partner to help rescue and care for stray animals." />
                 <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
             </Helmet>
+            
+            <WhyPartnerSection />
+            
             <div className="register-page">
                 <div className="register-container">
                     <div className="register-header">
@@ -687,7 +691,94 @@ const Register = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Success Modal Overlay */}
+                {registrationSuccess && (
+                    <div className="modal-overlay" style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'rgba(0, 0, 0, 0.4)',
+                        backdropFilter: 'blur(8px)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 9999
+                    }}>
+                        <div className="otp-modal-content" style={{
+                            background: 'white',
+                            padding: '40px',
+                            borderRadius: '16px',
+                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+                            width: '100%',
+                            maxWidth: '440px',
+                            textAlign: 'center',
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <div style={{
+                                width: '64px',
+                                height: '64px',
+                                background: '#f2ffe9',
+                                border: '2px solid #346c02',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                color: '#346c02'
+                            }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#2d3748', marginBottom: '12px' }}>
+                                Registration Complete!
+                            </h3>
+                            <p style={{ color: '#718096', fontSize: '1rem', marginBottom: '24px', lineHeight: '1.6' }}>
+                                Kindly login to your portal on <strong>furzo.vercel.app/vet</strong> after approval is complete.
+                            </p>
+                            
+                            <button
+                                onClick={() => navigate('/vet/login')}
+                                style={{
+                                    width: '100%',
+                                    background: '#346c02',
+                                    color: 'white',
+                                    padding: '14px',
+                                    borderRadius: '8px',
+                                    fontWeight: '600',
+                                    fontSize: '1rem',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    marginBottom: '12px'
+                                }}
+                            >
+                                Go to Vet Portal
+                            </button>
+                            <button
+                                onClick={() => navigate('/')}
+                                style={{
+                                    width: '100%',
+                                    background: 'none',
+                                    color: '#718096',
+                                    padding: '14px',
+                                    borderRadius: '8px',
+                                    fontWeight: '600',
+                                    fontSize: '1rem',
+                                    border: '1px solid #e2e8f0',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s'
+                                }}
+                            >
+                                Back to Home
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            <PartnersSection />
         </>
     );
 };

@@ -1,0 +1,39 @@
+.partners-page {
+  padding: 0px;
+  background-color: transparent;
+  min-height: 100vh;
+}
+
+.partners-page-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.partners-page-header h1 {
+  font-size: 3rem;
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-weight: 800;
+}
+
+.partners-page-header p {
+  font-size: 1.15rem;
+  color: #718096;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.partners-page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .partners-page {
+    padding-top: 100px;
+  }
+
+  .partners-page-header h1 {
+    font-size: 2.25rem;
+  }
+}

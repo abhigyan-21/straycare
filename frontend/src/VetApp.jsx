@@ -11,6 +11,7 @@ import VetNavbar from "./components/vet/VetNavbar";
 import Guide from "./pages/user/Guide"
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
+import Loader from './components/Loader';
 import './styles/global.css'
 import Footer from "./components/Footer";
 
@@ -20,7 +21,7 @@ function VetApp() {
   // Authorized roles: VET, NGO
   const isAuthorized = isLoggedIn && user && ['VET', 'NGO'].includes(user.role);
 
-  if (isLoading) return <div>Loading Portal...</div>;
+  if (isLoading) return <Loader />;
 
   return (
     <>

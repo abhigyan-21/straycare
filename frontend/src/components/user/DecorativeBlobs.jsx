@@ -32,6 +32,26 @@ const DecorativeBlobs = () => {
       <svg className="blob blob-6" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
         <path d="M0,150 C120,180 180,120 220,250 C260,380 150,400 0,400 Z" />
       </svg>
+
+      {/* 7. Lower-Left Add-on for extra sections */}
+      <svg className="blob blob-7" viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,100 C150,50 250,200 200,400 C150,600 250,750 0,800 Z" />
+      </svg>
+
+      {/* 8. Lower-Right Add-on for extra sections */}
+      <svg className="blob blob-8" viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M400,100 C250,50 150,200 200,400 C250,600 150,750 400,800 Z" />
+      </svg>
+
+      {/* 9. Mid-Left Add-on for gap near Action Cards */}
+      <svg className="blob blob-9" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,100 C150,50 250,200 200,350 C150,500 100,550 0,600 Z" />
+      </svg>
+
+      {/* 10. Small Right Corner Peek */}
+      <svg className="blob blob-10" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M200,50 C120,20 50,80 20,150 C10,180 100,200 200,200 Z" />
+      </svg>
     </div>
   );
 };

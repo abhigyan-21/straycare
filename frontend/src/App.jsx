@@ -20,6 +20,7 @@ import Register from "./pages/user/Register";
 import RescuerDashboard from "./pages/user/RescuerDashboard";
 import RescuerNavigation from "./pages/user/RescuerNavigation";
 import PublicPartner from "./pages/user/PublicPartner";
+import PartnersPage from "./pages/user/PartnersPage";
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import doctorClosed from "./assets/images/doctor-closed.webp";
 import doctorOpen from "./assets/images/doctor-open.webp";
@@ -187,6 +188,7 @@ function App() {
             <Route path="/help" element={<Help openAuthModal={openAuthModal} />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/partners" element={<PartnersPage />} />
             <Route path="/partner/:id" element={<PublicPartner />} />
 
             {/* Rescuer Section Paths */}

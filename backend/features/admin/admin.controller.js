@@ -228,12 +228,35 @@ const updateUserStatus = async (req, res) => {
       data: { status }
     });
 
-    // If we are activating a VET user, let's also verify their partner if they have one
-    if (status === 'Active' && updatedUser.partnerId) {
-      await prisma.partner.update({
-        where: { id: updatedUser.partnerId },
-        data: { verificationStatus: 'VERIFIED' }
-      });
+    // If we are activating a user, let's check their role and partner status
+    if (status === 'Active') {
+      if (updatedUser.partnerId) {
+        await prisma.partner.update({
+          where: { id: updatedUser.partnerId },
+          data: { verificationStatus: 'VERIFIED' }
+        });
+      }
+
+      // If they are a partner (VET or NGO), send an approval email
+      if (['VET', 'NGO'].includes(updatedUser.role)) {
+        sendEmail({
+          to: updatedUser.email,
+          subject: 'Your Partner Application is Approved! - Furzo',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 8px;">
+              <h2 style="color: #346c02; text-align: center;">Partner Application Approved!</h2>
+              <p>Dear Admin/Representative of ${updatedUser.name},</p>
+              <p>Congratulations! Your partner registration application with Furzo has been successfully reviewed and approved.</p>
+              <p>You can now log in to the Furzo Veterinary Portal , "furzo.vercel.app/vet" to manage adoption requests, track rescues, and update medical statuses of stray animals under your care.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://furzo.vercel.app/vet/login" style="background-color: #346c02; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Login to Vet Portal</a>
+              </div>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+              <p style="font-size: 0.85rem; color: #888; text-align: center;">Best regards,<br/>The Furzo Admin Team</p>
+            </div>
+          `
+        }).catch(err => console.error('Error sending approval email:', err));
+      }
     }
 
     // If we are rejecting a partner user, send a rejection email notification

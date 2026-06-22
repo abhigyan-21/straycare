@@ -15,7 +15,7 @@ export const testimonialData = [
         id: 3,
         name: "Urvashi Gulati",
         profilePic: 'Testimonial_Urvashi.webp',
-        statement: '"Loved the concept and design, They have thought of so many things and created a beautiful platform for stray animals. Keep it up."',
+        statement: '“Loved the concept and design, They have thought of so many things and created a beautiful platform for stray animals. Keep it up.”',
     },
     {
         id: 4,
@@ -27,14 +27,14 @@ export const testimonialData = [
         id: 5,
         name: "Kanak Verma",
         profilePic: 'Testimonial_Kanak.webp',
-        statement: `"I truly appreciate the work done by Furzo-for strays, their dedication towards rescuing the strays."`,
+        statement: `“I truly appreciate the work done by Furzo-for strays, their dedication towards rescuing the strays.”`,
     },
 
     {
         id: 6,
-        name: "Abhigyan Dutta",
-        profilePic: '',
-        statement: 'This is a statement from the user about how Furzo helped them or their pet.',
+        name: "Tanvi",
+        profilePic: 'Testimonial_Tanvi.webp',
+        statement: '“I appreciate the effort behind Furzo. The app is easy to navigate and provides a great way to contribute to the care and rescue of stray animals.”',
     },
 
 ];

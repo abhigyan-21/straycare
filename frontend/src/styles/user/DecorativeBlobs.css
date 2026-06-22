@@ -21,8 +21,10 @@
 .blob-1 {
   top: 0;
   left: 0;
-  width: 700px; /* Reduced from 900px */
-  height: 700px; /* Reduced from 900px */
+  width: 700px;
+  /* Reduced from 900px */
+  height: 700px;
+  /* Reduced from 900px */
 }
 
 /* 2. Top-Right Peek */
@@ -35,17 +37,20 @@
 
 /* 3. Middle-Left Sweep (Journey section) */
 .blob-3 {
-  top: 30%; /* Pushed down from 25% */
+  top: 35%;
+  /* Pushed down from 30% */
   left: 0;
-  width: 450px; /* Slightly reduced */
-  height: 800px;
+  width: 450px;
+  /* Slightly reduced */
+  height: 600px;
 }
 
 /* 4. Middle-Right Bulge (Action Cards) */
 .blob-4 {
   top: 20%;
   right: 0;
-  width: 400px; /* Increased */
+  width: 400px;
+  /* Increased */
   height: 600px;
 }
 
@@ -53,7 +58,8 @@
 .blob-5 {
   top: 45%;
   right: 0;
-  width: 550px; /* Increased */
+  width: 550px;
+  /* Increased */
   height: 1200px;
 }
 
@@ -65,13 +71,71 @@
   height: 1000px;
 }
 
+/* 7. Lower-Left Add-on */
+.blob-7 {
+  top: 55%;
+  left: 0;
+  width: 450px;
+  height: 800px;
+}
+
+/* 8. Lower-Right Add-on */
+.blob-8 {
+  top: 80%;
+  right: 0;
+  width: 500px;
+  height: 700px;
+}
+
+/* 9. Mid-Left Add-on for gap */
+.blob-9 {
+  top: 15%;
+  left: 0;
+  width: 350px;
+  height: 600px;
+}
+
+/* 10. Small Right Corner Peek */
+.blob-10 {
+  top: 10%;
+  right: -20px;
+  width: 250px;
+  height: 350px;
+}
+
 @media (max-width: 1200px) {
-  .blob-1 { width: 600px; height: 600px; }
-  .blob-5 { width: 300px; }
+  .blob-1 {
+    width: 600px;
+    height: 600px;
+  }
+
+  .blob-5 {
+    width: 300px;
+  }
+
+  .blob-7,
+  .blob-8 {
+    width: 300px;
+  }
+
+  .blob-9 {
+    width: 250px;
+  }
+
+  .blob-10 {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
-  .blob-3, .blob-4, .blob-5 {
+
+  .blob-3,
+  .blob-4,
+  .blob-5,
+  .blob-7,
+  .blob-8,
+  .blob-9,
+  .blob-10 {
     display: none;
   }
 }

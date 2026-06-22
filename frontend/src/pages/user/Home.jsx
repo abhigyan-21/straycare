@@ -4,6 +4,8 @@ import ActionCards from "../../components/user/ActionCards";
 import Testimonials from "../../components/user/Testimonials";
 import StoriesSection from "../../components/user/StoriesSection";
 import DecorativeBlobs from "../../components/user/DecorativeBlobs";
+import PartnersSection from "../../components/user/PartnersSection";
+import WhyPartnerSection from "../../components/user/WhyPartnerSection";
 
 function Home() {
   return (
@@ -50,6 +52,8 @@ function Home() {
         <ActionCards />
         <StoriesSection />
         <Testimonials />
+        <PartnersSection />
+        <WhyPartnerSection />
       </div>
     </>
   );

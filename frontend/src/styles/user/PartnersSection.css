@@ -1,0 +1,140 @@
+.partners-section {
+  padding: 60px 20px;
+  background-color: transparent;
+  text-align: center;
+}
+
+.partners-header {
+  margin-bottom: 40px;
+}
+
+.partners-header h2 {
+  font-size: 2.5rem;
+  color: #2d3748;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.partners-header p {
+  color: #718096;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(250px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.partner-card {
+  background: #eff0f1ee;
+  border-radius: 16px;
+  padding: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border: 2px solid #e1e1e1;
+  text-align: left;
+}
+
+.partner-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: #346c02;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Badge colors based on type */
+.partner-badge {
+  background-color: #7b7b7b;
+}
+
+.partner-logo-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 20px;
+  border: 3px solid #f7fafc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.partner-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.partner-info {
+  flex: 1;
+}
+
+.partner-info h3 {
+  font-size: 1.15rem;
+  color: #2d3748;
+  margin-bottom: 6px;
+  font-weight: 700;
+  padding-right: 60px;
+  /* Space for the badge */
+}
+
+.partner-info p {
+  color: #718096;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.partner-location {
+  display: flex;
+  align-items: center;
+  color: #718096;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.view-all-partners-container {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.view-all-partners-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  background-color: #346c02;
+  color: white;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.view-all-partners-btn:hover {
+  background-color: #2a5502;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(52, 108, 2, 0.2);
+}
+
+@media (max-width: 768px) {
+  .partners-header h2 {
+    font-size: 2rem;
+  }
+
+  .partners-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}

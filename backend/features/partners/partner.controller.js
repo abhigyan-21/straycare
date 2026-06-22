@@ -76,6 +76,51 @@ const getPublicPartnerProfile = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get all public verified partners
+ * @route GET /api/partners
+ * @access Public
+ */
+const getAllPublicPartners = async (req, res) => {
+  try {
+    const partners = await prisma.partner.findMany({
+      where: {
+        verificationStatus: 'VERIFIED'
+      },
+      select: {
+        id: true,
+        name: true,
+        partnerType: true,
+        city: true,
+        state: true,
+        users: {
+          select: {
+            avatarUrl: true
+          },
+          take: 1
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    const formattedPartners = partners.map(p => ({
+      id: p.id,
+      name: p.name,
+      type: p.partnerType,
+      location: p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || "Location Unspecified"),
+      logo: p.users[0]?.avatarUrl || 'https://via.placeholder.com/200x200.png?text=Partner'
+    }));
+
+    res.json(formattedPartners);
+  } catch (error) {
+    console.error('Error fetching all public partners:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
-  getPublicPartnerProfile
+  getPublicPartnerProfile,
+  getAllPublicPartners
 };
