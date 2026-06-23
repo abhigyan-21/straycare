@@ -4,7 +4,8 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilters }) => {
     const [filters, setFilters] = useState(currentFilters || {
         type: '',
         breed: '',
-        ageGroup: ''
+        ageGroup: '',
+        maxDistance: 50
     });
 
     if (!isOpen) return null;
@@ -19,7 +20,7 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilters }) => {
     };
 
     const handleClear = () => {
-        const cleared = { type: '', breed: '', ageGroup: '' };
+        const cleared = { type: '', breed: '', ageGroup: '', maxDistance: 50 };
         setFilters(cleared);
         onApply(cleared);
     };
@@ -62,6 +63,18 @@ const FilterModal = ({ isOpen, onClose, onApply, currentFilters }) => {
                             <option value="Young">Young</option>
                             <option value="Adult">Adult</option>
                             <option value="Senior">Senior</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Max Distance (km)</label>
+                        <select name="maxDistance" value={filters.maxDistance} onChange={handleChange}>
+                            <option value="">Any Distance</option>
+                            <option value="10">10 km</option>
+                            <option value="20">20 km</option>
+                            <option value="50">50 km</option>
+                            <option value="100">100 km</option>
+                            <option value="500">500 km</option>
                         </select>
                     </div>
                 </div>

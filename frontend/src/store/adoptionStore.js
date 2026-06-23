@@ -13,25 +13,39 @@ export const useAdoptionStore = create(
             loading: false,
             error: null,
 
+            // Location preferences
+            userLat: null,
+            userLng: null,
+            maxDistance: 50, // default to 50km
+
+            setLocation: (lat, lng) => {
+                set({ userLat: lat, userLng: lng });
+                get().invalidateCache(); // Invalidate cache so it fetches again with new location
+            },
+
+            setMaxDistance: (distance) => {
+                set({ maxDistance: distance });
+                get().invalidateCache(); // Invalidate cache
+            },
+
             // ── Fetch Pets + User Requests (with TTL + stale-while-revalidate) ─
-            fetchPetsAndRequests: async () => {
-                const { pets, lastFetched } = get();
-                const cacheHit = isCacheValid(lastFetched, TTL.adoptions) && pets.length > 0;
+            fetchPetsAndRequests: async (force = false) => {
+                const { pets, lastFetched, userLat, userLng, maxDistance } = get();
+                const cacheHit = !force && isCacheValid(lastFetched, TTL.adoptions);
 
                 if (cacheHit) {
                     // Cache is fresh — serve immediately
                     return;
                 }
 
-                // Stale-while-revalidate: if stale data exists, keep it visible while refetching
-                const hasStaleData = pets.length > 0 && !isCacheValid(lastFetched, TTL.adoptions);
-                if (!hasStaleData) {
+                // Stale-while-revalidate: only show a hard loading state if we have NO data
+                if (pets.length === 0) {
                     set({ loading: true, error: null });
                 }
 
                 try {
                     const [petsData, reqsData] = await Promise.all([
-                        getPets(),
+                        getPets(userLat, userLng, maxDistance),
                         getUserAdoptionRequests(),
                     ]);
 
@@ -101,6 +115,9 @@ export const useAdoptionStore = create(
                 pets: state.pets,
                 interestedPets: state.interestedPets,
                 lastFetched: state.lastFetched,
+                userLat: state.userLat,
+                userLng: state.userLng,
+                maxDistance: state.maxDistance,
             }),
         }
     )

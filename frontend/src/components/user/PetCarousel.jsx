@@ -162,6 +162,14 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
                                     <div className="pet-detail-row">
                                         <span className="detail-label">Sex:</span> {currentPet.sex}
                                     </div>
+                                    <div className="pet-detail-row">
+                                        <span className="detail-label">Location:</span> {currentPet.locationString || 'Unknown'}
+                                    </div>
+                                    {currentPet.distance !== null && currentPet.distance !== undefined && (
+                                        <div className="pet-detail-row">
+                                            <span className="detail-label">Distance:</span> {currentPet.distance.toFixed(1)} km away
+                                        </div>
+                                    )}
 
                                     <div className="pet-detail-row full-width mt-2">
                                         <span className="detail-label block">Medical history:</span> {currentPet.medicalHistory}

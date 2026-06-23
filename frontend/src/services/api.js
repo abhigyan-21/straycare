@@ -86,6 +86,10 @@ apiClient.interceptors.response.use(
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return axios(originalRequest);
+        } else {
+          console.warn('No refresh token available, logging out.');
+          const { useAuthStore } = await import('../store/authStore');
+          useAuthStore.getState().logout();
         }
       } catch (refreshError) {
         console.error('Session expired, logging out:', refreshError);
@@ -110,9 +114,17 @@ export const getStories = async () => {
   }
 };
 
-export const getPets = async () => {
+export const getPets = async (lat, lng, maxDistance) => {
   try {
-    const response = await apiClient.get('/adoptions/pets');
+    const params = {};
+    if (lat !== undefined && lng !== undefined) {
+      params.lat = lat;
+      params.lng = lng;
+    }
+    if (maxDistance !== undefined) {
+      params.maxDistance = maxDistance;
+    }
+    const response = await apiClient.get('/adoptions/pets', { params });
     return response.data.data || response.data;
   } catch (error) {
     console.warn('Failed to fetch pets:', error.message);

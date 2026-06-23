@@ -1,65 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import { usePartnerStore } from '../../store/partnerStore';
 import '../../styles/user/PartnersSection.css';
 
 const PartnersSection = () => {
-  const [partners, setPartners] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
+  const { partners, loading, fetchPartners } = usePartnerStore();
   const sectionRef = useRef(null);
 
   useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const response = await api.get('/partners');
-        if (Array.isArray(response.data)) {
-          setPartners(response.data);
-        } else {
-          console.warn('Expected array of partners, got:', response.data);
-          setPartners([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch partners:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Delay fetching slightly to prioritize main content loading,
+    // but the store will immediately return cached data if available.
+    const timer = setTimeout(() => {
+      fetchPartners();
+    }, 500);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasFetched) {
-          setHasFetched(true);
-          fetchPartners();
-        }
-      },
-      { rootMargin: '100px' }
-    );
+    return () => clearTimeout(timer);
+  }, [fetchPartners]);
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    const handlePreload = () => {
-      if (!hasFetched) {
-        setHasFetched(true);
-        fetchPartners();
-      }
-    };
-    window.addEventListener('preload-partners', handlePreload);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('preload-partners', handlePreload);
-    };
-  }, [hasFetched]);
-
-  if (loading) {
+  if (loading && partners.length === 0) {
     return (
       <section className="partners-section" ref={sectionRef}>
         <div className="partners-header">
           <h2>Our Trusted Partners</h2>
-          <p>{hasFetched ? "Loading partners..." : "Working together with incredible organizations to make a difference in the lives of stray animals."}</p>
+          <p>Loading partners...</p>
         </div>
       </section>
     );

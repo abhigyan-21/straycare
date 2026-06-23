@@ -69,6 +69,19 @@ const mapPetData = (pet) => {
   };
 };
 
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in km
+};
+
 /**
  * @desc Get all available pets for adoption
  * @route GET /api/adoptions/pets
@@ -76,6 +89,11 @@ const mapPetData = (pet) => {
  */
 const listPets = async (req, res) => {
   try {
+    const { lat, lng, maxDistance } = req.query;
+    const userLat = lat ? parseFloat(lat) : null;
+    const userLng = lng ? parseFloat(lng) : null;
+    const maxDist = maxDistance ? parseFloat(maxDistance) : null;
+
     const pets = await prisma.pet.findMany({
       where: { status: 'AVAILABLE' },
       include: {
@@ -90,7 +108,48 @@ const listPets = async (req, res) => {
         },
       },
     });
-    res.json({ status: 'success', data: pets.map(mapPetData) });
+
+    let mappedPets = pets.map(pet => {
+      const p = mapPetData(pet);
+      
+      let petLat = null;
+      let petLng = null;
+      let locationString = 'Location Unknown';
+
+      if (pet.partner && pet.partner.lat && pet.partner.lng) {
+        petLat = pet.partner.lat;
+        petLng = pet.partner.lng;
+        locationString = pet.partner.city ? `${pet.partner.name}, ${pet.partner.city}` : pet.partner.name;
+      } else if (pet.report && pet.report.locationLat && pet.report.locationLng) {
+        petLat = pet.report.locationLat;
+        petLng = pet.report.locationLng;
+        locationString = 'Reported Location';
+      }
+
+      let distance = null;
+      if (userLat !== null && userLng !== null && petLat !== null && petLng !== null) {
+        distance = calculateDistance(userLat, userLng, petLat, petLng);
+      }
+
+      return {
+        ...p,
+        distance,
+        locationString
+      };
+    });
+
+    if (userLat !== null && userLng !== null) {
+      if (maxDist !== null && !isNaN(maxDist)) {
+        mappedPets = mappedPets.filter(p => p.distance !== null && p.distance <= maxDist);
+      }
+      mappedPets.sort((a, b) => {
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
+        return a.distance - b.distance;
+      });
+    }
+
+    res.json({ status: 'success', data: mappedPets });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
   }

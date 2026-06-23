@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import '../../styles/user/WhyPartnerSection.css';
 
 const benefits = [
@@ -53,7 +54,7 @@ const benefits = [
   }
 ];
 
-const WhyPartnerSection = () => {
+const WhyPartnerSection = ({ showButton = true }) => {
   return (
     <section className="why-partner-section">
       <div className="why-partner-header">
@@ -71,6 +72,11 @@ const WhyPartnerSection = () => {
           </div>
         ))}
       </div>
+      {showButton && (
+        <div className="why-partner-cta">
+          <Link to="/register" className="btn-join-partner">Join as a Partner</Link>
+        </div>
+      )}
     </section>
   );
 };

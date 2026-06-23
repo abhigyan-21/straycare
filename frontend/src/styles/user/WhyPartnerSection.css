@@ -75,6 +75,30 @@
   line-height: 1.6;
 }
 
+.why-partner-cta {
+  margin-top: 50px;
+}
+
+.btn-join-partner {
+  display: inline-block;
+  background-color: #346c02;
+  color: white;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(52, 108, 2, 0.2);
+}
+
+.btn-join-partner:hover {
+  background-color: #275202;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(52, 108, 2, 0.3);
+  color: white;
+}
+
 @media (max-width: 768px) {
   .why-partner-header h2 {
     font-size: 2rem;

@@ -6,6 +6,7 @@ import FilterModal from '../../components/user/FilterModal';
 import ActionLoader from '../../components/ActionLoader';
 import { useAdoptionStore } from '../../store/adoptionStore';
 import PullToRefresh from 'react-simple-pull-to-refresh';
+import { Search, LocateFixed } from 'lucide-react';
 
 function Adopt() {
     const {
@@ -16,6 +17,11 @@ function Adopt() {
         cancelInterest,
         isInterested,
         invalidateCache,
+        setLocation,
+        setMaxDistance,
+        userLat,
+        userLng,
+        maxDistance
     } = useAdoptionStore();
 
     const [currentPetIndex, setCurrentPetIndex] = useState(0);
@@ -23,13 +29,52 @@ function Adopt() {
     const [filters, setFilters] = useState({
         type: '',
         breed: '',
-        ageGroup: ''
+        ageGroup: '',
+        maxDistance: maxDistance || 50
     });
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [locationSearch, setLocationSearch] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isSelectingSuggestion, setIsSelectingSuggestion] = useState(false);
 
     useEffect(() => {
-        fetchPetsAndRequests();
-    }, [fetchPetsAndRequests]);
+        const fetchSuggestions = async () => {
+            if (isSelectingSuggestion || locationSearch.trim().length < 3) {
+                setSuggestions([]);
+                setShowSuggestions(false);
+                return;
+            }
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationSearch)}&countrycodes=in&limit=5&addressdetails=1`);
+                const data = await res.json();
+                setSuggestions(data || []);
+                setShowSuggestions(true);
+            } catch (err) {
+                console.error('Error fetching suggestions:', err);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchSuggestions, 500);
+        return () => clearTimeout(timeoutId);
+    }, [locationSearch, isSelectingSuggestion]);
+
+    useEffect(() => {
+        if (!userLat && navigator.geolocation) {
+             navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation(position.coords.latitude, position.coords.longitude);
+                    fetchPetsAndRequests(true);
+                },
+                (error) => {
+                    fetchPetsAndRequests();
+                }
+            );
+        } else {
+            fetchPetsAndRequests();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const filteredPets = useMemo(() => {
         return pets.filter(pet => {
@@ -61,10 +106,65 @@ function Adopt() {
         }
     };
 
-    const handleApplyFilters = (newFilters) => {
+    const handleApplyFilters = async (newFilters) => {
         setFilters(newFilters);
+        if (newFilters.maxDistance && newFilters.maxDistance !== maxDistance) {
+            setMaxDistance(newFilters.maxDistance);
+            await fetchPetsAndRequests(true);
+        } else if (!newFilters.maxDistance && maxDistance) {
+            setMaxDistance(null);
+            await fetchPetsAndRequests(true);
+        }
         setIsFilterModalOpen(false);
         setCurrentPetIndex(0);
+    };
+
+    const handleDetectLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation(position.coords.latitude, position.coords.longitude);
+                    fetchPetsAndRequests(true);
+                },
+                (error) => {
+                    alert('Unable to retrieve your location. Please search manually.');
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser');
+        }
+    };
+
+    const handleSearchLocation = async (e) => {
+        e.preventDefault();
+        setShowSuggestions(false);
+        if (!locationSearch.trim()) return;
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationSearch)}&countrycodes=in`);
+            const data = await res.json();
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                setLocation(parseFloat(lat), parseFloat(lon));
+                fetchPetsAndRequests(true);
+            } else {
+                alert('Location not found. Try a different search.');
+            }
+        } catch (err) {
+            alert('Error searching location.');
+        }
+    };
+
+    const handleSuggestionClick = (suggestion) => {
+        setIsSelectingSuggestion(true);
+        setLocationSearch(suggestion.display_name);
+        setShowSuggestions(false);
+        setSuggestions([]);
+        
+        setLocation(parseFloat(suggestion.lat), parseFloat(suggestion.lon));
+        fetchPetsAndRequests(true);
+        
+        // Reset typing flag after a short delay so manual edits work again
+        setTimeout(() => setIsSelectingSuggestion(false), 800);
     };
 
     const handleRefresh = async () => {
@@ -113,12 +213,51 @@ function Adopt() {
             <PullToRefresh onRefresh={handleRefresh} pullingContent="" >
                 <div className="adopt-page">
                     <div className="adopt-toolbar">
-                        <button
-                            className="btn-filter"
-                            onClick={() => setIsFilterModalOpen(true)}
-                        >
-                            Filters
-                        </button>
+                        <div className="toolbar-left">
+                            <button
+                                className="btn-filter"
+                                onClick={() => setIsFilterModalOpen(true)}
+                            >
+                                Filters
+                            </button>
+                        </div>
+                        <div className="location-search-container search-wrapper">
+                            <form onSubmit={handleSearchLocation} className="location-search-form">
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter city or zip..." 
+                                    value={locationSearch}
+                                    onChange={(e) => {
+                                        setLocationSearch(e.target.value);
+                                        if (isSelectingSuggestion) setIsSelectingSuggestion(false);
+                                    }}
+                                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                    className="location-input"
+                                />
+                                <button type="submit" className="btn-search" aria-label="Search">
+                                    <Search size={18} />
+                                </button>
+                            </form>
+                            <button type="button" onClick={handleDetectLocation} className="btn-detect" title="Use Current Location">
+                                <LocateFixed size={18} />
+                            </button>
+
+                            {showSuggestions && suggestions.length > 0 && (
+                                <ul className="suggestions-dropdown">
+                                    {suggestions.map((sugg, index) => (
+                                        <li 
+                                            key={index} 
+                                            className="suggestion-item"
+                                            onMouseDown={() => handleSuggestionClick(sugg)}
+                                        >
+                                            {sugg.display_name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <div></div>
                     </div>
                     <div className="adopt-action-header">
                         <button

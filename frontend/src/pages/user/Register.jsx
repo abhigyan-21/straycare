@@ -291,7 +291,7 @@ const Register = () => {
                 <meta name="twitter:image" content="https://Furzo.vercel.app/FurzoBanner.jpg" />
             </Helmet>
             
-            <WhyPartnerSection />
+            <WhyPartnerSection showButton={false} />
             
             <div className="register-page">
                 <div className="register-container">
