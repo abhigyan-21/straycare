@@ -21,6 +21,7 @@ function Adopt() {
         setMaxDistance,
         userLat,
         userLng,
+        locationName,
         maxDistance
     } = useAdoptionStore();
 
@@ -33,14 +34,14 @@ function Adopt() {
         maxDistance: maxDistance || 50
     });
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [locationSearch, setLocationSearch] = useState('');
+    const [locationSearch, setLocationSearch] = useState(locationName || '');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isSelectingSuggestion, setIsSelectingSuggestion] = useState(false);
 
     useEffect(() => {
         const fetchSuggestions = async () => {
-            if (isSelectingSuggestion || locationSearch.trim().length < 3) {
+            if (isSelectingSuggestion || locationSearch.trim().length < 3 || locationSearch === locationName) {
                 setSuggestions([]);
                 setShowSuggestions(false);
                 return;
@@ -62,14 +63,28 @@ function Adopt() {
     useEffect(() => {
         if (!userLat && navigator.geolocation) {
              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLocation(position.coords.latitude, position.coords.longitude);
+                async (position) => {
+                    setIsSelectingSuggestion(true);
+                    let city = "Current Location";
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
+                        const data = await res.json();
+                        city = data.address?.city || data.address?.town || data.address?.village || data.address?.state_district || "Current Location";
+                        setLocationSearch(city);
+                    } catch {
+                        setLocationSearch(city);
+                    }
+                    setLocation(position.coords.latitude, position.coords.longitude, city);
                     fetchPetsAndRequests(true);
+                    setTimeout(() => setIsSelectingSuggestion(false), 800);
                 },
                 (error) => {
                     fetchPetsAndRequests();
                 }
             );
+        } else if (userLat && userLng && !locationSearch) {
+             setLocationSearch(locationName || "Current Location");
+             fetchPetsAndRequests();
         } else {
             fetchPetsAndRequests();
         }
@@ -122,9 +137,19 @@ function Adopt() {
     const handleDetectLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLocation(position.coords.latitude, position.coords.longitude);
-                    fetchPetsAndRequests(true);
+                async (position) => {
+                    setIsSelectingSuggestion(true);
+                    setLocationSearch("Locating...");
+                    let city = "Current Location";
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
+                        const data = await res.json();
+                        city = data.address?.city || data.address?.town || data.address?.village || data.address?.state_district || "Current Location";
+                        setLocationSearch(city);
+                    } catch {
+                        setLocationSearch(city);
+                    }
+                    setTimeout(() => setIsSelectingSuggestion(false), 800);
                 },
                 (error) => {
                     alert('Unable to retrieve your location. Please search manually.');
@@ -143,8 +168,9 @@ function Adopt() {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationSearch)}&countrycodes=in`);
             const data = await res.json();
             if (data && data.length > 0) {
-                const { lat, lon } = data[0];
-                setLocation(parseFloat(lat), parseFloat(lon));
+                const { lat, lon, display_name } = data[0];
+                setLocationSearch(display_name);
+                setLocation(parseFloat(lat), parseFloat(lon), display_name);
                 fetchPetsAndRequests(true);
             } else {
                 alert('Location not found. Try a different search.');
@@ -159,9 +185,6 @@ function Adopt() {
         setLocationSearch(suggestion.display_name);
         setShowSuggestions(false);
         setSuggestions([]);
-        
-        setLocation(parseFloat(suggestion.lat), parseFloat(suggestion.lon));
-        fetchPetsAndRequests(true);
         
         // Reset typing flag after a short delay so manual edits work again
         setTimeout(() => setIsSelectingSuggestion(false), 800);

@@ -16,10 +16,11 @@ export const useAdoptionStore = create(
             // Location preferences
             userLat: null,
             userLng: null,
+            locationName: null,
             maxDistance: 50, // default to 50km
 
-            setLocation: (lat, lng) => {
-                set({ userLat: lat, userLng: lng });
+            setLocation: (lat, lng, name = null) => {
+                set({ userLat: lat, userLng: lng, locationName: name });
                 get().invalidateCache(); // Invalidate cache so it fetches again with new location
             },
 
@@ -117,6 +118,7 @@ export const useAdoptionStore = create(
                 lastFetched: state.lastFetched,
                 userLat: state.userLat,
                 userLng: state.userLng,
+                locationName: state.locationName,
                 maxDistance: state.maxDistance,
             }),
         }
