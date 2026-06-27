@@ -6,6 +6,7 @@ if (typeof dns.setDefaultResultOrder === 'function') {
 }
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 
 // Routes Import
 const chatRoutes = require('./features/chat/chat.route');
@@ -88,8 +89,9 @@ app.use((req, res, next) => {
 });
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(helmet());
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Favicon dummy handler to prevent console clutter/CSP errors
 app.get('/favicon.ico', (req, res) => res.status(204).end());
