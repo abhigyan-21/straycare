@@ -2,7 +2,7 @@ export const storiesData = [
     {
         id: 1,
         title: "Parvo Survivor: A Tale of Resilience",
-        image: "/public/storyImages/stories_parvo.webp",
+        image: "/storyImages/stories_parvo.webp",
         description: "At just 1.5 months old, this puppy survived parvovirus despite losing both siblings to the disease. After 10 days of isolation, regular ORS, a liquid diet, antibiotics, and constant care, he made a full recovery. Healthy and active again, he was reunited with his mother, proving the power of timely treatment and dedication.",
         category: "Medical",
         date: "January 20, 2026"
