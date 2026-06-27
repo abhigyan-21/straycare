@@ -115,7 +115,7 @@ const getAllPublicPartners = async (req, res) => {
         name: p.name,
         type: p.partnerType,
         location: p.city && p.state ? `${p.city}, ${p.state}` : (p.address || "Location Unspecified"),
-        logo: avatar || 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=200&h=200&q=80'
+        logo: avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
       };
     });
 

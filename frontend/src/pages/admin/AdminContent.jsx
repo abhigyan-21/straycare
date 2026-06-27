@@ -100,10 +100,7 @@ const AdminContent = () => {
                                 <p>"{post.content}"</p>
                             </div>
 
-                            <div className="admin-post-footer admin-flex-between">
-                                <div className="admin-flex-row" style={{ color: 'var(--admin-text-light)', fontSize: '0.85rem' }}>
-                                    <MessageSquare size={16} /> 0 Comments
-                                </div>
+                            <div className="admin-post-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                 <div className="admin-flex-row">
                                     {post.status !== 'Published' && (
                                         <button className="admin-btn-action green" onClick={() => handleAction(post.id, 'approve')}>

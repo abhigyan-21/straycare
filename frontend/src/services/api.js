@@ -326,6 +326,8 @@ export const createPost = async (formData) => {
   return response.data;
 };
 
+
+
 export const toggleLikePost = async (postId) => {
   const response = await apiClient.post(`/posts/${postId}/like`);
   return response.data;
@@ -333,6 +335,16 @@ export const toggleLikePost = async (postId) => {
 
 export const addCommentToPost = async (postId, text) => {
   const response = await apiClient.post(`/posts/${postId}/comment`, { text });
+  return response.data;
+};
+
+export const deleteComment = async (commentId) => {
+  const response = await apiClient.delete(`/posts/comment/${commentId}`);
+  return response.data;
+};
+
+export const reportPost = async (postId) => {
+  const response = await apiClient.post(`/posts/${postId}/report`);
   return response.data;
 };
 

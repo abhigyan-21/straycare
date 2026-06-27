@@ -168,7 +168,7 @@ const getPartnerApplications = async (req, res) => {
         documents: {
           where: { type: 'REGISTRATION' }
         },
-        clinic: true
+        partner: true
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -360,18 +360,22 @@ const getTracking = async (req, res) => {
 const getPosts = async (req, res) => {
   try {
     const dbPosts = await prisma.post.findMany({
-      include: { author: true },
+      include: { 
+        author: true,
+        _count: { select: { comments: true } }
+      },
       orderBy: { createdAt: 'desc' }
     });
 
     const posts = dbPosts.map(p => ({
       id: p.id,
       author: p.author?.name || 'Anonymous',
-      authorAvatar: p.author?.avatarUrl || 'https://i.pravatar.cc/150?u=' + p.id,
+      authorAvatar: p.author?.avatarUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
       content: p.caption,
       date: p.createdAt.toISOString().split('T')[0],
-      status: 'Published',
-      reports: []
+      status: p.isReported ? 'Reported' : 'Published',
+      reports: p.reportCount || 0,
+      comments: p._count?.comments || 0
     }));
 
     res.json(posts);
@@ -405,7 +409,14 @@ const updatePostStatus = async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    res.json({ success: true, message: 'Post moderation status acknowledged', postId: id });
+    if (status === 'Published') {
+      await prisma.post.update({
+        where: { id },
+        data: { isReported: false, reportCount: 0 }
+      });
+    }
+
+    res.json({ success: true, message: 'Post moderation status acknowledged', postId: id, status });
   } catch (error) {
     console.error('Error updating post status:', error);
     res.status(500).json({ error: 'Internal Server Error' });

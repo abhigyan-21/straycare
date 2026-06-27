@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import sparrowImg from "../../assets/sparrow.png";
+import sparrowImg from "../../assets/sparrow.webp";
 import catImg from "../../assets/catImg.webp";
 import dogImg from "../../assets/dogImg.webp"
 

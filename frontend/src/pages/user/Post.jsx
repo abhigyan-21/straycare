@@ -8,10 +8,10 @@ import PostCard from '../../components/user/PostCard';
 import MiniLoader from '../../components/user/MiniLoader';
 import ActionLoader from '../../components/ActionLoader';
 import PullToRefresh from 'react-simple-pull-to-refresh';
-
+import { reportPost } from '../../services/api';
 function Post({ openAuthModal }) {
     const { isLoggedIn, user: authUser } = useAuthStore();
-    const { posts, loading, fetchPosts, createPost, toggleLike, addComment, page, hasMore, invalidateCache } = usePostStore();
+    const { posts, loading, fetchPosts, createPost, toggleLike, addComment, deleteComment, page, hasMore, invalidateCache } = usePostStore();
     const [newComment, setNewComment] = useState({});
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -112,6 +112,20 @@ function Post({ openAuthModal }) {
         setIsRefreshing(false);
     };
 
+    const handleReport = async (postId) => {
+        if (!isLoggedIn) {
+            openAuthModal('signin');
+            return;
+        }
+        try {
+            await reportPost(postId);
+            alert("Thank you for reporting this post. Our moderation team will review it shortly.");
+        } catch (error) {
+            console.error("Error reporting post:", error);
+            alert("Failed to report post. Please try again later.");
+        }
+    };
+
     return (
         <>
             <Helmet>
@@ -165,9 +179,11 @@ function Post({ openAuthModal }) {
                                 currentUserId={authUser?.id}
                                 onLike={handleLike}
                                 onShare={handleShare}
+                                onReport={handleReport}
                                 onCommentChange={handleCommentChange}
                                 onSubmitComment={submitComment}
                                 newComment={newComment[post.id]}
+                                onDeleteComment={deleteComment}
                             />
                         ))}
                         {loading && (

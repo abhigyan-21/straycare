@@ -1,11 +1,11 @@
 export const storiesData = [
     {
         id: 1,
-        title: "Feeding Drive: City Park",
-        image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800",
-        description: "Our dedicated volunteers spent the weekend ensuring over 50 stray dogs in the city park received nutritious meals and fresh water. A full belly is the first step to health.",
-        category: "Feeding",
-        date: "March 24, 2024"
+        title: "Parvo Survivor: A Tale of Resilience",
+        image: "/public/storyImages/stories_parvo.webp",
+        description: "At just 1.5 months old, this puppy survived parvovirus despite losing both siblings to the disease. After 10 days of isolation, regular ORS, a liquid diet, antibiotics, and constant care, he made a full recovery. Healthy and active again, he was reunited with his mother, proving the power of timely treatment and dedication.",
+        category: "Medical",
+        date: "January 20, 2026"
     },
     {
         id: 2,

@@ -367,6 +367,9 @@ model Post {
   author   User      @relation(fields: [authorId], references: [id])
   likes    Like[]
   comments Comment[]
+
+  isReported Boolean @default(false)
+  reportCount Int    @default(0)
 }
 
 model Like {

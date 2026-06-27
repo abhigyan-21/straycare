@@ -35,7 +35,10 @@ const PartnersSection = () => {
         <p>Working together with incredible organizations to make a difference in the lives of stray animals.</p>
       </div>
       <div className="partners-grid">
-        {partners.slice(0, 6).map((partner) => (
+        {partners
+          .filter(partner => !partner.name.toLowerCase().includes('mock'))
+          .slice(0, 6)
+          .map((partner) => (
           <div className="partner-card" key={partner.id}>
             <span className={`partner-badge ${partner.type.toLowerCase()}`}>
               {partner.type}

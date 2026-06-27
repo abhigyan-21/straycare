@@ -19,7 +19,13 @@ router.post('/:id/like', verifyToken, postController.toggleLike);
 // POST /api/posts/:id/comment - Add comment
 router.post('/:id/comment', verifyToken, postController.addComment);
 
+// DELETE /api/posts/comment/:commentId - Delete a comment
+router.delete('/comment/:commentId', verifyToken, postController.deleteComment);
+
 // DELETE /api/posts/:id - Delete a post (author only)
 router.delete('/:id', verifyToken, postController.deletePost);
+
+// POST /api/posts/:id/report - Report a post
+router.post('/:id/report', verifyToken, postController.reportPost);
 
 module.exports = router;

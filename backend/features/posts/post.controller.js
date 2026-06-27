@@ -214,3 +214,56 @@ exports.deletePost = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.reportPost = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const post = await prisma.post.findUnique({
+      where: { id }
+    });
+
+    if (!post) {
+      return res.status(404).json({ status: 'error', message: 'Post not found.' });
+    }
+
+    await prisma.post.update({
+      where: { id },
+      data: {
+        isReported: true,
+        reportCount: { increment: 1 }
+      }
+    });
+
+    res.status(200).json({ status: 'success', message: 'Post reported successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteComment = async (req, res, next) => {
+  try {
+    const { commentId } = req.params;
+    const userId = req.user.id;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId }
+    });
+
+    if (!comment) {
+      return res.status(404).json({ status: 'error', message: 'Comment not found.' });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({ status: 'error', message: 'You can only delete your own comments.' });
+    }
+
+    await prisma.comment.delete({
+      where: { id: commentId }
+    });
+
+    res.status(200).json({ status: 'success', message: 'Comment deleted successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};

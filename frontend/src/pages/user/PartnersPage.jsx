@@ -39,7 +39,9 @@ const PartnersPage = () => {
           </div>
         ) : (
           <div className="partners-grid">
-            {partners.map((partner) => (
+            {partners
+              .filter(partner => !partner.name.toLowerCase().includes('mock'))
+              .map((partner) => (
               <div className="partner-card" key={partner.id}>
                 <span className={`partner-badge ${partner.type.toLowerCase()}`}>
                   {partner.type}

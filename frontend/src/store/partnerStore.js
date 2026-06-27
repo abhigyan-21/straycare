@@ -12,8 +12,8 @@ export const usePartnerStore = create(
 
             fetchPartners: async (force = false) => {
                 const { partners, lastFetched } = get();
-                // 1 hour TTL for partners since they don't change often
-                const cacheHit = !force && isCacheValid(lastFetched, 60 * 60 * 1000) && partners.length > 0;
+                // 5 minutes TTL for partners to reflect newer ones quicker
+                const cacheHit = !force && isCacheValid(lastFetched, 5 * 60 * 1000) && partners.length > 0;
 
                 if (cacheHit) {
                     return;

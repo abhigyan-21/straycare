@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { fetchPosts, createPost, toggleLikePost, addCommentToPost } from '../services/api';
+import { fetchPosts, createPost, toggleLikePost, addCommentToPost, deleteComment as apiDeleteComment } from '../services/api';
 import { isCacheValid, TTL } from '../utils/cacheUtils';
 
 export const usePostStore = create(
@@ -103,6 +103,28 @@ export const usePostStore = create(
                     }));
                 } catch (error) {
                     console.error('Failed to add comment:', error);
+                }
+            },
+
+            // ── Delete Comment (optimistic update) ───────────────────────────
+            deleteComment: async (postId, commentId) => {
+                set((state) => ({
+                    posts: state.posts.map(post => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                comments: post.comments.filter(c => c.id !== commentId)
+                            };
+                        }
+                        return post;
+                    })
+                }));
+
+                try {
+                    await apiDeleteComment(commentId);
+                } catch (error) {
+                    console.error('Failed to delete comment:', error);
+                    // Reverting optimistic update in case of failure could be added here
                 }
             },
 

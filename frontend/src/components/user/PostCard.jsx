@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Heart, MessageCircle, Share2, MapPin } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MapPin, Flag, Trash2 } from 'lucide-react';
 
 const formatTimeAgo = (timestamp) => {
     if (!timestamp) return 'Just now';
@@ -17,7 +17,7 @@ const formatTimeAgo = (timestamp) => {
     return Math.floor(seconds) + " seconds ago";
 };
 
-const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSubmitComment, newComment }) => {
+const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSubmitComment, newComment, onReport, onDeleteComment }) => {
     const [showAllComments, setShowAllComments] = useState(false);
     const commentInputRef = useRef(null);
     const isLiked = post.likes?.some(like => like.userId === currentUserId);
@@ -63,13 +63,23 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                             const commenterName = comment.user?.name || 'Unknown';
                             const commenterImage = comment.user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(commenterName)}&background=random`;
                             return (
-                                <div key={comment.id} className="comment">
-                                    <img src={commenterImage} alt="User profile" className="post-user-img-small" loading="lazy" style={{ width: '24px', height: '24px', marginRight: '8px', display: 'inline-block', verticalAlign: 'middle' }} />
-                                    <div>
-                                        <span className="comment-username">{commenterName}</span>
-                                        {' '}
-                                        <span className="comment-text">{comment.text}</span>
+                                <div key={comment.id} className="comment" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', flex: 1 }}>
+                                        <img src={commenterImage} alt="User profile" className="post-user-img-small" loading="lazy" style={{ width: '24px', height: '24px', marginRight: '8px', display: 'inline-block', verticalAlign: 'middle', borderRadius: '50%' }} />
+                                        <div style={{ wordBreak: 'break-word', paddingRight: '8px' }}>
+                                            <span className="comment-username" style={{ fontWeight: '600', marginRight: '4px' }}>{commenterName}</span>
+                                            <span className="comment-text">{comment.text}</span>
+                                        </div>
                                     </div>
+                                    {comment.userId === currentUserId && (
+                                        <button 
+                                            onClick={() => onDeleteComment(post.id, comment.id)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, padding: '2px', alignSelf: 'center' }}
+                                            title="Delete Comment"
+                                        >
+                                            <Trash2 size={14} color="#ed4956" />
+                                        </button>
+                                    )}
                                 </div>
                             );
                         })}
@@ -87,7 +97,7 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
 
                 {/* Interaction Footer */}
                 <div className="post-footer">
-                    <div className="post-actions">
+                    <div className="post-actions" style={{ display: 'flex', alignItems: 'center' }}>
                         <button
                             className={`post-action-btn like-btn ${isLiked ? 'liked' : ''}`}
                             onClick={() => onLike(post.id)}
@@ -113,6 +123,11 @@ const PostCard = ({ post, currentUserId, onLike, onShare, onCommentChange, onSub
                         <button className="post-action-btn share-btn" onClick={() => onShare(post)} title="Share">
                             <Share2 size={22} color="#262626" strokeWidth={2.5} />
                         </button>
+                        {onReport && (
+                            <button className="post-action-btn" onClick={() => onReport(post.id)} title="Report Post" style={{ marginLeft: 'auto' }}>
+                                <Flag size={22} color="#ed4956" strokeWidth={2.5} />
+                            </button>
+                        )}
                     </div>
                     <div className="post-likes-count">
                         <strong>{likeCount.toLocaleString()} likes</strong>

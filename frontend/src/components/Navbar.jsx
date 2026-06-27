@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import logo from "../assets/straycare_logo.png";
+import logo from "../assets/straycare_logo.webp";
 import { useAuthStore } from '../store/authStore';
 import ProfileDropdown from "./ProfileDropdown";
 import { Home, Heart, PlusSquare, MapPin, HandHeart, BookOpen, UserPlus, User } from 'lucide-react';
