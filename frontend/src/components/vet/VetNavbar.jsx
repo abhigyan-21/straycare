@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import logo from "../../assets/straycare_logo.png";
+import logo from "../../assets/straycare_logo.webp";
 import { useAuthStore } from '../../store/authStore';
 import { User, LogOut } from "lucide-react";
 import "../../styles/vet/VetDashboard.css";
