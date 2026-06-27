@@ -39,7 +39,7 @@ import catRun1 from "./assets/loader/cat_run1.webp";
 import catRun2 from "./assets/loader/cat_run2.webp";
 import dogImg from "./assets/dogImg.webp";
 import catImg from "./assets/catImg.webp";
-import sparrowImg from "./assets/sparrow.png";
+import sparrowImg from "./assets/sparrow.webp";
 
 // Component to scroll to top on route change
 function ScrollToTop() {
