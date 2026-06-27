@@ -6,7 +6,8 @@ import LiveStatusView from '../../components/vet/LiveStatusView';
 import ActionLoader from '../../components/ActionLoader';
 import VetStatCard from '../../components/vet/VetStatCard';
 import { useAuthStore } from '../../store/authStore';
-import apiClient, { unwrapApiData, getCampaignEndDate } from '../../services/api';
+import { getCampaignEndDate } from '../../services/api';
+import { useVetDataStore } from '../../store/vetDataStore';
 
 function VetDashboard() {
     const [rescues, setRescues] = useState([]);
@@ -18,22 +19,19 @@ function VetDashboard() {
     });
     const { isFirstLogin, clearFirstLogin } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
+    
+    const { fetchReports, fetchPets, fetchRequests, fetchCampaigns } = useVetDataStore();
 
     const fetchData = async () => {
         setIsLoading(true);
         const startTime = Date.now();
         try {
-            const [reportsRes, petsRes, reqsRes, campsRes] = await Promise.all([
-                apiClient.get('/reports/clinic'),
-                apiClient.get('/adoptions/pets'),
-                apiClient.get('/adoptions/requests'),
-                apiClient.get('/funding/campaigns')
+            const [reports, pets, reqs, camps] = await Promise.all([
+                fetchReports(),
+                fetchPets(),
+                fetchRequests(),
+                fetchCampaigns()
             ]);
-
-            const reports = reportsRes.data;
-            const pets = unwrapApiData(petsRes.data);
-            const reqs = unwrapApiData(reqsRes.data);
-            const camps = unwrapApiData(campsRes.data);
 
             const latestCamp = camps?.[0];
 
@@ -67,7 +65,7 @@ function VetDashboard() {
             });
         } finally {
             const elapsedTime = Date.now() - startTime;
-            const minimumLoadingTime = isFirstLogin ? 2000 : 800; // 2 seconds for splash, 800ms for regular loader
+            const minimumLoadingTime = isFirstLogin ? 2000 : 800;
             const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
 
             setTimeout(() => {

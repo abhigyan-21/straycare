@@ -10,7 +10,8 @@ import InterviewCard from '../../components/vet/InterviewCard';
 import VetTabs from '../../components/vet/VetTabs';
 import CreateAdoptionModal from '../../components/vet/CreateAdoptionModal';
 import ActionLoader from '../../components/ActionLoader';
-import apiClient, { getClinicPets, updatePet } from '../../services/api';
+import apiClient, { updatePet } from '../../services/api';
+import { useVetDataStore } from '../../store/vetDataStore';
 
 const ADOPT_STATUS_OPTIONS = [
     { label: 'up for adoption', value: 'up for adoption', class: 'up-for-adoption' },
@@ -34,18 +35,20 @@ function VetAdopt() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchData = async () => {
+    const { fetchPets, fetchRequests, invalidatePets, invalidateRequests } = useVetDataStore();
+
+    const fetchData = async (force = false) => {
         setIsLoading(true);
         setError(null);
         const startTime = Date.now();
         try {
-            const [petsRes, reqsRes] = await Promise.all([
-                getClinicPets(),
-                apiClient.get('/adoptions/requests')
+            const [petsData, reqsData] = await Promise.all([
+                fetchPets(force),
+                fetchRequests(force)
             ]);
 
-            const pets = Array.isArray(petsRes) ? petsRes : (petsRes?.data || []);
-            const reqs = Array.isArray(reqsRes?.data?.data) ? reqsRes.data.data : (Array.isArray(reqsRes?.data) ? reqsRes.data : []);
+            const pets = Array.isArray(petsData) ? petsData : [];
+            const reqs = Array.isArray(reqsData) ? reqsData : [];
 
             const today = new Date().toISOString().split('T')[0];
 
@@ -61,24 +64,24 @@ function VetAdopt() {
                 todaysInterviews: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED' && r.interviewDate?.startsWith(today)).map(r => ({
                     id: r.id,
                     petId: r.petId,
-                    adopteeName: r.user.name,
-                    contact: r.user.contact || r.user.email,
+                    adopteeName: r.user?.name,
+                    contact: r.user?.contact || r.user?.email,
                     time: r.interviewTime
                 })),
                 currentRequests: reqs.filter(r => r.status === 'INTERVIEW_SCHEDULED').map(r => ({
                     id: r.id,
-                    name: r.user.name,
-                    contact: r.user.email,
+                    name: r.user?.name,
+                    contact: r.user?.email,
                     status: r.status.toLowerCase()
                 })),
                 newRequests: reqs.filter(r => r.status === 'PENDING').map(r => ({
                     id: r.id,
-                    name: r.user.name,
-                    contact: r.user.email
+                    name: r.user?.name,
+                    contact: r.user?.email
                 }))
             });
         } catch (error) {
-            console.warn("Failed to fetch VetAdopt data:", error);
+            console.error("Failed to fetch VetAdopt data:", error);
             setError("Failed to fetch adoption data. Please check your connection or try again later.");
             setData({
                 todaysInterviews: [],
@@ -123,8 +126,9 @@ function VetAdopt() {
             const apiStatus = statusMap[value] || value.toUpperCase().replace(' ', '_');
 
             await updatePet(id, { status: apiStatus });
+            invalidatePets();
             // Background sync
-            fetchData();
+            fetchData(true);
         } catch (error) {
             console.error('API failed:', error);
             // Revert state if failed
@@ -143,7 +147,8 @@ function VetAdopt() {
                 interviewDate: selectedDate,
                 interviewTime: selectedTime
             });
-            fetchData();
+            invalidateRequests();
+            fetchData(true);
         } catch (error) {
             console.error('API failed, mock save time:', error);
             setData(prev => ({
@@ -169,8 +174,8 @@ function VetAdopt() {
             await apiClient.patch(`/adoptions/requests/${reqId}`, {
                 status: 'APPROVED'
             });
-            // Background sync (optional, keeps other data fresh)
-            fetchData();
+            invalidateRequests();
+            fetchData(true);
         } catch (error) {
             console.error('Failed to accept request:', error);
             fetchData(); // Revert on failure
@@ -189,8 +194,8 @@ function VetAdopt() {
             await apiClient.patch(`/adoptions/requests/${reqId}`, {
                 status: 'REJECTED'
             });
-            // Background sync
-            fetchData();
+            invalidateRequests();
+            fetchData(true);
         } catch (error) {
             console.error('Failed to reject request:', error);
             fetchData(); // Revert on failure
@@ -200,7 +205,8 @@ function VetAdopt() {
     const handlePublishAdoption = async (formData) => {
         try {
             await apiClient.post('/adoptions/pets', formData);
-            fetchData();
+            invalidatePets();
+            fetchData(true);
         } catch (error) {
             console.error('API failed, mock publish:', error);
             const newPet = { id: `PET-${Date.now()}`, petName: formData.name, status: 'up for adoption', image: null };

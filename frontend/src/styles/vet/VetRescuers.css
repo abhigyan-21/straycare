@@ -199,11 +199,19 @@
 }
 
 @media (max-width: 768px) {
+    .vet-rescuers-page {
+        padding: 20px 15px;
+    }
+
     .rescuer-form {
         grid-template-columns: 1fr;
     }
 
     .add-btn {
         width: 100%;
+    }
+    
+    .add-rescuer-card {
+        padding: 20px;
     }
 }

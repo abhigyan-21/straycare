@@ -5,10 +5,11 @@ import '../../styles/vet/VetAdopt.css';
 import '../../styles/vet/VetStatus.css';
 import LiveStatusView from '../../components/vet/LiveStatusView';
 import VetStatusCard from '../../components/vet/VetStatusCard';
-import apiClient, { getClinicPets, updatePet } from '../../services/api';
+import apiClient, { updatePet } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
 import CreateAdoptionModal from '../../components/vet/CreateAdoptionModal';
 import { AlertTriangle } from 'lucide-react';
+import { useVetDataStore } from '../../store/vetDataStore';
 
 const REPORT_STATUS_OPTIONS = [
     { label: 'under treatment', value: 'under treatment', class: 'under-treatment' },
@@ -31,17 +32,19 @@ function VetStatus() {
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [error, setError] = useState(null);
 
-    const fetchData = async () => {
+    const { fetchReports, fetchPets, invalidateReports, invalidatePets } = useVetDataStore();
+
+    const fetchData = async (force = false) => {
         setIsLoading(true);
         setError(null);
         try {
-            const [reportsRes, petsRes] = await Promise.all([
-                apiClient.get('/reports/clinic'),
-                getClinicPets()
+            const [reportsData, petsData] = await Promise.all([
+                fetchReports(force),
+                fetchPets(force)
             ]);
 
-            const reports = Array.isArray(reportsRes.data) ? reportsRes.data : (reportsRes.data?.data || []);
-            const pets = Array.isArray(petsRes) ? petsRes : (petsRes?.data || []);
+            const reports = Array.isArray(reportsData) ? reportsData : [];
+            const pets = Array.isArray(petsData) ? petsData : [];
 
             // 1. Live rescues (green box): Show REPORTED or ASSIGNED status reports
             const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');
@@ -108,6 +111,7 @@ function VetStatus() {
                 };
                 const apiStatus = statusMap[newStatus] || newStatus.toUpperCase().replace(' ', '_');
                 await updatePet(item.id, { status: apiStatus });
+                invalidatePets();
             } else if (item.isReport) {
                 const statusMap = {
                     'under treatment': 'RESCUED',
@@ -115,8 +119,9 @@ function VetStatus() {
                 };
                 const apiStatus = statusMap[newStatus] || newStatus.toUpperCase().replace(' ', '_');
                 await apiClient.patch(`/reports/${item.id}/status`, { status: apiStatus });
+                invalidateReports();
             }
-            fetchData();
+            fetchData(true);
         } catch (error) {
             console.error('Failed to update status:', error);
             alert('Failed to update status in database');
@@ -138,13 +143,15 @@ function VetStatus() {
                 ...formData,
                 reportId: selectedReportId
             });
+            invalidatePets();
 
             // Mark the report status to TREATED
             await apiClient.patch(`/reports/${selectedReportId}/status`, {
                 status: 'TREATED'
             });
+            invalidateReports();
 
-            fetchData();
+            fetchData(true);
         } catch (error) {
             console.error('Failed to list pet for adoption:', error);
             alert('Failed to list pet for adoption');
@@ -154,7 +161,7 @@ function VetStatus() {
         }
     };
 
-    if (isLoading) return <ActionLoader message="Loading treatment records..." />;
+    if (isLoading && treatmentList.length === 0) return <ActionLoader message="Loading treatment records..." />;
 
     return (
         <>

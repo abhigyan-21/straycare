@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import '../../styles/vet/VetRescuers.css';
 import ActionLoader from '../../components/ActionLoader';
 import apiClient from '../../services/api';
+import { useVetDataStore } from '../../store/vetDataStore';
 
 const VetRescuers = () => {
     const { user: authUser } = useAuthStore();
@@ -12,30 +13,32 @@ const VetRescuers = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const { fetchRescuers: fetchRescuersFromStore, invalidateRescuers } = useVetDataStore();
+
     const [formData, setFormData] = useState({
         email: '',
         contact: ''
     });
 
-    useEffect(() => {
-        const fetchRescuers = async () => {
-            setIsLoading(true);
-            const startTime = Date.now();
-            try {
-                const response = await apiClient.get('/users/rescuers');
-                setRescuers(response.data);
-            } catch (error) {
-                console.warn("Failed to fetch rescuers:", error.message);
-                setRescuers([]);
-            } finally {
-                const elapsedTime = Date.now() - startTime;
-                const remainingTime = Math.max(0, 800 - elapsedTime);
-                setTimeout(() => {
-                    setIsLoading(false);
-                }, remainingTime);
-            }
-        };
+    const fetchRescuers = async (force = false) => {
+        setIsLoading(true);
+        const startTime = Date.now();
+        try {
+            const data = await fetchRescuersFromStore(force);
+            setRescuers(data || []);
+        } catch (error) {
+            console.warn("Failed to fetch rescuers:", error.message);
+            setRescuers([]);
+        } finally {
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, 800 - elapsedTime);
+            setTimeout(() => {
+                setIsLoading(false);
+            }, remainingTime);
+        }
+    };
 
+    useEffect(() => {
         fetchRescuers();
     }, []);
 
@@ -51,6 +54,7 @@ const VetRescuers = () => {
         try {
             const response = await apiClient.post('/users/rescuers/add', formData);
             const data = response.data;
+            invalidateRescuers();
             setRescuers(prev => [data.rescuer, ...prev]);
             setFormData({ email: '', contact: '' });
             alert('Rescuer added successfully!');
@@ -80,6 +84,7 @@ const VetRescuers = () => {
 
         try {
             await apiClient.post(`/users/rescuers/remove/${id}`);
+            invalidateRescuers();
             setRescuers(prev => prev.filter(r => r.id !== id));
         } catch (error) {
             console.error('API failed, falling back to mock:', error);

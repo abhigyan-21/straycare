@@ -212,6 +212,9 @@ export const useAuthStore = create(
             }
           } catch (_) {}
         });
+        import('./vetDataStore').then(({ useVetDataStore }) => {
+          useVetDataStore.getState().clearCache();
+        });
       },
     }),
     {

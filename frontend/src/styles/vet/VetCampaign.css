@@ -801,6 +801,28 @@
   .banner-overlay h2 {
     font-size: 1.5rem;
   }
+  
+  .campaign-active-card {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .card-image-section {
+    flex: 0 0 200px;
+    border-radius: 40px 40px 0 0 !important;
+  }
+
+  .card-bg-image, .card-overlay {
+    border-radius: 40px 40px 0 0 !important;
+  }
+
+  .card-details-section {
+    padding: 20px;
+  }
+
+  .campaign-filters {
+    flex-wrap: wrap;
+  }
 }
 
 /* Volunteers Header Controls */

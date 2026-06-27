@@ -493,3 +493,35 @@
         opacity: 0;
     }
 }
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .profile-content {
+        padding: 20px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-item.full-width {
+        grid-column: span 1;
+    }
+
+    .stats-row {
+        flex-direction: column;
+    }
+
+    .coordinates-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-section h2 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+
+    .mini-stat-card {
+        padding: 20px;
+    }
+}

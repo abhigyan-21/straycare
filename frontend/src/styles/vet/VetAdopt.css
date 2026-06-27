@@ -441,4 +441,16 @@
     .upload-box {
         min-height: 180px;
     }
+
+    .adopt-tabs {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tab-btn {
+        min-width: 120px;
+        padding: 10px 15px;
+        flex: 1;
+        font-size: 0.9rem;
+    }
 }

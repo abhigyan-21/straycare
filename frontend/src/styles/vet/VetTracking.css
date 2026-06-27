@@ -159,3 +159,17 @@
     height: 500px;
   }
 }
+
+@media (max-width: 768px) {
+  .vet-tracking-page {
+    padding: 15px;
+  }
+  
+  .map-wrapper {
+    height: 350px;
+  }
+
+  .tracking-header h1 {
+    font-size: 1.5rem;
+  }
+}

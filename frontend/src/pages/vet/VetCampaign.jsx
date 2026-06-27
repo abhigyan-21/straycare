@@ -10,6 +10,7 @@ import VetTabs from '../../components/vet/VetTabs';
 import CampaignDetailModal from '../../components/vet/CampaignDetailModal';
 import ActionLoader from '../../components/ActionLoader';
 import apiClient, { getCampaignEndDate, isActiveCampaign } from '../../services/api';
+import { useVetDataStore } from '../../store/vetDataStore';
 
 function VetCampaign() {
     const [activeTab, setActiveTab] = useState('manage');
@@ -35,12 +36,14 @@ function VetCampaign() {
         bannerFile: null
     });
 
-    const fetchCampaigns = async () => {
+    const { fetchCampaigns: fetchCampaignsFromStore, invalidateCampaigns } = useVetDataStore();
+
+    const fetchCampaigns = async (force = false) => {
         setIsLoading(true);
         const startTime = Date.now();
         try {
-            const response = await apiClient.get('/funding/campaigns');
-            setCampaigns(response.data.data || []);
+            const data = await fetchCampaignsFromStore(force);
+            setCampaigns(data || []);
         } catch (error) {
             console.warn("Failed to fetch campaigns:", error);
             setCampaigns([]);
@@ -136,6 +139,7 @@ function VetCampaign() {
         try {
             const response = await apiClient.post('/funding/campaigns', formData);
             const result = response.data;
+            invalidateCampaigns();
             setCampaigns([result.data, ...campaigns]);
             setActiveTab('manage');
             setNewCampaign({

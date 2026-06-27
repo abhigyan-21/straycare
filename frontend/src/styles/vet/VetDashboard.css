@@ -239,12 +239,27 @@
     flex: 0 0 90%;
     flex-direction: column;
     text-align: center;
+    height: auto;
   }
 
   .status-section {
     align-items: center;
     margin-top: 20px;
   }
+}
+
+.vet-auth-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-link-btn.vet-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  font-weight: 600;
 }
 
 .logout-btn {
@@ -263,4 +278,68 @@
 .logout-btn:hover {
   background-color: #f3533b;
   color: #fff;
+}
+
+@media (max-width: 768px) {
+  .vet-dashboard {
+    padding: 20px 10px;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .main-rescue-section {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .rescue-card-white {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .pet-image-container {
+    width: 100%;
+    height: 180px;
+  }
+  
+  .rescues-container {
+    height: auto;
+    max-height: 600px;
+    padding-right: 10px;
+  }
+
+  .stats-grid {
+    gap: 15px;
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-value {
+    font-size: 3rem;
+  }
+  
+  .stat-value.date {
+    font-size: 1.4rem;
+  }
+
+  .vet-auth-group {
+    gap: 8px;
+  }
+
+  .vet-nav-btn .vet-nav-text {
+    display: none;
+  }
+  
+  .logout-btn {
+    padding: 6px 10px;
+    gap: 0;
+  }
+  
+  .nav-link-btn.vet-nav-btn {
+    gap: 0;
+  }
 }

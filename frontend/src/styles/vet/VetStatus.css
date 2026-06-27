@@ -184,3 +184,39 @@
     transform: translateY(-50%);
     pointer-events: none;
 }
+
+/* Tablet / Mobile Adjustments */
+@media (max-width: 768px) {
+    .status-card {
+        flex-direction: column;
+        padding: 15px;
+        align-items: stretch;
+        height: auto;
+    }
+    
+    .status-card .pic-placeholder {
+        width: 100%;
+        height: 120px;
+    }
+
+    .status-card .card-details {
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    .status-control {
+        align-items: flex-start;
+        margin-top: 15px;
+        width: 100%;
+        min-width: auto;
+    }
+
+    .status-card .custom-select-wrapper {
+        width: 100%;
+    }
+    
+    .custom-dropdown-container {
+        width: 100%;
+    }
+}
