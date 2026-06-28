@@ -7,16 +7,35 @@ let initialized = false;
 
 // Initialize Firebase Admin SDK
 try {
-  const serviceAccountPath = path.join(__dirname, '..', 'serviceAccountKey.json');
-  if (fs.existsSync(serviceAccountPath)) {
-    const serviceAccount = require(serviceAccountPath);
+  let serviceAccount;
+
+  // 1. Try to load from Environment Variable (for production/deployment)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+      // Sometimes users wrap JSON in quotes, so we parse it safely
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } catch (parseError) {
+      console.error('[Firebase] Error parsing FIREBASE_SERVICE_ACCOUNT env var. Make sure it is valid JSON.');
+    }
+  }
+
+  // 2. Fallback to local file (for local development)
+  if (!serviceAccount) {
+    const serviceAccountPath = path.join(__dirname, '..', 'serviceAccountKey.json');
+    if (fs.existsSync(serviceAccountPath)) {
+      serviceAccount = require(serviceAccountPath);
+    }
+  }
+
+  // 3. Initialize if we found credentials
+  if (serviceAccount) {
     initializeApp({
       credential: cert(serviceAccount)
     });
     initialized = true;
     console.log('[Firebase] Admin SDK initialized successfully.');
   } else {
-    console.warn('[Firebase] Warning: serviceAccountKey.json not found in backend root.');
+    console.warn('[Firebase] Warning: Neither FIREBASE_SERVICE_ACCOUNT env var nor serviceAccountKey.json found.');
   }
 } catch (error) {
   console.error('[Firebase] Failed to initialize Admin SDK:', error);
