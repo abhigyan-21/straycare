@@ -10,6 +10,14 @@ const helmet = require('helmet');
 
 // Routes Import
 const chatRoutes = require('./features/chat/chat.route');
+
+// TEMPORARY: Write all console errors to file so we can see what's crashing
+const fs = require('fs');
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  originalConsoleError(...args);
+  fs.appendFileSync('backend-global-error.txt', args.map(a => typeof a === 'object' && a?.stack ? a.stack : String(a)).join(' ') + '\n');
+};
 const authRoutes = require('./features/auth/auth.route');
 const reportRoutes = require('./features/reports/report.route');
 const adoptionRoutes = require('./features/adoptions/adoption.route');
@@ -30,7 +38,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 // CORS allowed origins list (from environment variables)
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [];
 
@@ -83,18 +91,13 @@ const corsOptions = {
   credentials: true
 };
 
-app.use((req, res, next) => {
-  console.log(`[Request Log] ${req.method} ${req.url} | IP: ${req.ip} | X-Forwarded-For: ${req.headers['x-forwarded-for']}`);
-  next();
-});
-
 app.use(cors(corsOptions));
 app.use(helmet());
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Favicon dummy handler to prevent console clutter/CSP errors
-app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.webp', (req, res) => res.status(204).end());
 
 // Expose io instance to routes
 app.use((req, res, next) => {

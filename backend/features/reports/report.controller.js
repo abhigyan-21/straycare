@@ -1,4 +1,18 @@
 const prisma = require('../../db/prisma');
+const { sendPushNotification, sendTopicNotification } = require('../../utils/firebase');
+
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in km
+};
 
 /**
  * @desc Create a new animal report
@@ -28,9 +42,42 @@ const createReport = async (req, res) => {
       req.io.emit('new-report', report);
     }
 
+    // Find nearby rescuers and notify them
+    const rescuers = await prisma.user.findMany({
+      where: {
+        role: 'RESCUER',
+        fcmToken: { not: null }
+      },
+      include: {
+        partner: true,
+        generalVolunteer: true
+      }
+    });
+
+    const repLat = parseFloat(locationLat);
+    const repLng = parseFloat(locationLng);
+
+    rescuers.forEach(rescuer => {
+      const rescuerLat = rescuer.partner?.lat || rescuer.generalVolunteer?.lat;
+      const rescuerLng = rescuer.partner?.lng || rescuer.generalVolunteer?.lng;
+
+      if (rescuerLat != null && rescuerLng != null) {
+        const distance = calculateDistance(repLat, repLng, rescuerLat, rescuerLng);
+        // Notify rescuers within 50 km radius
+        if (distance <= 50) {
+          sendPushNotification(
+            rescuer.fcmToken,
+            'New Rescue Request Nearby!',
+            'A new animal in distress has been reported near your location. Check the app for details.'
+          );
+        }
+      }
+    });
+
     res.status(201).json(report);
   } catch (error) {
     console.error('Error creating report:', error);
+    require('fs').writeFileSync('backend-error.txt', String(error.stack || error));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -229,10 +276,19 @@ const updateReportStatus = async (req, res) => {
     const report = await prisma.animalReport.update({
       where: { id },
       data: { status },
+      include: { reporter: true }
     });
 
     if (req.io) {
       req.io.emit('report-updated', report);
+    }
+
+    if (report.reporter && report.reporter.fcmToken) {
+      sendPushNotification(
+        report.reporter.fcmToken,
+        'Rescue Report Updated',
+        `Your report status is now ${status}. Thank you for using Furzo.`
+      );
     }
 
     res.json(report);

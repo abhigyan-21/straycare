@@ -295,6 +295,7 @@ const submitAdoptionRequest = async (req, res) => {
 
     const pet = await prisma.pet.findUnique({
       where: { id: petId },
+      include: { owner: true }
     });
 
     if (!pet || pet.status !== 'AVAILABLE') {
@@ -321,6 +322,15 @@ const submitAdoptionRequest = async (req, res) => {
         status: 'PENDING',
       },
     });
+
+    if (pet.owner && pet.owner.fcmToken) {
+      const { sendPushNotification } = require('../../utils/firebase');
+      sendPushNotification(
+        pet.owner.fcmToken,
+        'New Adoption Request!',
+        `A new adoption request has been submitted for ${pet.name || 'your listed pet'}.`
+      );
+    }
 
     res.status(201).json({ status: 'success', data: request });
   } catch (error) {

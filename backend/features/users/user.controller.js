@@ -340,11 +340,71 @@ const verifyRescuerUpgradeOtp = async (req, res) => {
   }
 };
 
+/**
+ * @desc Save or update the FCM token for a user
+ * @route POST /api/users/fcm-token
+ * @access Private
+ */
+const saveFcmToken = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { fcmToken } = req.body;
+    
+    if (!fcmToken) {
+      return res.status(400).json({ error: 'FCM Token is required' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { fcmToken }
+    });
+
+    res.json({ message: 'FCM Token saved successfully' });
+  } catch (error) {
+    console.error('Error saving FCM token:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Update or create independent rescuer location
+ * @route POST /api/users/rescuer-location
+ * @access Private
+ */
+const updateRescuerLocation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { lat, lng } = req.body;
+    
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ error: 'Latitude and longitude are required' });
+    }
+
+    const updated = await prisma.generalVolunteer.upsert({
+      where: { userId },
+      update: { lat: parseFloat(lat), lng: parseFloat(lng) },
+      create: {
+        userId,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        status: 'ACTIVE'
+      }
+    });
+
+    res.json({ message: 'Location updated successfully', location: updated });
+  } catch (error) {
+    console.error('Error updating rescuer location:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getClinicRescuers,
   addRescuer,
   removeRescuer,
   getProfile,
   requestRescuerUpgradeOtp,
-  verifyRescuerUpgradeOtp
+  verifyRescuerUpgradeOtp,
+  saveFcmToken,
+  updateRescuerLocation
 };

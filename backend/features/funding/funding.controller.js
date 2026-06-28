@@ -1397,7 +1397,7 @@ const getMyDonations = async (req, res) => {
         campaign: {
           select: { title: true }
         },
-        clinic: {
+        partner: {
           select: { name: true }
         }
       },
@@ -1407,7 +1407,7 @@ const getMyDonations = async (req, res) => {
     const subscriptions = await prisma.subscription.findMany({
       where: { userId },
       include: {
-        clinic: {
+        partner: {
           select: { name: true }
         }
       },

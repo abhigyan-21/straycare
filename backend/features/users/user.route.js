@@ -6,6 +6,9 @@ const { verifyToken, allowRoles } = require('../auth/auth.middleware');
 // Token verification is required for all user routes
 router.use(verifyToken);
 
+router.post('/fcm-token', userController.saveFcmToken);
+router.post('/rescuer-location', userController.updateRescuerLocation);
+
 router.post('/upgrade-rescuer/request-otp', allowRoles('USER', 'VET', 'ADMIN', 'NGO'), userController.requestRescuerUpgradeOtp);
 router.post('/upgrade-rescuer/verify-otp', allowRoles('USER', 'VET', 'ADMIN', 'NGO'), userController.verifyRescuerUpgradeOtp);
 
