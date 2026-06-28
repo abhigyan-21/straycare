@@ -72,9 +72,11 @@ function Post({ openAuthModal }) {
         try {
             if (navigator.share) {
                 await navigator.share(shareData);
-            } else {
+            } else if (navigator.clipboard) {
                 await navigator.clipboard.writeText(shareData.url);
                 alert('Link copied to clipboard!');
+            } else {
+                alert('Sharing is not supported on this browser.');
             }
         } catch (err) {
             console.error('Error sharing:', err);

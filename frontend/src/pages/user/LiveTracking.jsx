@@ -304,9 +304,13 @@ function LiveTracking() {
 
   const handleCopyId = () => {
     if (!reportId) return;
-    navigator.clipboard.writeText(reportId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(reportId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      alert("Clipboard access is not available in your browser.");
+    }
   };
 
   if (isRescueCompleted) {
