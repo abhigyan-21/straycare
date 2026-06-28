@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { messaging } from '../services/firebase';
+import { getFirebaseMessaging } from '../services/firebase';
 import { getToken, onMessage } from 'firebase/messaging';
 import api from '../services/api';
 import { Bell, X } from 'lucide-react';
@@ -13,33 +13,47 @@ const NotificationHandler = () => {
   useEffect(() => {
     // Only handle notifications for logged in, verified users
     if (isLoggedIn && user && user.isEmailVerified) {
-      if (Notification.permission === 'default' && !sessionStorage.getItem('notificationPromptDismissed')) {
-        // Show our custom UI prompt instead of immediately asking the browser
-        setShowPrompt(true);
-      } else if (Notification.permission === 'granted') {
-        // Already granted, just ensure we have the token
-        requestPermissionAndToken();
+      if (typeof Notification !== 'undefined') {
+        if (Notification.permission === 'default' && !sessionStorage.getItem('notificationPromptDismissed')) {
+          // Show our custom UI prompt instead of immediately asking the browser
+          setShowPrompt(true);
+        } else if (Notification.permission === 'granted') {
+          // Already granted, just ensure we have the token
+          requestPermissionAndToken();
+        }
       }
     }
   }, [isLoggedIn, user]);
 
   useEffect(() => {
-    if (!messaging) return;
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('Message received in foreground: ', payload);
-      alert(`${payload.notification.title}\n${payload.notification.body}`);
-    });
+    let unsubscribe = null;
+
+    const setupMessaging = async () => {
+      const messaging = await getFirebaseMessaging();
+      if (!messaging) return;
+      unsubscribe = onMessage(messaging, (payload) => {
+        console.log('Message received in foreground: ', payload);
+        alert(`${payload.notification.title}\n${payload.notification.body}`);
+      });
+    };
+    
+    setupMessaging();
 
     return () => {
-      unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, []);
 
   const requestPermissionAndToken = async () => {
+    if (typeof Notification === 'undefined') return;
     try {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         setShowPrompt(false);
+        const messaging = await getFirebaseMessaging();
+        if (!messaging) return;
         const currentToken = await getToken(messaging, { 
           // vapidKey: 'YOUR_PUBLIC_VAPID_KEY_HERE' 
         });

@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getMessaging } from "firebase/messaging";
+import { getMessaging, isSupported } from "firebase/messaging";
 
 // TODO: Replace this with the config you got from the Firebase Console
 const firebaseConfig = {
@@ -13,7 +13,22 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
 
-export { messaging };
+let messaging = null;
+
+export const getFirebaseMessaging = async () => {
+  if (messaging) return messaging;
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      messaging = getMessaging(app);
+      return messaging;
+    }
+  } catch (err) {
+    console.warn("Firebase Messaging not supported", err);
+  }
+  return null;
+};
+
+export { app };
 
