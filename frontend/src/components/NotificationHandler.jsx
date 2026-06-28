@@ -13,7 +13,7 @@ const NotificationHandler = () => {
   useEffect(() => {
     // Only handle notifications for logged in, verified users
     if (isLoggedIn && user && user.isEmailVerified) {
-      if (Notification.permission === 'default' && !localStorage.getItem('notificationPromptDismissed')) {
+      if (Notification.permission === 'default' && !sessionStorage.getItem('notificationPromptDismissed')) {
         // Show our custom UI prompt instead of immediately asking the browser
         setShowPrompt(true);
       } else if (Notification.permission === 'granted') {
@@ -54,7 +54,7 @@ const NotificationHandler = () => {
       } else {
         // User denied or dismissed the native prompt
         setShowPrompt(false);
-        localStorage.setItem('notificationPromptDismissed', 'true');
+        sessionStorage.setItem('notificationPromptDismissed', 'true');
       }
     } catch (error) {
       console.error('An error occurred while retrieving token. ', error);
@@ -64,7 +64,7 @@ const NotificationHandler = () => {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('notificationPromptDismissed', 'true');
+    sessionStorage.setItem('notificationPromptDismissed', 'true');
   };
 
   if (!showPrompt) return null;
