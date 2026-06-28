@@ -1,0 +1,140 @@
+.notification-prompt-overlay {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 9999;
+  font-family: "Quicksand", sans-serif;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none; /* Allows clicking behind it */
+}
+
+.notification-prompt-card {
+  pointer-events: auto; /* Re-enable clicking on the card itself */
+  background: white;
+  border-radius: 28px;
+  padding: 24px;
+  width: 420px;
+  max-width: calc(100vw - 64px);
+  box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+  position: relative;
+  display: flex;
+  gap: 16px;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 768px) {
+  .notification-prompt-overlay {
+    bottom: 24px;
+    right: 0;
+    left: 0;
+    justify-content: center;
+  }
+  
+  .notification-prompt-card {
+    width: calc(100vw - 48px);
+    max-width: 100%;
+    margin: 0;
+    border-radius: 24px;
+    padding: 20px;
+    gap: 12px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+  }
+}
+
+.notification-prompt-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.notification-prompt-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.notification-prompt-icon-container {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-prompt-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-prompt-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 10px 0;
+}
+
+.notification-prompt-text {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.notification-prompt-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.notification-prompt-btn-primary {
+  background-color: #c5e1a5;
+  color: #1b5e20;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Quicksand", sans-serif;
+}
+
+.notification-prompt-btn-primary:hover {
+  background-color: #aed581;
+  transform: translateY(-1px);
+}
+
+.notification-prompt-btn-secondary {
+  background: none;
+  border: none;
+  color: #718096;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 16px;
+  transition: color 0.2s ease;
+  font-family: "Quicksand", sans-serif;
+}
+
+.notification-prompt-btn-secondary:hover {
+  color: #2d3748;
+}
