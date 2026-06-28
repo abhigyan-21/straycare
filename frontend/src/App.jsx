@@ -41,6 +41,8 @@ import dogImg from "./assets/dogImg.webp";
 import catImg from "./assets/catImg.webp";
 import sparrowImg from "./assets/sparrow.webp";
 
+import NotificationHandler from "./components/NotificationHandler";
+
 // Component to scroll to top on route change
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -167,6 +169,7 @@ function App() {
   return (
     <>      <Analytics />
       <SpeedInsights />
+      <NotificationHandler />
       {appLoading && <Loader />}
       <BrowserRouter>
         <ScrollToTop />

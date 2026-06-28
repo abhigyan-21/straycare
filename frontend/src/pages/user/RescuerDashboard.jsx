@@ -106,6 +106,10 @@ function RescuerDashboard() {
           const { latitude, longitude } = position.coords;
           setRescuerPos({ lat: latitude, lon: longitude });
 
+          // Auto-save location to backend so distance-based notifications work for independent rescuers
+          apiClient.post('/users/rescuer-location', { lat: latitude, lng: longitude })
+            .catch(err => console.error('Failed to update rescuer location on server', err));
+
           // Sort by distance
           const sorted = [...filtered].sort((a, b) => {
             const latA = a.locationLat !== undefined ? a.locationLat : (a.location?.[0] || 0);
