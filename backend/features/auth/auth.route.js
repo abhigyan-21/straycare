@@ -4,14 +4,24 @@ const authController = require('./auth.controller');
 const { verifyToken, allowRoles } = require('./auth.middleware');
 const rateLimit = require('express-rate-limit');
 
-const authLimiter = rateLimit({
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Max 10 requests per window
+  max: 50, // Max 50 requests per window
   handler: (req, res, next, options) => {
-    console.warn(`[RateLimit Warning] Auth rate limit exceeded for IP ${req.ip} on route: ${req.originalUrl}`);
+    console.warn(`[RateLimit Warning] Login rate limit exceeded for IP ${req.ip} on route: ${req.originalUrl}`);
     res.status(options.statusCode).json(options.message);
   },
-  message: { error: 'Too many requests from this IP, please try again later.' }
+  message: { error: 'Too many login attempts from this IP, please try again later.' }
+});
+
+const registrationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 150, // Max 150 requests per window
+  handler: (req, res, next, options) => {
+    console.warn(`[RateLimit Warning] Registration rate limit exceeded for IP ${req.ip} on route: ${req.originalUrl}`);
+    res.status(options.statusCode).json(options.message);
+  },
+  message: { error: 'Too many registration requests from this IP, please try again later.' }
 });
 
 const otpLimiter = rateLimit({
@@ -29,11 +39,11 @@ router.post('/request-email-otp', otpLimiter, verifyToken, authController.reques
 router.post('/verify-email', otpLimiter, verifyToken, authController.verifyEmail);
 
 
-router.post('/register', authLimiter, authController.register);
-router.post('/send-registration-otp', authLimiter, authController.sendRegistrationOtp);
-router.post('/verify-registration-otp', authLimiter, authController.verifyRegistrationOtp);
-router.post('/register-partner', authLimiter, authController.registerPartner);
-router.post('/login', authLimiter, authController.login);
+router.post('/register', registrationLimiter, authController.register);
+router.post('/send-registration-otp', registrationLimiter, authController.sendRegistrationOtp);
+router.post('/verify-registration-otp', registrationLimiter, authController.verifyRegistrationOtp);
+router.post('/register-partner', registrationLimiter, authController.registerPartner);
+router.post('/login', loginLimiter, authController.login);
 router.post('/refresh', authController.refresh);
 
 // Health check for frontend detection
