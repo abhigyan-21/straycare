@@ -30,12 +30,30 @@ const register = async (req, res) => {
 
     const existingUserByEmail = await prisma.user.findUnique({ where: { email } });
     if (existingUserByEmail) {
-      return res.status(400).json({ error: 'Email is already in use' });
+      if (existingUserByEmail.isEmailVerified) {
+        return res.status(400).json({ error: 'Email is already in use' });
+      } else {
+        try {
+          await prisma.user.delete({ where: { id: existingUserByEmail.id } });
+        } catch (error) {
+          console.error('Error deleting unverified user by email:', error);
+          return res.status(400).json({ error: 'Email is already in use' });
+        }
+      }
     }
 
     const existingUserByPhone = await prisma.user.findUnique({ where: { phone } });
     if (existingUserByPhone) {
-      return res.status(400).json({ error: 'Phone number is already in use' });
+      if (existingUserByPhone.isEmailVerified) {
+        return res.status(400).json({ error: 'Phone number is already in use' });
+      } else {
+        try {
+          await prisma.user.delete({ where: { id: existingUserByPhone.id } });
+        } catch (error) {
+          console.error('Error deleting unverified user by phone:', error);
+          return res.status(400).json({ error: 'Phone number is already in use' });
+        }
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
