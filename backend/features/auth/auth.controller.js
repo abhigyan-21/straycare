@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { generateOTP } = require('../../utils/otp');
 const { sendEmail } = require('../../services/email.service');
-const { sendSMS } = require('../../services/sms.service');
+
 
 /**
  * @desc Register a new user
@@ -245,7 +245,7 @@ const verifyRegistrationOtp = async (req, res) => {
     let decoded;
     try {
       decoded = jwt.verify(verificationToken, process.env.JWT_SECRET);
-    } catch (err) {
+    } catch (_err) {
       return res.status(400).json({ error: 'Verification session expired or invalid. Please request a new OTP.' });
     }
 
@@ -287,7 +287,7 @@ const registerPartner = async (req, res) => {
     let decodedRegister;
     try {
       decodedRegister = jwt.verify(registerToken, process.env.JWT_SECRET);
-    } catch (err) {
+    } catch (_err) {
       return res.status(400).json({ error: 'Email verification expired. Please verify your email again.' });
     }
 

@@ -1,5 +1,5 @@
 const prisma = require('../../db/prisma');
-const { sendPushNotification, sendTopicNotification } = require('../../utils/firebase');
+const { sendPushNotification } = require('../../utils/firebase');
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;

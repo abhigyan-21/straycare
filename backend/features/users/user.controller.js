@@ -187,7 +187,7 @@ const getProfile = async (req, res) => {
       if (regDoc && regDoc.fileData) {
         try {
           registrationDetails = JSON.parse(regDoc.fileData);
-        } catch (e) {
+        } catch (_e) {
           registrationDetails = { registrationNumber: regDoc.fileData };
         }
       }
@@ -206,7 +206,7 @@ const getProfile = async (req, res) => {
       if (regDoc && regDoc.fileData) {
         try {
           registrationDetails = JSON.parse(regDoc.fileData);
-        } catch (e) {
+        } catch (_e) {
           registrationDetails = { registrationNumber: regDoc.fileData };
         }
       }
@@ -354,7 +354,7 @@ const saveFcmToken = async (req, res) => {
       return res.status(400).json({ error: 'FCM Token is required' });
     }
 
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: { fcmToken }
     });

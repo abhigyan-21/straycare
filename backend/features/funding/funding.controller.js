@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+
 const prisma = require('../../db/prisma');
 const Razorpay = require('razorpay');
 const { sendEmail } = require('../../services/email.service');
@@ -235,7 +235,7 @@ const createHubSubscription = async (req, res) => {
 
     // 3. Save to database
     // We'll store the category in the type field for reference
-    const dbSubscription = await prisma.subscription.create({
+    await prisma.subscription.create({
       data: {
         userId,
         partnerId: 'SYSTEM', // Not tied to a single partner initially
@@ -364,7 +364,7 @@ const createDonationOrder = async (req, res) => {
  * @access Public — called by Razorpay, verified via HMAC signature
  */
 const handleRazorpayWebhook = async (req, res) => {
-  const signature = req.headers['x-razorpay-signature'];
+  // const signature = req.headers['x-razorpay-signature'];
 
   // ── 1. Verify webhook signature ──────────────────────────────
   // const expectedSignature = crypto
@@ -382,7 +382,7 @@ const handleRazorpayWebhook = async (req, res) => {
 
   if (event === 'order.paid') {
     const orderId = req.body.payload.order.entity.id;
-    const amountPaise = req.body.payload.order.entity.amount;
+    // const amountPaise = req.body.payload.order.entity.amount;
 
     try {
       // Find all PENDING donations linked to this Razorpay order
@@ -832,7 +832,7 @@ const getFundingHighlights = async (req, res) => {
       existingVolunteer = await prisma.generalVolunteer.findUnique({
         where: { userId }
       });
-    } catch (err) {
+    } catch (_err) {
       console.warn("DB offline, checking in-memory state only.");
     }
 
@@ -1248,7 +1248,7 @@ const confirmVolunteerCampaign = async (req, res) => {
         }
       });
       console.log(`✅ User ${userId} successfully confirmed specific volunteer registration for campaign ${campaignId}`);
-    } catch (err) {
+    } catch (_err) {
       console.warn("DB offline, simulating confirmation success page.");
     }
 
@@ -1349,7 +1349,7 @@ const cancelVolunteerCampaignEmail = async (req, res) => {
         }
       });
       console.log(`❌ User ${userId} cancelled/declined volunteer response for campaign ${campaignId}`);
-    } catch (err) {
+    } catch (_err) {
       console.warn("DB offline or error deleting volunteer entry, simulating cancel page.");
     }
 

@@ -101,6 +101,7 @@ const getStats = async (req, res) => {
     ];
 
     activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // eslint-disable-next-line no-unused-vars
     const recentActivity = activities.slice(0, 5).map(({ createdAt, ...rest }) => rest);
 
     res.json({
@@ -179,7 +180,7 @@ const getPartnerApplications = async (req, res) => {
       if (regDoc && regDoc.fileData) {
         try {
           details = JSON.parse(regDoc.fileData);
-        } catch (e) {
+        } catch (_e) {
           details = { registrationNumber: regDoc.fileData };
         }
       }

@@ -14,7 +14,7 @@ try {
     try {
       // Sometimes users wrap JSON in quotes, so we parse it safely
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    } catch (parseError) {
+    } catch (_parseError) {
       console.error('[Firebase] Error parsing FIREBASE_SERVICE_ACCOUNT env var. Make sure it is valid JSON.');
     }
   }

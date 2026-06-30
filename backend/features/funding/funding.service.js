@@ -66,7 +66,7 @@ class FundingService {
 
     for (let i = 0; i < sorted.length; i++) {
       const campaign = sorted[i];
-      let alloc = 0;
+      let alloc;
 
       if (i === sorted.length - 1) {
         alloc = remainingAmount; // Give the rest to the last one
