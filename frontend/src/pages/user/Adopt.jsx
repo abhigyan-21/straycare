@@ -58,7 +58,7 @@ function Adopt() {
 
         const timeoutId = setTimeout(fetchSuggestions, 500);
         return () => clearTimeout(timeoutId);
-    }, [locationSearch, isSelectingSuggestion]);
+    }, [locationSearch, isSelectingSuggestion, locationName]);
 
     useEffect(() => {
         if (!userLat && navigator.geolocation) {
@@ -78,7 +78,7 @@ function Adopt() {
                     fetchPetsAndRequests(true);
                     setTimeout(() => setIsSelectingSuggestion(false), 800);
                 },
-                (error) => {
+                () => {
                     fetchPetsAndRequests();
                 }
             );
@@ -151,7 +151,7 @@ function Adopt() {
                     }
                     setTimeout(() => setIsSelectingSuggestion(false), 800);
                 },
-                (error) => {
+                () => {
                     alert('Unable to retrieve your location. Please search manually.');
                 }
             );
@@ -175,7 +175,7 @@ function Adopt() {
             } else {
                 alert('Location not found. Try a different search.');
             }
-        } catch (err) {
+        } catch {
             alert('Error searching location.');
         }
     };

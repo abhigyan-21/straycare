@@ -58,6 +58,7 @@ function VetCampaign() {
 
     useEffect(() => {
         fetchCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const activeCampaigns = campaigns.filter(isActiveCampaign);

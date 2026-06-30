@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { registerPartner, sendRegistrationOtp, verifyRegistrationOtp } from '../../services/api';
 import '../../styles/user/Register.css';
-import hospitalImg from '../../assets/images/Hospital.webp';
+
 import PartnersSection from '../../components/user/PartnersSection';
 import WhyPartnerSection from '../../components/user/WhyPartnerSection';
 import { fetchLocationDetails } from '../../utils/mapUtils';

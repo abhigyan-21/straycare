@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { getFirebaseMessaging } from '../services/firebase';
 import { getToken, onMessage } from 'firebase/messaging';
@@ -10,43 +10,7 @@ const NotificationHandler = () => {
   const { isLoggedIn, user } = useAuthStore();
   const [showPrompt, setShowPrompt] = useState(false);
 
-  useEffect(() => {
-    // Only handle notifications for logged in, verified users
-    if (isLoggedIn && user && user.isEmailVerified) {
-      if (typeof Notification !== 'undefined') {
-        if (Notification.permission === 'default' && !sessionStorage.getItem('notificationPromptDismissed')) {
-          // Show our custom UI prompt instead of immediately asking the browser
-          setShowPrompt(true);
-        } else if (Notification.permission === 'granted') {
-          // Already granted, just ensure we have the token
-          requestPermissionAndToken();
-        }
-      }
-    }
-  }, [isLoggedIn, user]);
-
-  useEffect(() => {
-    let unsubscribe = null;
-
-    const setupMessaging = async () => {
-      const messaging = await getFirebaseMessaging();
-      if (!messaging) return;
-      unsubscribe = onMessage(messaging, (payload) => {
-        console.log('Message received in foreground: ', payload);
-        alert(`${payload.notification.title}\n${payload.notification.body}`);
-      });
-    };
-    
-    setupMessaging();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, []);
-
-  const requestPermissionAndToken = async () => {
+  const requestPermissionAndToken = useCallback(async () => {
     if (typeof Notification === 'undefined') return;
     try {
       const permission = await Notification.requestPermission();
@@ -74,7 +38,46 @@ const NotificationHandler = () => {
       console.error('An error occurred while retrieving token. ', error);
       setShowPrompt(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Only handle notifications for logged in, verified users
+    if (isLoggedIn && user && user.isEmailVerified) {
+      if (typeof Notification !== 'undefined') {
+        if (Notification.permission === 'default' && !sessionStorage.getItem('notificationPromptDismissed')) {
+          // Show our custom UI prompt instead of immediately asking the browser
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setShowPrompt(true);
+        } else if (Notification.permission === 'granted') {
+          // Already granted, just ensure we have the token
+          requestPermissionAndToken();
+        }
+      }
+    }
+  }, [isLoggedIn, user, requestPermissionAndToken]);
+
+  useEffect(() => {
+    let unsubscribe = null;
+
+    const setupMessaging = async () => {
+      const messaging = await getFirebaseMessaging();
+      if (!messaging) return;
+      unsubscribe = onMessage(messaging, (payload) => {
+        console.log('Message received in foreground: ', payload);
+        alert(`${payload.notification.title}\n${payload.notification.body}`);
+      });
+    };
+    
+    setupMessaging();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
+
+
 
   const handleDismiss = () => {
     setShowPrompt(false);

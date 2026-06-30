@@ -22,6 +22,7 @@ function Emergency({ openAuthModal }) {
 
     useEffect(() => {
         if (isLoggedIn && user) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setReporterName(user.name || '');
             setReporterPhone(user.phone || user.contact || '');
             setReporterEmail(user.email || '');
@@ -40,6 +41,7 @@ function Emergency({ openAuthModal }) {
                         const data = await response.json();
                         setLocation(`${data.locality || data.city || 'Unknown Location'}, ${data.principalSubdivision || data.countryName}`);
                     } catch (err) {
+                        console.warn("Reverse geocoding failed", err);
                         setLocation(`Lat: ${lat.toFixed(4)}, Lng: ${lon.toFixed(4)}`);
                     }
                 },
@@ -49,6 +51,7 @@ function Emergency({ openAuthModal }) {
                 }
             );
         } else {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLocation('Geolocation not supported by browser');
         }
     }, []);

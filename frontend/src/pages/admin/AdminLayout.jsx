@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink } from "react-router-dom";
 import { useAuthStore } from '../../store/authStore';
 import { LayoutDashboard, Target, FileText, Users, Edit3, LogOut, BarChart2, Search, ShieldAlert, Settings } from "lucide-react";
 import "../../styles/admin/admin.css";

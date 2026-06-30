@@ -155,7 +155,7 @@ function Track() {
             setTrackingId(location.state.trackingId);
             fetchTrackingDetails(location.state.trackingId);
         }
-    }, [location.state?.trackingId]);
+    }, [location.state, location.state?.trackingId]);
 
     const handleTrack = () => {
         if (!trackingId) return;

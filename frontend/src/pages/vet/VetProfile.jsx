@@ -27,9 +27,8 @@ import '../../styles/vet/VetProfile.css';
 import { uploadUserDocument } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
 import { useVetProfileStore } from '../../store/vetProfileStore';
-import { processPDF, formatFileSize } from '../../utils/pdfUtils';
-import { fetchLocationName, fetchLocationDetails } from '../../utils/mapUtils';
-import hospitalImg from '../../assets/images/Hospital.webp';
+import { processPDF } from '../../utils/pdfUtils';
+import { fetchLocationDetails } from '../../utils/mapUtils';
 
 const circularLocationIcon = new L.DivIcon({
     className: 'custom-circular-marker',
@@ -55,7 +54,7 @@ function MapEventsHandler({ onMapClick, center }) {
 }
 
 const VetProfile = () => {
-    const { user: authUser, logout, updateProfileAction, changePasswordAction } = useAuthStore();
+    const { user: authUser, updateProfileAction, changePasswordAction } = useAuthStore();
 
     // ── Vet Profile Store (cached) ────────────────────────────────────────────
     const {
@@ -96,12 +95,13 @@ const VetProfile = () => {
     // Fetch on mount (TTL-aware — skips API if cache is fresh)
     useEffect(() => {
         fetchVetProfile(authUser);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authUser]);
 
     // Clinic coordinates update states
     const [clinicLatVal, setClinicLatVal] = useState(null);
     const [clinicLngVal, setClinicLngVal] = useState(null);
-    const [clinicLocationName, setClinicLocationName] = useState('');
+    const [, setClinicLocationName] = useState('');
     const [clinicCity, setClinicCity] = useState('');
     const [clinicState, setClinicState] = useState('');
     const [profileMapCenter, setProfileMapCenter] = useState([30.7333, 76.7794]);
@@ -139,10 +139,7 @@ const VetProfile = () => {
         { day: 'Sunday', time: 'Emergency Only' }
     ];
 
-    const handleLogout = () => {
-        logout();
-        window.location.href = '/';
-    };
+
 
     const handleAvatarClick = () => {
         avatarInputRef.current.click();
@@ -726,7 +723,7 @@ const VetProfile = () => {
                                                                 setAddressVal(details.name);
                                                             });
                                                         },
-                                                        (error) => {
+                                                        () => {
                                                             alert("Failed to detect current location. Please pick it manually on the map.");
                                                         }
                                                     );

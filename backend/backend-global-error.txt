@@ -31,3 +31,23 @@ To prepare for this change:
 
 See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
 (Use `node --trace-warnings ...` to show where the warning was created)
+(node:12708) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Error during token refresh: TokenExpiredError: jwt expired
+    at C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\jsonwebtoken\verify.js:190:21
+    at getSecret (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\jsonwebtoken\verify.js:101:10)
+    at refresh (C:\Users\abhig\Desktop\codes\StrayCare\backend\features\auth\auth.controller.js:460:25)
+    at Layer.handleRequest (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\abhig\Desktop\codes\StrayCare\backend\node_modules\router\index.js:295:15

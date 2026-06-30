@@ -94,6 +94,7 @@ function VetStatus() {
 
     useEffect(() => {
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleStatusChange = async (item, newStatus) => {

@@ -1,6 +1,36 @@
 import React, { useState, useEffect } from 'react';
 
 const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInterested }) => {
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsExpanded(false);
+    }, [currentIndex]);
+
+    const prevIndex = currentIndex - 1;
+    const nextIndex = currentIndex + 1;
+
+    const hasPrev = prevIndex >= 0;
+    const hasNext = pets ? nextIndex < pets.length : false;
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowLeft' && hasPrev) {
+                onPrev();
+            } else if (e.key === 'ArrowRight' && hasNext) {
+                onNext();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [hasPrev, hasNext, onPrev, onNext]);
+
     if (!pets || pets.length === 0) {
         return (
             <div className="pet-carousel empty">
@@ -8,23 +38,6 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
             </div>
         );
     }
-
-    // Calculate indices for previous and next cards if they exist
-    // We want to show a layered effect: current in middle, prev slightly behind left, next slightly behind right.
-    const prevIndex = currentIndex - 1;
-    const nextIndex = currentIndex + 1;
-
-    const hasPrev = prevIndex >= 0;
-    const hasNext = nextIndex < pets.length;
-
-    const [touchStart, setTouchStart] = useState(null);
-    const [touchEnd, setTouchEnd] = useState(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    useEffect(() => {
-        setIsExpanded(false);
-    }, [currentIndex]);
 
     const minSwipeDistance = 50;
 
@@ -66,19 +79,6 @@ const PetCarousel = ({ pets, currentIndex, onNext, onPrev, onInterested, isInter
         }
     };
 
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            if (e.key === 'ArrowLeft' && hasPrev) {
-                onPrev();
-            } else if (e.key === 'ArrowRight' && hasNext) {
-                onNext();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [hasPrev, hasNext, onPrev, onNext]);
 
     let swipeOffset = 0;
     if (isDragging && touchStart && touchEnd) {

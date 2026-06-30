@@ -26,14 +26,12 @@ const SupportModal = ({
     onVolunteerCancel,
     campaigns = [],
     isLoadingCampaigns,
-    onDonate,
+
     getBackgroundImage,
     openAuthModal,
     initialViewMode,
     initialSelectedCampaign
 }) => {
-    if (!card) return null;
-
     // View mode: 'main', 'donations', 'payment', 'success'
     const [viewMode, setViewMode] = useState(initialViewMode || 'main');
     const [confirmingVolunteer, setConfirmingVolunteer] = useState(false);
@@ -46,6 +44,37 @@ const SupportModal = ({
     const [paymentMode, setPaymentMode] = useState('one-time'); // 'one-time' | 'autopay'
     const [splitRecommendation, setSplitRecommendation] = useState([]);
     const [isLoadingSplit, setIsLoadingSplit] = useState(false);
+
+    // Fetch Smart Recommendation Split dynamically
+    useEffect(() => {
+        if (viewMode === 'payment' && card?.id !== 4) {
+            const amount = customAmount ? parseFloat(customAmount) : parseFloat(donationAmount);
+            if (isNaN(amount) || amount <= 0) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setSplitRecommendation([]);
+                return;
+            }
+
+            let category = 'FOOD';
+            if (card?.id === 2) category = 'TREATMENT';
+            if (card?.id === 3) category = 'SHELTER';
+
+            setIsLoadingSplit(true);
+            apiClient.post('/funding/split-donate', { amount, category })
+                .then(res => {
+                    if (res.data && res.data.status === 'success') {
+                        setSplitRecommendation(res.data.data || []);
+                    }
+                })
+                .catch(err => {
+                    console.warn("Failed to fetch split:", err);
+                    setSplitRecommendation([]);
+                })
+                .finally(() => setIsLoadingSplit(false));
+        }
+    }, [viewMode, customAmount, donationAmount, card?.id]);
+
+    if (!card) return null;
 
     const handleVolunteerClick = () => {
         if (!isLoggedIn) {
@@ -133,7 +162,7 @@ const SupportModal = ({
                 currency: "INR",
                 name: "Furzo",
                 description: `Support ${category} Hub`,
-                handler: async function (response) {
+                handler: async function () {
                     setIsPaymentProcessing(false);
                     setViewMode('success');
                 },
@@ -192,33 +221,7 @@ const SupportModal = ({
         }
     };
 
-    // Fetch Smart Recommendation Split dynamically
-    useEffect(() => {
-        if (viewMode === 'payment' && card.id !== 4) {
-            const amount = customAmount ? parseFloat(customAmount) : parseFloat(donationAmount);
-            if (isNaN(amount) || amount <= 0) {
-                setSplitRecommendation([]);
-                return;
-            }
 
-            let category = 'FOOD';
-            if (card.id === 2) category = 'TREATMENT';
-            if (card.id === 3) category = 'SHELTER';
-
-            setIsLoadingSplit(true);
-            apiClient.post('/funding/split-donate', { amount, category })
-                .then(res => {
-                    if (res.data && res.data.status === 'success') {
-                        setSplitRecommendation(res.data.data || []);
-                    }
-                })
-                .catch(err => {
-                    console.warn("Failed to fetch split:", err);
-                    setSplitRecommendation([]);
-                })
-                .finally(() => setIsLoadingSplit(false));
-        }
-    }, [viewMode, customAmount, donationAmount, card.id]);
 
     const handleClose = () => {
         // Reset local states

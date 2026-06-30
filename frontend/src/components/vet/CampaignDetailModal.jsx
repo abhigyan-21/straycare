@@ -4,35 +4,36 @@ import '../../styles/vet/VetCampaign.css';
 import apiClient, { getCampaignEndDate } from '../../services/api';
 
 const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
-    if (!campaign) return null;
 
     const [isBroadcasting, setIsBroadcasting] = useState(false);
     const [broadcastSuccess, setBroadcastSuccess] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [collectedAmount, setCollectedAmount] = useState(campaign.raisedAmount || 0);
+    const [collectedAmount, setCollectedAmount] = useState(campaign?.raisedAmount || 0);
     const [isUpdatingAmount, setIsUpdatingAmount] = useState(false);
 
     const formatDateForInput = (dateString) => {
         if (!dateString) return '';
         try {
             return new Date(dateString).toISOString().split('T')[0];
-        } catch (e) {
+        } catch {
             return '';
         }
     };
 
     const [editedFields, setEditedFields] = useState({
-        title: campaign.title || '',
-        description: campaign.description || '',
-        purpose: campaign.purpose || campaign.description || '',
-        goalAmount: campaign.goalAmount || '',
-        location: campaign.location || '',
-        startDate: formatDateForInput(campaign.startDate),
-        endDate: formatDateForInput(getCampaignEndDate(campaign)),
-        startTime: campaign.startTime || '09:00 AM'
+        title: campaign?.title || '',
+        description: campaign?.description || '',
+        purpose: campaign?.purpose || campaign?.description || '',
+        goalAmount: campaign?.goalAmount || '',
+        location: campaign?.location || '',
+        startDate: formatDateForInput(campaign?.startDate),
+        endDate: formatDateForInput(campaign ? getCampaignEndDate(campaign) : ''),
+        startTime: campaign?.startTime || '09:00 AM'
     });
+
+    if (!campaign) return null;
 
     const handleSaveChanges = async (e) => {
         e.preventDefault();

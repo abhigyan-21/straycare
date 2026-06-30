@@ -22,7 +22,7 @@ import { useAuthStore } from '../../store/authStore';
 import MiniLoader from '../../components/user/MiniLoader';
 import apiClient, { requestRescuerUpgradeOtp, verifyRescuerUpgradeOtp } from '../../services/api';
 import { useProfileStore } from '../../store/profileStore';
-import { processPDF, formatFileSize } from '../../utils/pdfUtils';
+import { processPDF } from '../../utils/pdfUtils';
 
 const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'><rect width='100%25' height='100%25' fill='%23f1f5f9'/><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 
@@ -32,6 +32,7 @@ const ReportAddress = ({ lat, lng }) => {
 
     useEffect(() => {
         if (!lat || !lng) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setAddress('No location coordinates');
             return;
         }
@@ -45,7 +46,7 @@ const ReportAddress = ({ lat, lng }) => {
                     const formatted = `${data.locality || data.city || 'Unknown Location'}, ${data.principalSubdivision || data.countryName}`;
                     setAddress(formatted);
                 }
-            } catch (err) {
+            } catch {
                 if (active) {
                     setAddress(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
                 }
@@ -220,7 +221,7 @@ const Profile = () => {
         if (authUser) {
             fetchProfileData(authUser);
         }
-    }, [authUser]);
+    }, [authUser, fetchProfileData]);
 
     const handleOpenCreateModal = (post = null) => {
         setPostToEdit(post);
@@ -549,7 +550,7 @@ const Profile = () => {
                         </div>
                     </div>
                 );
-            case 'donations':
+            case 'donations': {
                 const allItems = [
                     ...donations.map(d => ({ ...d, isSubscription: false })),
                     ...subscriptions.map(s => ({ ...s, isSubscription: true }))
@@ -582,6 +583,7 @@ const Profile = () => {
                         </div>
                     </div>
                 );
+            }
             case 'documents':
                 return (
                     <div className="profile-section fade-in">
@@ -662,7 +664,8 @@ const Profile = () => {
                         </div>
                     </div>
                 );
-            case 'adoptions':
+
+            case 'adoptions': {
                 const filteredAdoptions = adoptions.filter(a =>
                     adoptionSubTab === 'interested' ? a.statusType !== 'adopted' : a.statusType === 'adopted'
                 );
@@ -719,7 +722,8 @@ const Profile = () => {
                         </div>
                     </div>
                 );
-            case 'rescues':
+            }
+            case 'rescues': {
                 const filteredRescues = rescues.filter(r =>
                     rescueSubTab === 'active'
                         ? (r.status === 'ASSIGNED')
@@ -782,6 +786,7 @@ const Profile = () => {
                         </div>
                     </div>
                 );
+            }
             case 'upgrade':
                 return (
                     <div className="profile-section fade-in">
@@ -826,6 +831,7 @@ const Profile = () => {
                         </div>
                     </div>
                 );
+
             default:
                 return null;
         }

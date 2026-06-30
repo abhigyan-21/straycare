@@ -13,6 +13,7 @@ const ReportAddress = ({ lat, lng, fallbackAddress }) => {
 
   useEffect(() => {
     if (fallbackAddress) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAddress(fallbackAddress);
       return;
     }
@@ -31,6 +32,7 @@ const ReportAddress = ({ lat, lng, fallbackAddress }) => {
           setAddress(formatted);
         }
       } catch (err) {
+        console.warn(err);
         if (active) {
           setAddress(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
         }
@@ -64,6 +66,7 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_B
 function RescuerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  // eslint-disable-next-line no-unused-vars
   const [rescuerPos, setRescuerPos] = useState(null);
   const [sortedReports, setSortedReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,6 +158,7 @@ function RescuerDashboard() {
 
   // Initial fetch on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchReportsAndLocation(true);
   }, [fetchReportsAndLocation]);
 

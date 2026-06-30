@@ -98,6 +98,7 @@ function App() {
     if (isLoggedIn && user && !user.isEmailVerified) {
       const mode = 'verify-email';
       if (!isAuthModalOpen || authMode !== mode) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAuthMode(mode);
         setIsAuthModalOpen(true);
       }
@@ -121,6 +122,7 @@ function App() {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAppLoading(true);
 
     const criticalImages = [
@@ -159,7 +161,7 @@ function App() {
         }
       }, remainingTime);
     });
-  }, [isFirstLogin, clearFirstLogin]);
+  }, [isFirstLogin, clearFirstLogin, isLoggedIn, user]);
 
   const openAuthModal = (mode) => {
     setAuthMode(mode);

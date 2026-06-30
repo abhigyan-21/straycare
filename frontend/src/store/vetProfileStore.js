@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { getProfile, getUserDocuments, uploadUserDocument, deleteUserDocument } from '../services/api';
+import { getProfile, getUserDocuments, deleteUserDocument } from '../services/api';
 import { isCacheValid, TTL } from '../utils/cacheUtils';
 
 // ── User-scoped storage key (prevents cross-user data leakage) ────────────────
@@ -26,7 +26,7 @@ export const getVetProfileStore = (userId) => {
 
                     // ── Fetch profile + documents (TTL + stale-while-revalidate) ──
                     fetchVetProfile: async (authUser) => {
-                        const { vetData, documents, lastFetchedProfile } = get();
+                        const { vetData, lastFetchedProfile } = get();
                         const profileCacheHit =
                             isCacheValid(lastFetchedProfile, TTL.profile) && vetData !== null;
 
@@ -174,6 +174,6 @@ export const useVetProfileStore = () => {
             const parsed = JSON.parse(raw);
             userId = parsed?.state?.user?.id || null;
         }
-    } catch (_) {}
+    } catch { /* intentionally ignored — best-effort userId lookup */ }
     return getVetProfileStore(userId)();
 };

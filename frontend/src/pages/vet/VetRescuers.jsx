@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+
 import '../../styles/vet/VetRescuers.css';
 import ActionLoader from '../../components/ActionLoader';
 import apiClient from '../../services/api';
 import { useVetDataStore } from '../../store/vetDataStore';
 
 const VetRescuers = () => {
-    const { user: authUser } = useAuthStore();
+
     const [rescuers, setRescuers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +40,7 @@ const VetRescuers = () => {
 
     useEffect(() => {
         fetchRescuers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleInputChange = (e) => {

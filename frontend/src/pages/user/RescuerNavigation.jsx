@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRescueStore } from '../../store/rescueStore';
@@ -31,7 +31,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 function RescuerNavigation() {
   const { reportId } = useParams();
-  const { startRescue, updateRescueEta, endRescue } = useRescueStore();
+  const { startRescue, endRescue } = useRescueStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
@@ -104,23 +104,29 @@ function RescuerNavigation() {
     };
   }, []);
 
-  // Compute location arrays safely
-  const reportLocation = report
-    ? (report.location || [report.locationLat, report.locationLng])
-    : null;
+  // Compute location arrays safely (memoized to stabilize references)
+  const reportLocation = useMemo(() => {
+    return report
+      ? (report.location || [report.locationLat, report.locationLng])
+      : null;
+  }, [report]);
 
   const rescuerPartner = getPartner(report?.rescuer);
   const userPartner = getPartner(user);
   const reportPartner = getPartner(report);
-  const assignedHospitalLocation = rescuerPartner?.lat && rescuerPartner?.lng
-    ? [rescuerPartner.lat, rescuerPartner.lng]
-    : userPartner?.lat && userPartner?.lng
-      ? [userPartner.lat, userPartner.lng]
-      : reportPartner?.lat && reportPartner?.lng
-        ? [reportPartner.lat, reportPartner.lng]
-        : null;
+  const assignedHospitalLocation = useMemo(() => {
+    return rescuerPartner?.lat && rescuerPartner?.lng
+      ? [rescuerPartner.lat, rescuerPartner.lng]
+      : userPartner?.lat && userPartner?.lng
+        ? [userPartner.lat, userPartner.lng]
+        : reportPartner?.lat && reportPartner?.lng
+          ? [reportPartner.lat, reportPartner.lng]
+          : null;
+  }, [rescuerPartner?.lat, rescuerPartner?.lng, userPartner?.lat, userPartner?.lng, reportPartner?.lat, reportPartner?.lng]);
 
-  const hospitalLocation = assignedHospitalLocation || (nearestClinic ? [nearestClinic.lat, nearestClinic.lng] : null);
+  const hospitalLocation = useMemo(() => {
+    return assignedHospitalLocation || (nearestClinic ? [nearestClinic.lat, nearestClinic.lng] : null);
+  }, [assignedHospitalLocation, nearestClinic]);
 
   // Fetch nearest clinic if none is explicitly assigned
   useEffect(() => {
@@ -168,14 +174,13 @@ function RescuerNavigation() {
         const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
         const data = await response.json();
         setResolvedAddress(`${data.locality || data.city || 'Unknown Location'}, ${data.principalSubdivision || data.countryName}`);
-      } catch (err) {
+      } catch {
         setResolvedAddress(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
       }
     };
     fetchAddress();
   }, [report]);
 
-  // Start rescue session on mount
   useEffect(() => {
     if (reportId) {
       startRescue(reportId, 'rescuer', 8);
@@ -186,11 +191,14 @@ function RescuerNavigation() {
   useEffect(() => {
     if (!reportId) return;
 
+    const rescuerLat = rescuerPos[0];
+    const rescuerLng = rescuerPos[1];
+
     const updateDBLocation = async () => {
       try {
         await apiClient.patch(`/reports/${reportId}/location`, {
-          lat: rescuerPos[0],
-          lng: rescuerPos[1]
+          lat: rescuerLat,
+          lng: rescuerLng
         });
       } catch (err) {
         console.error("Error updating location in DB:", err);
@@ -200,7 +208,7 @@ function RescuerNavigation() {
     // Debounce/Throttle to avoid overloading (update every 1 second while driving)
     const timer = setTimeout(updateDBLocation, 1000);
     return () => clearTimeout(timer);
-  }, [rescuerPos[0], rescuerPos[1], reportId]);
+  }, [rescuerPos, reportId]);
 
   // Fetch Route from OSRM (using static initial position to avoid rate limits)
   useEffect(() => {
@@ -228,12 +236,9 @@ function RescuerNavigation() {
     fetchRoute();
   }, [
     stage,
-    reportLocation?.[0],
-    reportLocation?.[1],
-    hospitalLocation?.[0],
-    hospitalLocation?.[1],
-    initialPos?.[0],
-    initialPos?.[1]
+    reportLocation,
+    hospitalLocation,
+    initialPos
   ]);
 
   const handleOpenGoogleMaps = () => {

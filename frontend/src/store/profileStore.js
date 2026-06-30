@@ -245,6 +245,6 @@ export const useProfileStore = () => {
             const parsed = JSON.parse(raw);
             userId = parsed?.state?.user?.id || null;
         }
-    } catch (_) {}
+    } catch { /* intentionally ignored — best-effort userId lookup */ }
     return getProfileStore(userId)();
 };

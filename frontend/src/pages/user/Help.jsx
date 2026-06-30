@@ -19,7 +19,7 @@ function Help({ openAuthModal }) {
         campaigns,
         highlights,
         loadingCampaigns: isLoadingCampaigns,
-        loadingHighlights: isLoadingHighlights,
+
         fetchCampaigns,
         fetchHighlights,
         handleDonation: storeDonation,
@@ -103,7 +103,7 @@ function Help({ openAuthModal }) {
                 setVolunteerPending(false);
                 setCooldownRemaining(0);
             }
-        } catch (err) {
+        } catch {
             // Fallback to localStorage mock volunteering status
             const mockStatus = localStorage.getItem('mock_volunteer_status') || 'none';
             if (mockStatus === 'applied') {
@@ -171,7 +171,7 @@ function Help({ openAuthModal }) {
                 const secs = json.remainingSeconds || 120;
                 setCooldownRemaining(secs);
                 startCountdown(secs);
-            } catch (err) {
+            } catch {
                 // Mock volunteer registration
                 localStorage.setItem('mock_volunteer_status', 'pending');
                 localStorage.setItem('mock_volunteer_timer_end', (Date.now() + 120 * 1000).toString());
@@ -212,7 +212,7 @@ function Help({ openAuthModal }) {
             setHasVolunteered(false);
             setVolunteerPending(false);
             setCooldownRemaining(0);
-        } catch (err) {
+        } catch {
             // Mock volunteer cancellation
             localStorage.setItem('mock_volunteer_status', 'none');
             localStorage.removeItem('mock_volunteer_timer_end');
@@ -244,6 +244,7 @@ function Help({ openAuthModal }) {
         return () => {
             if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoggedIn]);
 
     useEffect(() => {

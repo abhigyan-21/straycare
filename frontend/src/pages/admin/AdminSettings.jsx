@@ -26,6 +26,7 @@ const AdminSettings = () => {
     });
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCriteria({
             length: newPassword.length >= 8,
             upperLower: /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword),

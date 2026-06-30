@@ -30,6 +30,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     // Reset mode and states when opened/initialMode changes
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMode(initialMode);
             setError('');
             setSuccessMessage('');

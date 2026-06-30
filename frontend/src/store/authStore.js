@@ -210,7 +210,7 @@ export const useAuthStore = create(
               const userId = parsed?.state?.user?.id;
               if (userId) getVetProfileStore(userId).getState().clearCache();
             }
-          } catch (_) {}
+          } catch { /* intentionally ignored — best-effort cleanup */ }
         });
         import('./vetDataStore').then(({ useVetDataStore }) => {
           useVetDataStore.getState().clearCache();

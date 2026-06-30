@@ -106,7 +106,7 @@ function LiveTracking() {
       setJourneyStage('RESCUING');
       setStatus('RESCUER REACHED CLINIC');
     }
-  }, [report?.status, isDemo]);
+  }, [report, isDemo]);
 
 
 
@@ -114,7 +114,7 @@ function LiveTracking() {
     return report
       ? (report.location || [report.locationLat, report.locationLng])
       : defaultUserPos;
-  }, [report, defaultUserPos]);
+  }, [report]);
 
   const reportHospitalPos = useMemo(() => {
     const rescuerPartner = getPartner(report?.rescuer);
@@ -124,7 +124,7 @@ function LiveTracking() {
       : reportPartner?.lat && reportPartner?.lng
         ? [reportPartner.lat, reportPartner.lng]
         : defaultHospitalPos;
-  }, [report, defaultHospitalPos]);
+  }, [report]);
 
   const [rescuerPos, setRescuerPos] = useState(reportHospitalPos);
   const [fullRoute, setFullRoute] = useState([]);
@@ -186,7 +186,7 @@ function LiveTracking() {
 
     fetchRoute();
     startRescue(reportId || 'demo-123', 'user', 10);
-  }, [journeyStage, reportId, startRescue, isLoadingReport, isDemo, isAssigned, reportUserPos[0], reportUserPos[1], reportHospitalPos[0], reportHospitalPos[1]]);
+  }, [journeyStage, reportId, startRescue, isLoadingReport, isDemo, isAssigned, reportUserPos, reportHospitalPos]);
 
   useEffect(() => {
     socketRef.current = io(SOCKET_URL);
@@ -244,7 +244,7 @@ function LiveTracking() {
     }, 400);
 
     return () => clearInterval(interval);
-  }, [isSimulating, fullRoute, journeyStage, reportId, isDemo]);
+  }, [isSimulating, fullRoute, journeyStage, reportId, isDemo, endRescue, updateRescueEta]);
 
   // Calculate dynamic progress percent
   const progressPercent = useMemo(() => {

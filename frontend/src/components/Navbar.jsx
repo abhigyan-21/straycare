@@ -6,7 +6,7 @@ import ProfileDropdown from "./ProfileDropdown";
 import { Home, Heart, PlusSquare, MapPin, HandHeart, BookOpen, UserPlus, User } from 'lucide-react';
 
 function Navbar({ openAuthModal }) {
-  const { isLoggedIn, logout } = useAuthStore();
+  const { isLoggedIn } = useAuthStore();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);

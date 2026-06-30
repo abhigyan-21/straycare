@@ -65,7 +65,7 @@ const FloatingRescueButton = () => {
             clearInterval(intervalId);
             controller.abort();
         };
-    }, [isLoggedIn, user?.id, user?.role, startRescue, endRescue]);
+    }, [isLoggedIn, user, startRescue, endRescue, activeRescue?.isActive]);
 
     // Don't show if no active rescue
     if (!activeRescue || !activeRescue.isActive) return null;
