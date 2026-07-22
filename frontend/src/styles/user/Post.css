@@ -432,13 +432,14 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    right: 0;
+    bottom: 0;
     z-index: 1000;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 2rem;
+    box-sizing: border-box;
 }
 
 .create-post-modal-backdrop {
@@ -530,6 +531,13 @@
 .create-post-form.preview-mode {
     padding: 0;
 }
+
+.mock-post-preview {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
 
 .image-upload-section {
     width: 100%;
@@ -760,9 +768,39 @@
 }
 
 @media (max-width: 768px) {
+    .create-post-modal-overlay {
+        padding: 1rem;
+    }
+
     .create-post-modal {
         max-height: 90vh;
+        width: 100%;
+        margin: 0;
     }
+    
+    .create-post-modal.preview-active {
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .mock-post-preview {
+        flex-direction: column;
+        height: auto;
+        min-height: 100%;
+    }
+
+    .mock-post-preview .post-image-section {
+        height: 250px;
+        flex: none;
+        width: 100%;
+    }
+
+    .mock-post-preview .post-details-section {
+        min-height: auto;
+        min-width: unset;
+        width: 100%;
+    }
+
 
     .create-post-header {
         right: 20px;

@@ -188,7 +188,7 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit, initialPost }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="create-post-form preview-mode">
-                    <div className="mock-post-preview" style={{ display: 'flex', width: '100%', height: '100%' }}>
+                    <div className="mock-post-preview">
                         <div className="post-image-section">
                             {isCropMode && imgSrc ? (
                                 <div className="crop-container" style={{ width: '100%', height: '100%' }}>
