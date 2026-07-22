@@ -300,6 +300,11 @@ const CreatePostModal = ({ isOpen, onClose, onSubmit, initialPost }) => {
                                                 }
                                             }
                                         }}
+                                        onFocus={(e) => {
+                                            setTimeout(() => {
+                                                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            }, 300);
+                                        }}
                                         rows="4"
                                         autoFocus
                                     />

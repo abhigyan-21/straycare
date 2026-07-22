@@ -667,6 +667,7 @@
     background: #000;
     /* Dark background during crop */
     position: relative;
+    touch-action: none;
 }
 
 .img-to-crop {
