@@ -22,14 +22,24 @@ function Post({ openAuthModal }) {
     }, [fetchPosts]);
 
     useEffect(() => {
-        const handleScroll = () => {
+        const handleScroll = (e) => {
             if (loading || !hasMore) return;
-            if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 150) {
+            // Only respond to scroll events on the document/body, not internal scrollable elements like modals
+            const target = e.target;
+            if (target !== document && target !== document.body && target !== document.documentElement) return;
+
+            const scrollingElement = target.scrollingElement || document.body;
+            const scrollTop = scrollingElement.scrollTop || window.scrollY || 0;
+            const scrollHeight = scrollingElement.scrollHeight || document.documentElement.scrollHeight;
+            const clientHeight = scrollingElement.clientHeight || window.innerHeight;
+            
+            if (clientHeight + scrollTop >= scrollHeight - 300) {
                 fetchPosts(page + 1);
             }
         };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        // Use true for useCapture to catch scroll events from child elements like body if they are the scroll container
+        window.addEventListener('scroll', handleScroll, true);
+        return () => window.removeEventListener('scroll', handleScroll, true);
     }, [page, hasMore, loading, fetchPosts]);
 
     useEffect(() => {

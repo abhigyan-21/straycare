@@ -21,6 +21,8 @@ export const usePostStore = create(
 
                 if (cacheHit) {
                     // Serve cached data immediately — no loading state, no API call
+                    // Ensure the page state reflects the number of cached posts
+                    set({ page: Math.max(1, Math.ceil(posts.length / limit)) });
                     return;
                 }
 
@@ -35,13 +37,17 @@ export const usePostStore = create(
                     const data = await fetchPosts(pageNumber, limit);
                     const newPosts = data.data;
                     const pagination = data.pagination || {};
-                    set((state) => ({
-                        posts: pageNumber === 1 ? newPosts : [...state.posts, ...newPosts],
-                        page: pageNumber,
-                        hasMore: pagination.hasMore !== undefined ? pagination.hasMore : false,
-                        lastFetched: pageNumber === 1 ? Date.now() : state.lastFetched,
-                        loading: false,
-                    }));
+                    set((state) => {
+                        const existingIds = new Set(state.posts.map(p => p.id));
+                        const filteredNewPosts = newPosts.filter(p => !existingIds.has(p.id));
+                        return {
+                            posts: pageNumber === 1 ? newPosts : [...state.posts, ...filteredNewPosts],
+                            page: pageNumber,
+                            hasMore: pagination.hasMore !== undefined ? pagination.hasMore : false,
+                            lastFetched: pageNumber === 1 ? Date.now() : state.lastFetched,
+                            loading: false,
+                        };
+                    });
                 } catch (error) {
                     set({ error: error.message || 'Failed to fetch posts', loading: false });
                 }
