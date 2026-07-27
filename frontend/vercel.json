@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/post/:id",
+      "destination": "/api/post-preview"
+    },
+    {
       "source": "/((?!public/|.*\\.[^\\./]+$).*)",
       "destination": "/index.html"
     }

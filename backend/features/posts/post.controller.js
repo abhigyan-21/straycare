@@ -64,6 +64,60 @@ exports.getPosts = async (req, res, next) => {
   }
 };
 
+exports.getPostById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: { id: true, name: true, avatarUrl: true }
+        },
+        likes: {
+          select: { userId: true }
+        },
+        comments: {
+          include: {
+            user: {
+              select: { id: true, name: true, avatarUrl: true }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
+        }
+      }
+    });
+
+    if (!post) {
+      return res.status(404).json({ status: 'error', message: 'Post not found.' });
+    }
+
+    const optimizedPost = {
+      ...post,
+      postImage: getOptimizedUrl(post.postImage, { width: 800 }),
+      author: post.author ? {
+        ...post.author,
+        avatarUrl: getOptimizedUrl(post.author.avatarUrl, { width: 100, crop: 'fill' })
+      } : null,
+      comments: post.comments.map(comment => ({
+        ...comment,
+        user: comment.user ? {
+          ...comment.user,
+          avatarUrl: getOptimizedUrl(comment.user.avatarUrl, { width: 60, crop: 'fill' })
+        } : null
+      }))
+    };
+
+    res.status(200).json({
+      status: 'success',
+      data: optimizedPost
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 exports.createPost = async (req, res, next) => {
   try {
     const { caption, location } = req.body;

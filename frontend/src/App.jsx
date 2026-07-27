@@ -8,6 +8,7 @@ import Track from "./pages/user/Track";
 import About from "./pages/user/About";
 import Guide from "./pages/user/Guide";
 import Post from "./pages/user/Post";
+import PostDetails from "./pages/user/PostDetails";
 import Help from "./pages/user/Help";
 import Terms from './pages/Terms';
 import FAQ from './pages/FAQ';
@@ -190,6 +191,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/guide" element={<Guide />} />
             <Route path="/post" element={<Post openAuthModal={openAuthModal} />} />
+            <Route path="/post/:id" element={<PostDetails openAuthModal={openAuthModal} />} />
             <Route path="/help" element={<Help openAuthModal={openAuthModal} />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/register" element={<Register />} />

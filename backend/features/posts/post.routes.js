@@ -7,6 +7,9 @@ const { verifyToken } = require('../../features/auth/auth.middleware');
 // GET /api/posts - Fetch all posts
 router.get('/', postController.getPosts);
 
+// GET /api/posts/:id - Fetch a single post
+router.get('/:id', postController.getPostById);
+
 // GET /api/posts/my-posts - Fetch logged-in user's posts
 router.get('/my-posts', verifyToken, postController.getMyPosts);
 
