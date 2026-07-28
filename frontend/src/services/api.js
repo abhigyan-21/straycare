@@ -101,6 +101,202 @@ apiClient.interceptors.response.use(
   }
 );
 
+
+
+
+export const getStories = async () => {
+  try {
+    const response = await apiClient.get('/feed/stories');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch stories:', error.message);
+    return [];
+  }
+};
+
+export const getPets = async (lat, lng, maxDistance) => {
+  try {
+    const params = {};
+    if (lat !== undefined && lng !== undefined) {
+      params.lat = lat;
+      params.lng = lng;
+    }
+    if (maxDistance !== undefined) {
+      params.maxDistance = maxDistance;
+    }
+    const response = await apiClient.get('/adoptions/pets', { params });
+    return response.data.data || response.data;
+  } catch (error) {
+    console.warn('Failed to fetch pets:', error.message);
+    return [];
+  }
+};
+
+export const sendRegistrationOtp = async (email) => {
+  const response = await apiClient.post('/auth/send-registration-otp', { email });
+  return response.data;
+};
+
+export const verifyRegistrationOtp = async (email, otp, verificationToken) => {
+  const response = await apiClient.post('/auth/verify-registration-otp', { email, otp, verificationToken });
+  return response.data;
+};
+
+export const registerPartner = async (partnerData) => {
+  const response = await apiClient.post('/auth/register-partner', partnerData);
+  return response.data;
+};
+
+export const getProfile = async () => {
+  const response = await apiClient.get('/users/profile');
+  return response.data;
+};
+
+export const getClinicPets = async () => {
+  try {
+    const response = await apiClient.get('/adoptions/clinic-pets');
+    return response.data?.data || response.data || [];
+  } catch (error) {
+    console.warn('Failed to fetch clinic pets:', error.message);
+    return [];
+  }
+};
+
+export const updatePet = async (id, data) => {
+  const response = await apiClient.patch(`/adoptions/pets/${id}`, data);
+  return response.data;
+};
+
+// Admin Endpoints
+export const getAdminStats = async () => {
+  try {
+    const response = await apiClient.get('/admin/stats');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin stats:', error.message);
+    return { adoptions: 0, rescues: 0, urgentReports: 0, funding: '₹0', month: '' };
+  }
+};
+
+export const getAdminUsers = async () => {
+  try {
+    const response = await apiClient.get('/admin/users');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin users:', error.message);
+    return [];
+  }
+};
+
+export const getPartnerApplications = async () => {
+  try {
+    const response = await apiClient.get('/admin/partner-applications');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch partner applications, returning empty:', error.message);
+    return [];
+  }
+};
+
+export const getAdminTracking = async () => {
+  try {
+    const response = await apiClient.get('/admin/tracking');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin tracking:', error.message);
+    return [];
+  }
+};
+
+export const getAdminDocs = async () => {
+  try {
+    const response = await apiClient.get('/admin/documents');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin documents:', error.message);
+    return [];
+  }
+};
+
+export const updateAdminUserStatus = async (id, status) => {
+  const response = await apiClient.patch(`/admin/users/${id}/status`, { status });
+  return response.data;
+};
+
+export const deleteAdminUser = async (id) => {
+  const response = await apiClient.delete(`/admin/users/${id}`);
+  return response.data;
+};
+
+export const updateAdminUserRole = async (id, role) => {
+  const response = await apiClient.put(`/admin/users/${id}/role`, { role });
+  return response.data;
+};
+
+export const requestRescuerUpgradeOtp = async () => {
+  const response = await apiClient.post('/users/upgrade-rescuer/request-otp');
+  return response.data;
+};
+
+export const verifyRescuerUpgradeOtp = async (otp) => {
+  const response = await apiClient.post('/users/upgrade-rescuer/verify-otp', { otp });
+  return response.data;
+};
+
+
+export const getAdminPosts = async () => {
+  try {
+    const response = await apiClient.get('/admin/posts');
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin posts:', error.message);
+    return [];
+  }
+};
+
+export const updateAdminPostStatus = async (id, status) => {
+  const response = await apiClient.patch(`/admin/posts/${id}/status`, { status });
+  return response.data;
+};
+
+export const deleteAdminPost = async (id) => {
+  const response = await apiClient.delete(`/admin/posts/${id}`);
+  return response.data;
+};
+
+export const getAdminReports = async (start, end) => {
+  try {
+    const params = {};
+    if (start) params.start = start;
+    if (end) params.end = end;
+    const response = await apiClient.get('/admin/reports', { params });
+    return response.data;
+  } catch (error) {
+    console.warn('Failed to fetch admin reports:', error.message);
+    return { adoptions: '0', rescues: '0', userGrowth: '0%', donations: '₹0', campaigns: [] };
+  }
+};
+
+export const getUserDocuments = async () => {
+  const response = await apiClient.get('/medical/documents');
+  return response.data;
+};
+
+export const uploadUserDocument = async (data) => {
+  const response = await apiClient.post('/medical/documents', data);
+  return response.data;
+};
+
+export const deleteUserDocument = async (id) => {
+  const response = await apiClient.delete(`/medical/documents/${id}`);
+  return response.data;
+};
+
+export const submitAdoptionRequest = async (petId, formDetails = {}) => {
+  const response = await apiClient.post('/adoptions/requests', { petId, formDetails });
+  return response.data;
+};
+
 export const getUserAdoptionRequests = async () => {
   try {
     const response = await apiClient.get('/adoptions/requests');
