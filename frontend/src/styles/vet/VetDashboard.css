@@ -155,33 +155,56 @@
 }
 
 .status-badge {
-  padding: 16px 40px;
+  padding: 10px 28px;
   border-radius: 40px;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   text-transform: lowercase;
-  color: #000;
-  transition: all 0.3s ease;
-  min-width: 180px;
+  transition: background-color 0.2s ease;
+  min-width: 160px;
   text-align: center;
 }
 
-/* Dynamic Status Colors */
+/* Dynamic Status Colors — flat, no glow */
 .status-transit {
-  background-color: var(--vet-primary);
-  box-shadow: 0 8px 25px rgba(255, 210, 30, 0.4);
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
 .status-clinic {
-  background-color: var(--vet-reached);
-  color: #fff;
-  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+  background-color: #c8e6c9;
+  color: #1b5e20;
 }
 
 .status-pickup {
-  background-color: var(--vet-pickup);
-  color: #fff;
-  box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+/* DB-driven status colours */
+.status-reported {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.status-assigned {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-rescued {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-treated {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.status-adopted {
+  background-color: #e0f7fa;
+  color: #00695c;
 }
 
 /* Stats Grid */

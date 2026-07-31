@@ -31,7 +31,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 function RescuerNavigation() {
   const { reportId } = useParams();
-  const { startRescue, endRescue } = useRescueStore();
+  const { startRescue, endRescue, updateRescueEta } = useRescueStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
@@ -64,6 +64,15 @@ function RescuerNavigation() {
     };
 
     fetchReport();
+  }, [reportId]);
+
+  // Set initial rescue phase when rescuer opens navigation
+  useEffect(() => {
+    if (!reportId) return;
+    // Only set phase if the report isn't already at RESCUED stage
+    // (rescuer may reopen the nav page mid-rescue)
+    apiClient.patch(`/reports/${reportId}/phase`, { phase: 'HEADING_TO_ANIMAL' })
+      .catch(err => console.error('Failed to set rescue phase:', err));
   }, [reportId]);
 
   // Geolocation for rescuer real-time position tracking
@@ -228,6 +237,9 @@ function RescuerNavigation() {
         if (data.routes && data.routes[0]) {
           const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
           setRoute(coords);
+          // Update the floating rescue button ETA with real driving time
+          const etaMins = Math.ceil(data.routes[0].duration / 60);
+          updateRescueEta(etaMins);
         }
       } catch (err) {
         console.error("Routing error:", err);
@@ -238,7 +250,8 @@ function RescuerNavigation() {
     stage,
     reportLocation,
     hospitalLocation,
-    initialPos
+    initialPos,
+    updateRescueEta
   ]);
 
   const handleOpenGoogleMaps = () => {
@@ -253,6 +266,7 @@ function RescuerNavigation() {
     if (!reportId) return;
     try {
       await apiClient.patch(`/reports/${reportId}/status`, { status: 'RESCUED' });
+      await apiClient.patch(`/reports/${reportId}/phase`, { phase: 'HEADING_TO_CLINIC' });
       setStage('TO_HOSPITAL');
     } catch (err) {
       console.error("Error setting report status to RESCUED:", err);
@@ -264,6 +278,7 @@ function RescuerNavigation() {
     if (!reportId) return;
     try {
       await apiClient.patch(`/reports/${reportId}/status`, { status: 'TREATED' });
+      await apiClient.patch(`/reports/${reportId}/phase`, { phase: null });
     } catch (err) {
       console.error("Error setting report status to TREATED:", err);
     } finally {

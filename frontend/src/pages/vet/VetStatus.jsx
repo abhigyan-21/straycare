@@ -46,22 +46,26 @@ function VetStatus() {
             const reports = Array.isArray(reportsData) ? reportsData : [];
             const pets = Array.isArray(petsData) ? petsData : [];
 
-            // 1. Live rescues (green box): Show REPORTED or ASSIGNED status reports
-            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');
+            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED' || r.status === 'RESCUED');
             setCurrentRescues(liveRescues.map(r => ({
-                id: r.id.substring(0, 8).toUpperCase(),
+                id: r.id,
+                displayId: r.id.substring(0, 8).toUpperCase(),
                 description: r.description,
-                status: r.status.toLowerCase().replace('_', ' '),
+                status: r.rescuePhase === 'HEADING_TO_ANIMAL' ? 'on the way to pickup'
+                      : r.rescuePhase === 'HEADING_TO_CLINIC'  ? 'on the way to clinic'
+                      : r.status === 'RESCUED'                 ? 'on the way to clinic'
+                      : r.status.toLowerCase().replace('_', ' '),
                 image: r.mediaUrls?.[0] || null
             })));
 
             // Find reportIds that are already proper Pet records to avoid duplication
             const petReportIds = new Set(pets.map(p => p.reportId).filter(Boolean));
 
-            // 2. Treatment List: 
-            // - Reports that have reached the clinic (RESCUED, TREATED) and aren't listed as Pets yet
+            // 2. Treatment List:
+            // - Reports that have TREATED status (animal at clinic, vet managing care)
+            // - RESCUED is excluded here because it still shows in the current rescue section above (heading to clinic)
             const reportTreatments = reports
-                .filter(r => (r.status === 'RESCUED' || r.status === 'TREATED') && !petReportIds.has(r.id))
+                .filter(r => r.status === 'TREATED' && !petReportIds.has(r.id))
                 .map(r => ({
                     id: r.id,
                     displayId: r.id.substring(0, 8).toUpperCase(),

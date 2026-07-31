@@ -33,4 +33,7 @@ router.patch('/:id/assign', verifyToken, allowRoles('ADMIN', 'VET', 'NGO', 'RESC
 // Update rescuer location
 router.patch('/:id/location', verifyToken, allowRoles('RESCUER'), reportController.updateRescuerLocation);
 
+// Update rescue phase (heading to animal / heading to clinic)
+router.patch('/:id/phase', verifyToken, allowRoles('RESCUER'), reportController.updateRescuePhase);
+
 module.exports = router;

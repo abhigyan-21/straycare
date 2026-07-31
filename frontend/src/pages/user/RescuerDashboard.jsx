@@ -63,125 +63,164 @@ function getDistance(lat1, lon1, lat2, lon2) {
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
 
+// How often to poll as a fallback (ms). Socket handles instant updates;
+// polling catches anything missed due to disconnects or missed events.
+const POLL_INTERVAL_MS = 15000;
+
 function RescuerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  // eslint-disable-next-line no-unused-vars
   const [rescuerPos, setRescuerPos] = useState(null);
+  const rescuerPosRef = useRef(null); // stable ref so callbacks always have latest coords
   const [sortedReports, setSortedReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const socketRef = useRef();
+  const pollTimerRef = useRef();
 
-  const fetchReportsAndLocation = useCallback(async (showLoader = false) => {
-    if (showLoader) setIsLoading(true);
-    const startTime = Date.now();
-
-    let fetchedReports = [];
-    try {
-      const response = await apiClient.get('/reports');
-      fetchedReports = response.data || [];
-    } catch (err) {
-      console.error("Error fetching reports", err);
-    }
-
-    // Filter reports:
-    // Show reports that are status 'REPORTED', OR status 'ASSIGNED' or 'RESCUED' and assigned to current user
+  // Build the sorted/filtered list from raw reports + current position
+  const applyPositionAndSet = useCallback((fetchedReports, pos) => {
     const filtered = fetchedReports.filter(r =>
       r.status === 'REPORTED' ||
       ((r.status === 'ASSIGNED' || r.status === 'RESCUED') && r.assignedRescuerId === user?.id)
     );
 
-    const finishLoading = (reportsList) => {
-      setSortedReports(reportsList);
-      if (showLoader) {
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, 1000 - elapsedTime);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, remainingTime);
-      }
-    };
+    if (pos) {
+      const sorted = [...filtered].sort((a, b) => {
+        const distA = getDistance(pos.lat, pos.lon,
+          a.locationLat ?? a.location?.[0] ?? 0,
+          a.locationLng ?? a.location?.[1] ?? 0);
+        const distB = getDistance(pos.lat, pos.lon,
+          b.locationLat ?? b.location?.[0] ?? 0,
+          b.locationLng ?? b.location?.[1] ?? 0);
+        return distA - distB;
+      });
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setRescuerPos({ lat: latitude, lon: longitude });
-
-          // Auto-save location to backend so distance-based notifications work for independent rescuers
-          apiClient.post('/users/rescuer-location', { lat: latitude, lng: longitude })
-            .catch(err => console.error('Failed to update rescuer location on server', err));
-
-          // Sort by distance
-          const sorted = [...filtered].sort((a, b) => {
-            const latA = a.locationLat !== undefined ? a.locationLat : (a.location?.[0] || 0);
-            const lonA = a.locationLng !== undefined ? a.locationLng : (a.location?.[1] || 0);
-            const latB = b.locationLat !== undefined ? b.locationLat : (b.location?.[0] || 0);
-            const lonB = b.locationLng !== undefined ? b.locationLng : (b.location?.[1] || 0);
-
-            const distA = getDistance(latitude, longitude, latA, lonA);
-            const distB = getDistance(latitude, longitude, latB, lonB);
-            return distA - distB;
-          });
-
-          // Map distance property for display
-          const withDist = sorted.map(r => {
-            const rLat = r.locationLat !== undefined ? r.locationLat : (r.location?.[0] || 0);
-            const rLon = r.locationLng !== undefined ? r.locationLng : (r.location?.[1] || 0);
-            return {
-              ...r,
-              distance: getDistance(latitude, longitude, rLat, rLon).toFixed(1)
-            };
-          });
-
-          finishLoading(withDist);
-        },
-        (error) => {
-          console.error("Error getting location", error);
-          // Default mapping without distance if location fails
-          const withoutDist = filtered.map(r => ({
-            ...r,
-            distance: null
-          }));
-          finishLoading(withoutDist);
-        }
-      );
-    } else {
-      const withoutDist = filtered.map(r => ({
+      setSortedReports(sorted.map(r => ({
         ...r,
-        distance: null
-      }));
-      finishLoading(withoutDist);
+        distance: getDistance(
+          pos.lat, pos.lon,
+          r.locationLat ?? r.location?.[0] ?? 0,
+          r.locationLng ?? r.location?.[1] ?? 0
+        ).toFixed(1)
+      })));
+    } else {
+      setSortedReports(filtered.map(r => ({ ...r, distance: null })));
     }
   }, [user?.id]);
 
-  // Initial fetch on mount
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchReportsAndLocation(true);
-  }, [fetchReportsAndLocation]);
+  const fetchReports = useCallback(async (showLoader = false) => {
+    if (showLoader) setIsLoading(true);
+    const startTime = Date.now();
 
-  // WebSocket real-time updates listener
-  useEffect(() => {
-    socketRef.current = io(SOCKET_URL);
+    try {
+      const response = await apiClient.get('/reports');
+      const fetchedReports = response.data || [];
+      applyPositionAndSet(fetchedReports, rescuerPosRef.current);
+    } catch (err) {
+      console.error('Error fetching reports', err);
+    } finally {
+      if (showLoader) {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 1000 - elapsed);
+        setTimeout(() => setIsLoading(false), remaining);
+      }
+    }
+  }, [applyPositionAndSet]);
 
-    socketRef.current.on('new-report', (newReport) => {
-      console.log('Real-time: new report created. Refreshing rescues list...', newReport);
-      fetchReportsAndLocation(false);
+  // Get geolocation once on mount, then kick off data fetch
+  useEffect(() => {
+    const initLocation = () => {
+      if (!('geolocation' in navigator)) {
+        fetchReports(true);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = { lat: position.coords.latitude, lon: position.coords.longitude };
+          setRescuerPos(pos);
+          rescuerPosRef.current = pos;
+
+          // Save to backend for push notification radius checks
+          apiClient.post('/users/rescuer-location', { lat: pos.lat, lng: pos.lon })
+            .catch(err => console.error('Failed to update rescuer location on server', err));
+
+          // Register location with socket server so targeted broadcasts work.
+          // If socket connected before geolocation resolved, this catches up.
+          if (socketRef.current?.connected && socketRef.current._registerWithServer) {
+            socketRef.current._registerWithServer();
+          }
+
+          fetchReports(true);
+        },
+        (error) => {
+          console.error('Error getting location', error);
+          fetchReports(true);
+        }
+      );
+    };
+
+    initLocation();
+  }, [fetchReports]);
+
+  // Socket: real-time instant updates targeted to nearby rescuers
+  useEffect(() => {
+    socketRef.current = io(SOCKET_URL, {
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 10000,
     });
 
-    socketRef.current.on('report-updated', (updatedReport) => {
-      console.log('Real-time: report updated. Refreshing rescues list...', updatedReport);
-      fetchReportsAndLocation(false);
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
+    const registerWithServer = () => {
+      // Tell the server our position so it can target us in proximity-based broadcasts.
+      // Use the ref so we always send the latest coords even if state hasn't flushed yet.
+      const pos = rescuerPosRef.current;
+      if (pos && user?.id) {
+        socketRef.current.emit('rescuer-register', {
+          userId: user.id,
+          lat: pos.lat,
+          lng: pos.lon,
+        });
       }
     };
-  }, [fetchReportsAndLocation]);
+
+    socketRef.current.on('connect', () => {
+      console.log('Socket connected:', socketRef.current.id);
+      registerWithServer();
+    });
+
+    socketRef.current.on('disconnect', (reason) => {
+      console.warn('Socket disconnected:', reason);
+    });
+
+    socketRef.current.on('new-report', () => {
+      fetchReports(false);
+    });
+
+    socketRef.current.on('report-updated', () => {
+      fetchReports(false);
+    });
+
+    // If location resolves after the socket connects, register then too
+    socketRef.current._registerWithServer = registerWithServer;
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [fetchReports, user?.id]);
+
+  // Polling fallback: re-fetch every POLL_INTERVAL_MS in case socket misses an event
+  useEffect(() => {
+    pollTimerRef.current = setInterval(() => {
+      fetchReports(false);
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      clearInterval(pollTimerRef.current);
+    };
+  }, [fetchReports]);
 
   const handleAcceptRescue = async (reportId, isAlreadyAssigned) => {
     if (isAlreadyAssigned) {
@@ -190,12 +229,11 @@ function RescuerDashboard() {
     }
 
     try {
-      // Call self-assign backend endpoint
       await apiClient.patch(`/reports/${reportId}/assign`, { rescuerId: user?.id });
       navigate(`/rescuer/nav/${reportId}`);
     } catch (err) {
-      console.error("Error accepting rescue:", err);
-      alert("Failed to accept rescue. It may have been taken by another rescuer.");
+      console.error('Error accepting rescue:', err);
+      alert('Failed to accept rescue. It may have been taken by another rescuer.');
     }
   };
 

@@ -38,8 +38,8 @@ const createReport = async (req, res) => {
       },
     });
 
-    if (req.io) {
-      req.io.emit('new-report', report);
+    if (req.emitToNearbyRescuers) {
+      req.emitToNearbyRescuers('new-report', report, report.locationLat, report.locationLng);
     }
 
     // Find nearby rescuers and notify them
@@ -279,8 +279,8 @@ const updateReportStatus = async (req, res) => {
       include: { reporter: true }
     });
 
-    if (req.io) {
-      req.io.emit('report-updated', report);
+    if (req.emitToNearbyRescuers) {
+      req.emitToNearbyRescuers('report-updated', report, report.locationLat, report.locationLng);
     }
 
     if (report.reporter && report.reporter.fcmToken) {
@@ -333,13 +333,44 @@ const assignReport = async (req, res) => {
       data,
     });
 
-    if (req.io) {
-      req.io.emit('report-updated', report);
+    if (req.emitToNearbyRescuers) {
+      req.emitToNearbyRescuers('report-updated', report, report.locationLat, report.locationLng);
     }
 
     res.json(report);
   } catch (error) {
     console.error('Error assigning report:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+ * @desc Update the rescue phase for an assigned report
+ * @route PATCH /api/reports/:id/phase
+ * @access Private (Rescuer)
+ */
+const updateRescuePhase = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { phase } = req.body;
+
+    const validPhases = ['HEADING_TO_ANIMAL', 'HEADING_TO_CLINIC', null];
+    if (!validPhases.includes(phase)) {
+      return res.status(400).json({ error: 'Invalid phase. Must be HEADING_TO_ANIMAL, HEADING_TO_CLINIC, or null.' });
+    }
+
+    const report = await prisma.animalReport.update({
+      where: { id },
+      data: { rescuePhase: phase },
+    });
+
+    if (req.emitToNearbyRescuers) {
+      req.emitToNearbyRescuers('report-updated', report, report.locationLat, report.locationLng);
+    }
+
+    res.json(report);
+  } catch (error) {
+    console.error('Error updating rescue phase:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -440,6 +471,7 @@ module.exports = {
   updateReportStatus,
   assignReport,
   updateRescuerLocation,
+  updateRescuePhase,
   getClinicReports,
   getMyRescues,
   getClinics,

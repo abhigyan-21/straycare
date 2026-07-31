@@ -6,11 +6,19 @@ import { Inbox } from 'lucide-react';
 function LiveStatusView({ rescues, title = "current pet being rescued" }) {
     const navigate = useNavigate();
     const getStatusClass = (status) => {
-        const s = status.toLowerCase();
-        if (s.includes('transit')) return 'status-transit';
-        if (s.includes('clinic')) return 'status-clinic';
-        if (s.includes('pickup')) return 'status-pickup';
-        return '';
+        const s = (status || '').toLowerCase();
+        if (s === 'reported')               return 'status-reported';
+        if (s === 'assigned')               return 'status-assigned';
+        if (s === 'on the way to pickup')   return 'status-pickup';
+        if (s === 'on the way to clinic')   return 'status-transit';
+        if (s === 'rescued')                return 'status-rescued';
+        if (s === 'treated')                return 'status-treated';
+        if (s === 'adopted')                return 'status-adopted';
+        // Legacy labels
+        if (s.includes('transit'))          return 'status-transit';
+        if (s.includes('clinic'))           return 'status-transit';
+        if (s.includes('pickup'))           return 'status-pickup';
+        return 'status-reported';
     };
 
     return (
@@ -34,7 +42,7 @@ function LiveStatusView({ rescues, title = "current pet being rescued" }) {
                                 <div className="rescue-info">
                                     <div className="info-item">
                                         <span className="info-label">Report id:</span>
-                                        <span className="info-value">{rescue.id}</span>
+                                        <span className="info-value">{rescue.displayId || rescue.id}</span>
                                     </div>
                                     <div className="info-item">
                                         <span className="info-label">Report:</span>

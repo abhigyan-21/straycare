@@ -152,6 +152,10 @@ model AnimalReport {
   
   assignedPartnerId String?
 
+  /// Tracks the rescuer's current navigation phase while status is ASSIGNED.
+  /// Values: "HEADING_TO_ANIMAL" | "HEADING_TO_CLINIC" | null
+  rescuePhase       String?
+
 partner Partner? @relation(fields: [assignedPartnerId], references: [id])
 
   createdAt         DateTime        @default(now())

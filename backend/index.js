@@ -50,9 +50,63 @@ const io = new Server(server, {
   }
 });
 
-// Socket.io Logic for Tracking
+// Socket.io Logic for Tracking and Proximity-based Rescuer Notifications
+//
+// Rescuers register their location on connect via 'rescuer-register'.
+// The server keeps an in-memory map of socketId → { userId, lat, lng } so that
+// new-report and report-updated events can be targeted only at nearby rescuers
+// instead of broadcasting to every connected client.
+//
+const RESCUER_NOTIFY_RADIUS_KM = 50;
+
+// In-memory registry: socketId → { userId, lat, lng }
+const rescuerSockets = new Map();
+
+function haversineKm(lat1, lng1, lat2, lng2) {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return Infinity;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Emit an event to all rescuer sockets that are within RESCUER_NOTIFY_RADIUS_KM
+ * of the given report location. Falls back to broadcasting to all registered
+ * rescuer sockets if the report has no valid coordinates (edge case).
+ */
+function emitToNearbyRescuers(event, payload, reportLat, reportLng) {
+  const hasCoords = reportLat != null && reportLng != null;
+
+  rescuerSockets.forEach(({ lat, lng }, socketId) => {
+    if (!hasCoords || haversineKm(reportLat, reportLng, lat, lng) <= RESCUER_NOTIFY_RADIUS_KM) {
+      io.to(socketId).emit(event, payload);
+    }
+  });
+}
+
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  // Rescuers call this event right after connecting (and after every reconnect)
+  // so the server knows their current position for targeted broadcasts.
+  // Payload: { userId: string, lat: number, lng: number }
+  socket.on('rescuer-register', ({ userId, lat, lng } = {}) => {
+    if (userId && lat != null && lng != null) {
+      rescuerSockets.set(socket.id, { userId, lat: parseFloat(lat), lng: parseFloat(lng) });
+      console.log(`Rescuer registered: userId=${userId} socketId=${socket.id} lat=${lat} lng=${lng}`);
+    }
+  });
+
+  // Rescuers call this when their position changes (optional, improves accuracy)
+  socket.on('rescuer-update-location', ({ lat, lng } = {}) => {
+    const existing = rescuerSockets.get(socket.id);
+    if (existing && lat != null && lng != null) {
+      rescuerSockets.set(socket.id, { ...existing, lat: parseFloat(lat), lng: parseFloat(lng) });
+    }
+  });
 
   socket.on('join-track', (reportId) => {
     socket.join(`track-${reportId}`);
@@ -69,11 +123,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    rescuerSockets.delete(socket.id);
     console.log('Client disconnected:', socket.id);
   });
 });
-
-// ── Middleware Setup ────────────────────────────────────────
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -99,9 +152,10 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Favicon dummy handler to prevent console clutter/CSP errors
 app.get('/favicon.webp', (req, res) => res.status(204).end());
 
-// Expose io instance to routes
-app.use((req, res, next) => {
+// Attach io and proximity emitter to every request so route controllers can use them
+app.use((req, _res, next) => {
   req.io = io;
+  req.emitToNearbyRescuers = emitToNearbyRescuers;
   next();
 });
 

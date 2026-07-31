@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Loader from '../../components/Loader';
 import '../../styles/vet/VetDashboard.css';
@@ -8,6 +8,10 @@ import VetStatCard from '../../components/vet/VetStatCard';
 import { useAuthStore } from '../../store/authStore';
 import { getCampaignEndDate } from '../../services/api';
 import { useVetDataStore } from '../../store/vetDataStore';
+import io from 'socket.io-client';
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+const POLL_INTERVAL_MS = 15000;
 
 function VetDashboard() {
     const [rescues, setRescues] = useState([]);
@@ -20,14 +24,16 @@ function VetDashboard() {
     const { isFirstLogin, clearFirstLogin } = useAuthStore();
     const [isLoading, setIsLoading] = useState(true);
     
-    const { fetchReports, fetchPets, fetchRequests, fetchCampaigns } = useVetDataStore();
+    const { fetchReports, fetchPets, fetchRequests, fetchCampaigns, invalidateReports } = useVetDataStore();
+    const socketRef = useRef();
+    const pollTimerRef = useRef();
 
-    const fetchData = async () => {
-        setIsLoading(true);
+    const fetchData = useCallback(async (showLoader = false) => {
+        if (showLoader) setIsLoading(true);
         const startTime = Date.now();
         try {
             const [reports, pets, reqs, camps] = await Promise.all([
-                fetchReports(),
+                fetchReports(true), // always force-fresh for live status
                 fetchPets(),
                 fetchRequests(),
                 fetchCampaigns()
@@ -35,11 +41,15 @@ function VetDashboard() {
 
             const latestCamp = camps?.[0];
 
-            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED');
+            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED' || r.status === 'RESCUED');
             setRescues(liveRescues.map(r => ({
-                id: r.id.substring(0, 8).toUpperCase(),
+                id: r.id,
+                displayId: r.id.substring(0, 8).toUpperCase(),
                 description: r.description,
-                status: r.status.toLowerCase().replace('_', ' '),
+                status: r.rescuePhase === 'HEADING_TO_ANIMAL' ? 'on the way to pickup'
+                      : r.rescuePhase === 'HEADING_TO_CLINIC'  ? 'on the way to clinic'
+                      : r.status === 'RESCUED'                 ? 'on the way to clinic'
+                      : r.status.toLowerCase().replace('_', ' '),
                 image: r.mediaUrls?.[0] || null
             })));
 
@@ -64,23 +74,50 @@ function VetDashboard() {
                 latestCampaign: { title: 'No active campaign', date: '--' }
             });
         } finally {
-            const elapsedTime = Date.now() - startTime;
-            const minimumLoadingTime = isFirstLogin ? 2000 : 800;
-            const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
-
-            setTimeout(() => {
-                setIsLoading(false);
-                if (isFirstLogin) {
-                    clearFirstLogin();
-                }
-            }, remainingTime);
+            if (showLoader) {
+                const elapsedTime = Date.now() - startTime;
+                const minimumLoadingTime = isFirstLogin ? 2000 : 800;
+                const remainingTime = Math.max(0, minimumLoadingTime - elapsedTime);
+                setTimeout(() => {
+                    setIsLoading(false);
+                    if (isFirstLogin) clearFirstLogin();
+                }, remainingTime);
+            }
         }
-    };
+    }, [fetchReports, fetchPets, fetchRequests, fetchCampaigns, isFirstLogin, clearFirstLogin]);
 
+    // Initial load
     useEffect(() => {
-        fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        fetchData(true);
+    }, [fetchData]);
+
+    // Socket: instant updates when a report changes
+    useEffect(() => {
+        socketRef.current = io(SOCKET_URL, {
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 10000,
+        });
+
+        socketRef.current.on('report-updated', () => {
+            invalidateReports();
+            fetchData(false);
+        });
+
+        socketRef.current.on('new-report', () => {
+            invalidateReports();
+            fetchData(false);
+        });
+
+        return () => socketRef.current?.disconnect();
+    }, [fetchData, invalidateReports]);
+
+    // Polling fallback every 15s
+    useEffect(() => {
+        pollTimerRef.current = setInterval(() => fetchData(false), POLL_INTERVAL_MS);
+        return () => clearInterval(pollTimerRef.current);
+    }, [fetchData]);
 
     if (isLoading && isFirstLogin) return <Loader />;
     if (isLoading) return <ActionLoader message="Updating Dashboard..." />;
