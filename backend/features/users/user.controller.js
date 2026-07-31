@@ -1,7 +1,7 @@
 const prisma = require('../../db/prisma');
 const { sendEmail } = require('../../services/email.service');
 const { generateToken } = require('../auth/auth.middleware');
-
+const { generateOTP } = require('../../utils/otp');
 /**
  * @desc Get all rescuers linked to the current vet's partner
  * @route GET /api/users/rescuers
@@ -43,17 +43,90 @@ const getClinicRescuers = async (req, res) => {
 };
 
 /**
+ * @desc Request OTP to add an existing user as a rescuer
+ * @route POST /api/users/rescuers/request-add-otp
+ * @access Private (Vet/Admin)
+ */
+const requestAddRescuerOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const vetId = req.user.id;
+
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required' });
+    }
+
+    const vetUser = await prisma.user.findUnique({
+      where: { id: vetId },
+      select: { partnerId: true, partner: true }
+    });
+
+    if (!vetUser || !vetUser.partnerId) {
+      return res.status(400).json({ error: 'You are not associated with any partner' });
+    }
+
+    const userToPromote = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!userToPromote) {
+      return res.status(404).json({ error: 'User not found. Please ask them to register on StrayCare first.' });
+    }
+
+    if (userToPromote.role === 'RESCUER') {
+      if (userToPromote.partnerId === vetUser.partnerId) {
+        return res.status(400).json({ error: 'This user is already a rescuer in your team.' });
+      } else if (userToPromote.partnerId) {
+        return res.status(400).json({ error: 'This user is already a rescuer for another clinic.' });
+      }
+    }
+
+    const { otp, expiry } = generateOTP();
+
+    await prisma.user.update({
+      where: { id: userToPromote.id },
+      data: {
+        emailOtp: otp,
+        emailOtpExpiry: expiry
+      }
+    });
+
+    const partnerName = vetUser.partner ? vetUser.partner.name : 'A clinic';
+    const emailBody = `
+      <h1>Rescuer Invitation</h1>
+      <p>Hello ${userToPromote.name || 'User'},</p>
+      <p><strong>${partnerName}</strong> is attempting to add you to their rescuer team on StrayCare.</p>
+      <p>Please share the following OTP with them to confirm your addition:</p>
+      <h2 style="font-size: 24px; letter-spacing: 2px;">${otp}</h2>
+      <p>This OTP is valid for 5 minutes.</p>
+    `;
+
+    await sendEmail({
+      to: email,
+      subject: 'StrayCare - Rescuer Addition Verification',
+      html: emailBody
+    });
+
+    res.json({ message: 'OTP sent to the user successfully.' });
+  } catch (error) {
+    console.error('Error requesting add rescuer OTP:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+/**
  * @desc Add an existing user as a rescuer for the clinic
  * @route POST /api/users/rescuers/add
  * @access Private (Vet/Admin)
  */
 const addRescuer = async (req, res) => {
   try {
-    const { email, contact } = req.body;
+    const { email, contact, otp } = req.body;
     const vetId = req.user.id;
 
-    if (!email) {
-      return res.status(400).json({ error: 'User email is required' });
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'User email and OTP are required' });
     }
 
     // Get Vet's partnerId
@@ -75,13 +148,31 @@ const addRescuer = async (req, res) => {
       return res.status(404).json({ error: 'User not found. Please ask them to register on StrayCare first.' });
     }
 
+    if (userToPromote.role === 'RESCUER') {
+      if (userToPromote.partnerId === vetUser.partnerId) {
+        return res.status(400).json({ error: 'This user is already a rescuer in your team.' });
+      } else if (userToPromote.partnerId) {
+        return res.status(400).json({ error: 'This user is already a rescuer for another clinic.' });
+      }
+    }
+
+    if (userToPromote.emailOtp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+
+    if (!userToPromote.emailOtpExpiry || new Date() > userToPromote.emailOtpExpiry) {
+      return res.status(400).json({ error: 'OTP has expired' });
+    }
+
     // Update the user
     const updatedUser = await prisma.user.update({
       where: { id: userToPromote.id },
       data: {
         role: 'RESCUER',
         partnerId: vetUser.partnerId,
-        contact: contact || userToPromote.contact
+        contact: contact || userToPromote.contact,
+        emailOtp: null,
+        emailOtpExpiry: null
       },
       select: {
         id: true,
@@ -142,6 +233,32 @@ const removeRescuer = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+/**
+ * @desc Leave the rescuer role (demote self to USER)
+ * @route POST /api/users/leave-rescuer-role
+ * @access Private (RESCUER)
+ */
+const leaveRescuerRole = async (req, res) => {
+  try {
+    const rescuerId = req.user.id;
+
+    // Demote the user
+    const updatedUser = await prisma.user.update({
+      where: { id: rescuerId },
+      data: {
+        role: 'USER',
+        partnerId: null
+      }
+    });
+
+    res.json({ message: 'You have left the rescuer role successfully', user: { role: updatedUser.role } });
+  } catch (error) {
+    console.error('Error leaving rescuer role:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 /**
  * @desc Get full profile details (including role-specific and partner details)
@@ -400,8 +517,10 @@ const updateRescuerLocation = async (req, res) => {
 
 module.exports = {
   getClinicRescuers,
+  requestAddRescuerOtp,
   addRescuer,
   removeRescuer,
+  leaveRescuerRole,
   getProfile,
   requestRescuerUpgradeOtp,
   verifyRescuerUpgradeOtp,

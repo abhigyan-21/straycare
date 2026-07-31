@@ -11,12 +11,14 @@ router.post('/rescuer-location', userController.updateRescuerLocation);
 
 router.post('/upgrade-rescuer/request-otp', allowRoles('USER', 'VET', 'ADMIN', 'NGO'), userController.requestRescuerUpgradeOtp);
 router.post('/upgrade-rescuer/verify-otp', allowRoles('USER', 'VET', 'ADMIN', 'NGO'), userController.verifyRescuerUpgradeOtp);
+router.post('/leave-rescuer-role', allowRoles('RESCUER'), userController.leaveRescuerRole);
 
 // The routes below are restricted to Vet/Clinic/NGO staff or Admins
 router.use(allowRoles('VET', 'ADMIN', 'NGO'));
 
 router.get('/profile', userController.getProfile);
 router.get('/rescuers', userController.getClinicRescuers);
+router.post('/rescuers/request-add-otp', userController.requestAddRescuerOtp);
 router.post('/rescuers/add', userController.addRescuer);
 router.post('/rescuers/remove/:id', userController.removeRescuer);
 

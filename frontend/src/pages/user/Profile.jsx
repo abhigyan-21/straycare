@@ -13,7 +13,8 @@ import {
     Edit2,
     Trash2,
     Download,
-    Star
+    Star,
+    MoreVertical
 } from 'lucide-react';
 import '../../styles/user/Profile.css';
 import '../../styles/user/Post.css'; // For create-post-btn styles
@@ -100,6 +101,7 @@ const Profile = () => {
     const [upgradeOtp, setUpgradeOtp] = useState('');
     const [isOtpSent, setIsOtpSent] = useState(false);
     const [isUpgrading, setIsUpgrading] = useState(false);
+    const [showRescuerMenu, setShowRescuerMenu] = useState(false);
 
     const handleRequestUpgradeOtp = async () => {
         setIsUpgrading(true);
@@ -132,6 +134,23 @@ const Profile = () => {
             alert(error.response?.data?.error || 'Failed to verify OTP');
         } finally {
             setIsUpgrading(false);
+        }
+    };
+
+    const handleLeaveRescuerRole = async () => {
+        if (!window.confirm("Are you sure you want to leave the rescuer role? You will lose access to rescuer features and assigned rescues.")) return;
+        try {
+            await apiClient.post('/users/leave-rescuer-role');
+            const state = JSON.parse(localStorage.getItem('straycare_user'));
+            if (state && state.state && state.state.user) {
+                state.state.user.role = 'USER';
+                localStorage.setItem('straycare_user', JSON.stringify(state));
+            }
+            alert('You have successfully left the rescuer role.');
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.error || 'Failed to leave rescuer role');
         }
     };
 
@@ -732,21 +751,74 @@ const Profile = () => {
 
                 return (
                     <div className="profile-section fade-in">
-                        <div className="profile-section-header">
-                            <h2>My Rescues</h2>
-                            <div className="sub-tab-toggle">
-                                <button
-                                    className={`sub-tab-btn ${rescueSubTab === 'active' ? 'active' : ''}`}
-                                    onClick={() => setRescueSubTab('active')}
-                                >
-                                    Active Rescues
-                                </button>
-                                <button
-                                    className={`sub-tab-btn ${rescueSubTab === 'completed' ? 'active' : ''}`}
-                                    onClick={() => setRescueSubTab('completed')}
-                                >
-                                    Completed Rescues
-                                </button>
+                        <div className="profile-section-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <h2>My Rescues</h2>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div className="sub-tab-toggle">
+                                    <button
+                                        className={`sub-tab-btn ${rescueSubTab === 'active' ? 'active' : ''}`}
+                                        onClick={() => setRescueSubTab('active')}
+                                    >
+                                        Active Rescues
+                                    </button>
+                                    <button
+                                        className={`sub-tab-btn ${rescueSubTab === 'completed' ? 'active' : ''}`}
+                                        onClick={() => setRescueSubTab('completed')}
+                                    >
+                                        Completed Rescues
+                                    </button>
+                                </div>
+                                {authUser?.role === 'RESCUER' && (
+                                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                                        <button 
+                                            onClick={() => setShowRescuerMenu(!showRescuerMenu)}
+                                            style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', borderRadius: '50%' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                        >
+                                            <MoreVertical size={20} />
+                                        </button>
+                                        {showRescuerMenu && (
+                                            <div style={{ 
+                                                position: 'absolute', 
+                                                top: '100%', 
+                                                right: 0, 
+                                                marginTop: '5px', 
+                                                background: 'white', 
+                                                border: '1px solid #ddd', 
+                                                borderRadius: '8px', 
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
+                                                zIndex: 10,
+                                                minWidth: '150px',
+                                                overflow: 'hidden'
+                                            }}>
+                                                <button 
+                                                    onClick={() => {
+                                                        setShowRescuerMenu(false);
+                                                        handleLeaveRescuerRole();
+                                                    }}
+                                                    style={{ 
+                                                        width: '100%', 
+                                                        padding: '12px 16px', 
+                                                        background: 'none', 
+                                                        border: 'none', 
+                                                        textAlign: 'left', 
+                                                        color: '#ff4d4f', 
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.9rem',
+                                                        display: 'block'
+                                                    }}
+                                                    onMouseEnter={(e) => e.target.style.background = '#fff1f0'}
+                                                    onMouseLeave={(e) => e.target.style.background = 'none'}
+                                                >
+                                                    Leave Role
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 

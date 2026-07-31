@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { UserPlus, Trash2, Mail, Phone, Users, Shield } from 'lucide-react';
 
 import '../../styles/vet/VetRescuers.css';
+import '../../styles/AuthModal.css';
 import ActionLoader from '../../components/ActionLoader';
 import apiClient from '../../services/api';
 import { useVetDataStore } from '../../store/vetDataStore';
@@ -12,6 +13,12 @@ const VetRescuers = () => {
     const [rescuers, setRescuers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
+    const [otpError, setOtpError] = useState('');
+    const otpInputsRef = useRef([]);
 
     const { fetchRescuers: fetchRescuersFromStore, invalidateRescuers } = useVetDataStore();
 
@@ -53,28 +60,59 @@ const VetRescuers = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await apiClient.post('/users/rescuers/add', formData);
+            await apiClient.post('/users/rescuers/request-add-otp', { email: formData.email });
+            setShowOtpModal(true);
+            setOtpDigits(['', '', '', '', '', '']);
+            setOtpError('');
+            setTimeout(() => otpInputsRef.current[0]?.focus(), 100);
+        } catch (error) {
+            console.error('API failed:', error);
+            const errorMsg = error.response?.data?.error || error.message;
+            alert(`Failed to request OTP: ${errorMsg}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleOtpChange = (index, value) => {
+        if (!/^\d*$/.test(value)) return;
+        const newOtp = [...otpDigits];
+        newOtp[index] = value;
+        setOtpDigits(newOtp);
+        if (value && index < 5) {
+            otpInputsRef.current[index + 1].focus();
+        }
+    };
+
+    const handleOtpKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+            otpInputsRef.current[index - 1].focus();
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        const otp = otpDigits.join('');
+        if (otp.length !== 6) {
+            setOtpError('Please enter a 6-digit OTP');
+            return;
+        }
+
+        setVerifyingOtp(true);
+        setOtpError('');
+
+        try {
+            const response = await apiClient.post('/users/rescuers/add', { ...formData, otp });
             const data = response.data;
             invalidateRescuers();
             setRescuers(prev => [data.rescuer, ...prev]);
             setFormData({ email: '', contact: '' });
+            setShowOtpModal(false);
             alert('Rescuer added successfully!');
         } catch (error) {
-            console.error('API failed, falling back to mock:', error);
-            const errorMsg = error.response?.data?.error || error.message;
-            // Mock fallback
-            const newRescuer = {
-                id: Math.random().toString(36).substr(2, 9),
-                name: formData.email.split('@')[0],
-                email: formData.email,
-                contact: formData.contact,
-                avatarUrl: null
-            };
-            setRescuers(prev => [newRescuer, ...prev]);
-            setFormData({ email: '', contact: '' });
-            alert(`Added (Mock Mode - API Error: ${errorMsg})`);
+            console.error('API failed:', error);
+            setOtpError(error.response?.data?.error || error.message || 'Failed to verify OTP');
         } finally {
-            setIsSubmitting(false);
+            setVerifyingOtp(false);
         }
     };
 
@@ -88,8 +126,9 @@ const VetRescuers = () => {
             invalidateRescuers();
             setRescuers(prev => prev.filter(r => r.id !== id));
         } catch (error) {
-            console.error('API failed, falling back to mock:', error);
-            setRescuers(prev => prev.filter(r => r.id !== id));
+            console.error('API failed:', error);
+            const errorMsg = error.response?.data?.error || error.message;
+            alert(`Failed to remove rescuer: ${errorMsg}`);
         }
     };
 
@@ -178,6 +217,51 @@ const VetRescuers = () => {
                         </div>
                     )}
                 </div>
+
+                {/* OTP Modal */}
+                {showOtpModal && (
+                    <div className="auth-modal-overlay">
+                        <div className="auth-modal-content otp-modal">
+                            <h2>Verify Rescuer</h2>
+                            <p>An OTP has been sent to <strong>{formData.email}</strong>. Please ask the user to provide it to finalize the addition.</p>
+                            
+                            <div className="otp-container">
+                                {otpDigits.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        ref={(el) => (otpInputsRef.current[index] = el)}
+                                        type="text"
+                                        maxLength="1"
+                                        className="otp-digit-input"
+                                        value={digit}
+                                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                        disabled={verifyingOtp}
+                                    />
+                                ))}
+                            </div>
+                            
+                            {otpError && <p className="auth-error">{otpError}</p>}
+                            
+                            <div className="auth-otp-actions">
+                                <button
+                                    className="auth-submit-btn verify-btn"
+                                    onClick={handleVerifyOtp}
+                                    disabled={verifyingOtp || otpDigits.join('').length !== 6}
+                                >
+                                    {verifyingOtp ? 'Verifying...' : 'Verify & Add'}
+                                </button>
+                                <button
+                                    className="auth-secondary-btn"
+                                    onClick={() => setShowOtpModal(false)}
+                                    disabled={verifyingOtp}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );

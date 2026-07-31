@@ -34,7 +34,7 @@ const FloatingRescueButton = () => {
                     );
                     if (active) {
                         startRescue(active.id, 'rescuer', 8);
-                    } else if (useRescueStore.getState().activeRescue?.mode === 'rescuer') {
+                    } else if (useRescueStore.getState().activeRescue?.isActive) {
                         endRescue();
                     }
                 } else {
@@ -45,7 +45,7 @@ const FloatingRescueButton = () => {
                     );
                     if (active) {
                         startRescue(active.id, 'user', 10);
-                    } else if (useRescueStore.getState().activeRescue?.mode === 'user') {
+                    } else if (useRescueStore.getState().activeRescue?.isActive) {
                         endRescue();
                     }
                 }
