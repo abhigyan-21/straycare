@@ -41,7 +41,12 @@ function VetDashboard() {
 
             const latestCamp = camps?.[0];
 
-            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED' || r.status === 'RESCUED');
+            // Live rescues: REPORTED, ASSIGNED, or RESCUED-with-active-phase (still in transit)
+            const liveRescues = reports.filter(r =>
+                r.status === 'REPORTED' ||
+                r.status === 'ASSIGNED' ||
+                (r.status === 'RESCUED' && (r.rescuePhase === 'HEADING_TO_CLINIC' || r.rescuePhase === 'HEADING_TO_ANIMAL'))
+            );
             setRescues(liveRescues.map(r => ({
                 id: r.id,
                 displayId: r.id.substring(0, 8).toUpperCase(),

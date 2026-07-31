@@ -46,7 +46,12 @@ function VetStatus() {
             const reports = Array.isArray(reportsData) ? reportsData : [];
             const pets = Array.isArray(petsData) ? petsData : [];
 
-            const liveRescues = reports.filter(r => r.status === 'REPORTED' || r.status === 'ASSIGNED' || r.status === 'RESCUED');
+            // Live rescues: REPORTED, ASSIGNED, or RESCUED-with-active-phase (still in transit)
+            const liveRescues = reports.filter(r =>
+                r.status === 'REPORTED' ||
+                r.status === 'ASSIGNED' ||
+                (r.status === 'RESCUED' && (r.rescuePhase === 'HEADING_TO_CLINIC' || r.rescuePhase === 'HEADING_TO_ANIMAL'))
+            );
             setCurrentRescues(liveRescues.map(r => ({
                 id: r.id,
                 displayId: r.id.substring(0, 8).toUpperCase(),
@@ -62,14 +67,14 @@ function VetStatus() {
             const petReportIds = new Set(pets.map(p => p.reportId).filter(Boolean));
 
             // 2. Treatment List:
-            // - Reports that have TREATED status (animal at clinic, vet managing care)
-            // - RESCUED is excluded here because it still shows in the current rescue section above (heading to clinic)
+            // - RESCUED = animal arrived at clinic, vet manages care → show as "under treatment"
+            // - TREATED = vet has treated it, ready for next step
             const reportTreatments = reports
-                .filter(r => r.status === 'TREATED' && !petReportIds.has(r.id))
+                .filter(r => (r.status === 'RESCUED' || r.status === 'TREATED') && !petReportIds.has(r.id))
                 .map(r => ({
                     id: r.id,
                     displayId: r.id.substring(0, 8).toUpperCase(),
-                    status: r.status === 'RESCUED' ? 'under treatment' : r.status === 'TREATED' ? 'treated' : r.status.toLowerCase().replace('_', ' '),
+                    status: r.status === 'RESCUED' ? 'under treatment' : 'treated',
                     image: r.mediaUrls?.[0] || null,
                     name: r.description ? (r.description.length > 20 ? r.description.substring(0, 20) + '...' : r.description) : 'Stray Animal',
                     isReport: true

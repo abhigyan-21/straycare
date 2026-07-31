@@ -89,7 +89,7 @@ function LiveTracking() {
     return () => clearInterval(intervalId);
   }, [reportId]);
 
-  // Derive journeyStage and status from database report status
+  // Derive journeyStage and status from database report status + rescuePhase
   useEffect(() => {
     if (isDemo || !report) return;
 
@@ -98,10 +98,11 @@ function LiveTracking() {
       setStatus('ASSIGNING RESCUER');
     } else if (report.status === 'ASSIGNED') {
       setJourneyStage('EN_ROUTE');
-      setStatus('RESCUER ON THE WAY');
+      setStatus(report.rescuePhase === 'HEADING_TO_ANIMAL' ? 'RESCUER ON THE WAY' : 'RESCUER ON THE WAY');
     } else if (report.status === 'RESCUED') {
+      // Rescuer picked up the animal — now heading to clinic
       setJourneyStage('RESCUING');
-      setStatus('RESCUE IN PROGRESS');
+      setStatus('HEADING TO CLINIC');
     } else if (report.status === 'TREATED' || report.status === 'ADOPTED') {
       setJourneyStage('RESCUING');
       setStatus('RESCUER REACHED CLINIC');
@@ -173,6 +174,10 @@ function LiveTracking() {
           routeIndexRef.current = 0; // Reset index ref
           setIsFlipped(journeyStage === 'RESCUING');
 
+          // Set real ETA from OSRM on the floating rescue button
+          const etaMins = Math.ceil(data.routes[0].duration / 60);
+          updateRescueEta(etaMins);
+
           if (isDemo) {
             setRescuerPos(coords[0]);
             setProgress(0);
@@ -185,7 +190,7 @@ function LiveTracking() {
     };
 
     fetchRoute();
-    startRescue(reportId || 'demo-123', 'user', 10);
+    startRescue(reportId || 'demo-123', 'user', null);
   }, [journeyStage, reportId, startRescue, isLoadingReport, isDemo, isAssigned, reportUserPos, reportHospitalPos]);
 
   useEffect(() => {

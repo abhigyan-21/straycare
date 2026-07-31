@@ -277,10 +277,11 @@ function RescuerNavigation() {
   const handleRescueCompleted = async () => {
     if (!reportId) return;
     try {
-      await apiClient.patch(`/reports/${reportId}/status`, { status: 'TREATED' });
+      // Status stays RESCUED — the vet manages treatment from here.
+      // Just clear the phase so the dashboard knows the animal has arrived.
       await apiClient.patch(`/reports/${reportId}/phase`, { phase: null });
     } catch (err) {
-      console.error("Error setting report status to TREATED:", err);
+      console.error("Error clearing rescue phase:", err);
     } finally {
       endRescue();
       navigate('/rescuer/dashboard');

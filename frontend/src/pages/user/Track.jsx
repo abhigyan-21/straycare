@@ -32,28 +32,26 @@ function Track() {
             const rescuerPartner = getPartner(r.rescuer);
 
             let statusIndex = -1;
-            if (r.status === 'ASSIGNED' || r.status === 'RESCUED') {
-                statusIndex = 0;
+            if (r.status === 'ASSIGNED') {
+                // Rescuer accepted, heading to animal
+                statusIndex = 0; // rescue in progress — active (half filled)
+            } else if (r.status === 'RESCUED' && r.rescuePhase) {
+                // Rescuer picked up animal, still in transit to clinic
+                statusIndex = 0; // rescue in progress — active (half filled)
+            } else if (r.status === 'RESCUED' && !r.rescuePhase) {
+                // Animal arrived at clinic, vet managing care
+                statusIndex = 1; // reached center — always, regardless of medical records
             } else if (r.status === 'TREATED') {
-                if (r.pet) {
-                    if (r.pet.status === 'AVAILABLE') {
-                        statusIndex = 3;
-                    } else if (r.pet.status === 'ADOPTED') {
-                        statusIndex = 4;
-                    } else if (r.medicalRecords && r.medicalRecords.length > 0) {
-                        statusIndex = 2; // treatment
-                    } else {
-                        statusIndex = 1; // reached center
-                    }
+                // Vet marked treated — treatment complete
+                if (r.pet && r.pet.status === 'AVAILABLE') {
+                    statusIndex = 3; // open for adoption — active
+                } else if (r.pet && (r.pet.status === 'ADOPTED' || r.pet.status === 'UNDER_ADOPTION')) {
+                    statusIndex = 4; // adopted — active
                 } else {
-                    if (r.medicalRecords && r.medicalRecords.length > 0) {
-                        statusIndex = 2; // treatment
-                    } else {
-                        statusIndex = 1; // reached center
-                    }
+                    statusIndex = 3; // treatment complete, next is open for adoption
                 }
-            } else if (r.status === 'ADOPTED') {
-                statusIndex = 4;
+            } else if (r.status === 'ADOPTED' || (r.pet && r.pet.status === 'ADOPTED')) {
+                statusIndex = 4; // fully adopted
             }
 
             const details = [
@@ -65,62 +63,64 @@ function Track() {
 
             const history = [];
 
-            // 1. request filed
+            // 1. Request filed
             history.push({
                 date: new Date(r.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
                 stage: "rescue request filed",
                 notes: "Rescue report created with description: " + r.description
             });
 
-            // 2. assigned
+            // 2. Rescuer assigned
             if (r.status !== 'REPORTED') {
+                const isStillActive = r.status === 'ASSIGNED' || (r.status === 'RESCUED' && r.rescuePhase);
                 history.push({
-                    date: "Ongoing",
+                    date: isStillActive ? "In Progress" : "Completed",
                     stage: "rescuer assigned",
-                    notes: `Rescuer ${r.rescuer?.name || 'assigned'} has accepted the case and is en-route.`
+                    notes: `Rescuer ${r.rescuer?.name || 'assigned'} accepted the case and is en-route to the animal.`
                 });
             }
 
-            // 3. rescued
-            if (r.status === 'TREATED' || r.status === 'ADOPTED') {
+            // 3. Reached center — animal dropped off at clinic
+            if ((r.status === 'RESCUED' && !r.rescuePhase) || r.status === 'TREATED' || r.status === 'ADOPTED') {
                 history.push({
-                    date: r.lastTracked ? new Date(r.lastTracked).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Rescue complete",
+                    date: r.lastTracked
+                        ? new Date(r.lastTracked).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : "Completed",
                     stage: "reached center",
-                    notes: `Animal successfully rescued and taken to ${partner?.name || rescuerPartner?.name || 'clinic'} for care.`
+                    notes: `Animal safely transported to ${partner?.name || rescuerPartner?.name || 'the clinic'} and admitted for care.`
                 });
             }
 
-            // 4. treatment (medical records)
+            // 4. Treatment logs from vet medical records (shown only if records exist)
             if (r.medicalRecords && r.medicalRecords.length > 0) {
                 r.medicalRecords.forEach(mr => {
                     history.push({
                         date: new Date(mr.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                        stage: "treatment logs",
+                        stage: "vet update",
                         notes: `Diagnosis: ${mr.diagnosis || 'Under Observation'}. Treatment: ${mr.treatment || 'N/A'}`
                     });
                 });
-            } else if (r.status === 'RESCUED') {
-                // Rescue is still in progress, do nothing for treatment
-            } else if (r.status === 'TREATED' && (!r.pet || r.pet.status === 'UNDER_TREATMENT')) {
-                if (r.medicalRecords && r.medicalRecords.length > 0) {
-                    history.push({
-                        date: "Ongoing",
-                        stage: "treatment",
-                        notes: "Admitted into veterinary ward and started medical observation/treatment."
-                    });
-                }
             }
 
-            // 5. treated (open for adoption)
-            if ((r.pet && r.pet.status === 'AVAILABLE') || r.status === 'ADOPTED' || (r.pet && r.pet.status === 'ADOPTED')) {
+            // 5. Treatment complete / open for adoption
+            if (r.status === 'TREATED' || r.status === 'ADOPTED' || (r.pet && (r.pet.status === 'AVAILABLE' || r.pet.status === 'ADOPTED'))) {
                 history.push({
                     date: "Completed",
+                    stage: "treatment complete",
+                    notes: "Animal has fully recovered and is cleared for adoption."
+                });
+            }
+
+            // 6. Listed for adoption
+            if (r.pet && (r.pet.status === 'AVAILABLE' || r.pet.status === 'ADOPTED')) {
+                history.push({
+                    date: "Active",
                     stage: "open for adoption",
                     notes: "Animal recovery complete. Now listed on our Adopt page for adoption!"
                 });
             }
 
-            // 6. adopted
+            // 7. Adopted
             if (r.status === 'ADOPTED' || (r.pet && r.pet.status === 'ADOPTED')) {
                 history.push({
                     date: "Completed",
@@ -275,7 +275,12 @@ function Track() {
                                         <td style={{ width: '30%', fontWeight: 'bold' }}>Current Status</td>
                                         <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span style={{ textTransform: 'capitalize' }}>
-                                                {petData.statusIndex >= 0 ? STAGES[petData.statusIndex] : 'reported'}
+                                                {petData.statusIndex === -1  ? 'reported — awaiting rescuer'
+                                                : petData.statusIndex === 0  ? 'rescue in progress'
+                                                : petData.statusIndex === 1  ? 'reached center — awaiting treatment'
+                                                : petData.statusIndex === 2  ? 'under treatment'
+                                                : petData.statusIndex === 3  ? 'treatment complete — open for adoption'
+                                                : 'adopted / fostered'}
                                             </span>
                                             <button className="view-more-btn" onClick={() => setShowHistoryModal(true)}>
                                                 View More Details
