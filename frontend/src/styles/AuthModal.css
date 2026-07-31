@@ -229,9 +229,39 @@
 }
 
 .auth-otp-actions {
+    display: flex;
+    gap: 12px;
     margin-top: 1.5rem;
-    text-align: center;
     width: 100%;
+}
+
+.auth-secondary-btn {
+    flex: 1;
+    background-color: #f5f5f5;
+    color: #555;
+    border: 1.5px solid #ddd;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.auth-secondary-btn:hover:not(:disabled) {
+    background-color: #ebebeb;
+    border-color: #bbb;
+    color: #333;
+}
+
+.auth-secondary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-submit-btn.verify-btn {
+    flex: 2;
+    margin-top: 0;
 }
 
 .auth-timer-text {
