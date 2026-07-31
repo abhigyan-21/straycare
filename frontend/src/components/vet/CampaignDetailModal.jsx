@@ -285,6 +285,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                                             <input 
                                                 type="date" 
                                                 required
+                                                min={new Date().toISOString().split('T')[0]}
                                                 value={editedFields.startDate}
                                                 onChange={e => setEditedFields({...editedFields, startDate: e.target.value})}
                                                 style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}
@@ -295,6 +296,7 @@ const CampaignDetailModal = ({ campaign, onClose, onRefresh }) => {
                                             <input 
                                                 type="date" 
                                                 required
+                                                min={editedFields.startDate || new Date().toISOString().split('T')[0]}
                                                 value={editedFields.endDate}
                                                 onChange={e => setEditedFields({...editedFields, endDate: e.target.value})}
                                                 style={{ padding: '12px 16px', borderRadius: '12px', border: '1.5px solid #ddd', fontSize: '0.95rem', fontFamily: 'inherit' }}

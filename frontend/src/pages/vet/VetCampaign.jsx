@@ -325,6 +325,7 @@ function VetCampaign() {
                                     <input
                                         type="date"
                                         required
+                                        min={new Date().toISOString().split('T')[0]}
                                         value={newCampaign.startDate}
                                         onChange={e => setNewCampaign({ ...newCampaign, startDate: e.target.value })}
                                     />
@@ -335,6 +336,7 @@ function VetCampaign() {
                                     <input
                                         type="date"
                                         required
+                                        min={newCampaign.startDate || new Date().toISOString().split('T')[0]}
                                         value={newCampaign.endDate}
                                         onChange={e => setNewCampaign({ ...newCampaign, endDate: e.target.value })}
                                     />

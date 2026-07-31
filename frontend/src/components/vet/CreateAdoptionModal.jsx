@@ -93,7 +93,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                             <div className="input-row">
                                 <div className="input-group">
                                     <label>Species</label>
-                                    <select name="species" value={formData.species} onChange={handleChange}>
+                                    <select name="species" value={formData.species} onChange={handleChange} required>
                                         <option value="Dog">Dog</option>
                                         <option value="Cat">Cat</option>
                                         <option value="Other">Other</option>
@@ -101,7 +101,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                                 </div>
                                 <div className="input-group">
                                     <label>Gender</label>
-                                    <select name="gender" value={formData.gender} onChange={handleChange}>
+                                    <select name="gender" value={formData.gender} onChange={handleChange} required>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
@@ -117,6 +117,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                                         placeholder="e.g. 2 years"
                                         value={formData.age}
                                         onChange={handleChange}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -129,6 +130,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                                         placeholder="e.g. Golden Retriever"
                                         value={formData.breed}
                                         onChange={handleChange}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -155,6 +157,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                                         className="file-input" 
                                         accept=".jpeg,.jpg,.png,image/jpeg,image/png" 
                                         onChange={handleFileChange}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -193,6 +196,7 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
                                     placeholder="e.g. Fully vaccinated, Neutered"
                                     value={formData.healthStatus}
                                     onChange={handleChange}
+                                    required
                                 />
                             </div>
                         </div>
