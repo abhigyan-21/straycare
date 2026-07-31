@@ -281,18 +281,21 @@ function LiveTracking() {
   let displayStatus = status;
   let displayArrivalTime = `ARRIVING IN ${arrivalTime} MINS`;
 
-  if (!isDemo && !isAssigned) {
+  if (isLoadingReport && !isDemo) {
+    displayStatus = 'LOADING...';
+    displayArrivalTime = 'FETCHING RESCUE STATUS';
+  } else if (!isDemo && !isAssigned) {
     displayStatus = 'ASSIGNING RESCUER';
     displayArrivalTime = 'WAITING FOR RESCUER TO ACCEPT';
   } else if (!isDemo && isAssigned) {
     if (journeyStage === 'EN_ROUTE') {
       displayStatus = 'RESCUER ON THE WAY';
       const dist = getDistance(rescuerPos[0], rescuerPos[1], reportUserPos[0], reportUserPos[1]);
-      const mins = Math.max(1, Math.ceil((dist / 40) * 60)); // assume 40km/h avg speed
+      const mins = Math.max(1, Math.ceil((dist / 40) * 60));
       displayArrivalTime = `ARRIVING IN ${mins} MINS`;
     } else if (journeyStage === 'RESCUING') {
-      displayStatus = 'RESCUE IN PROGRESS';
-      displayArrivalTime = 'HEADING TO CLINIC';
+      displayStatus = 'HEADING TO CLINIC';
+      displayArrivalTime = 'ANIMAL PICKED UP — EN ROUTE TO CLINIC';
     } else {
       displayStatus = 'RESCUER REACHED CLINIC';
       displayArrivalTime = 'RESCUE COMPLETED';

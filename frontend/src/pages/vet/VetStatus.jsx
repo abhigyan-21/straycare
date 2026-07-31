@@ -67,10 +67,14 @@ function VetStatus() {
             const petReportIds = new Set(pets.map(p => p.reportId).filter(Boolean));
 
             // 2. Treatment List:
-            // - RESCUED = animal arrived at clinic, vet manages care → show as "under treatment"
-            // - TREATED = vet has treated it, ready for next step
+            // - RESCUED + no phase = animal at clinic, vet managing care → "under treatment"
+            // - RESCUED + active phase = still in transit, show in top section only
+            // - TREATED = vet has treated it
             const reportTreatments = reports
-                .filter(r => (r.status === 'RESCUED' || r.status === 'TREATED') && !petReportIds.has(r.id))
+                .filter(r => (
+                    (r.status === 'RESCUED' && !r.rescuePhase) ||
+                    r.status === 'TREATED'
+                ) && !petReportIds.has(r.id))
                 .map(r => ({
                     id: r.id,
                     displayId: r.id.substring(0, 8).toUpperCase(),

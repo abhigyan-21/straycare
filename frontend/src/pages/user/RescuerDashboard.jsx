@@ -80,10 +80,14 @@ function RescuerDashboard() {
 
   // Build the sorted/filtered list from raw reports + current position
   const applyPositionAndSet = useCallback((fetchedReports, pos) => {
-    const filtered = fetchedReports.filter(r =>
-      r.status === 'REPORTED' ||
-      ((r.status === 'ASSIGNED' || r.status === 'RESCUED') && r.assignedRescuerId === user?.id)
-    );
+    const filtered = fetchedReports.filter(r => {
+      if (r.status === 'REPORTED') return true;
+      if (r.status === 'ASSIGNED' && r.assignedRescuerId === user?.id) return true;
+      // RESCUED + active phase means still in transit — show to rescuer
+      if (r.status === 'RESCUED' && r.rescuePhase && r.assignedRescuerId === user?.id) return true;
+      // RESCUED + no phase means handed off to vet — rescuer is done, hide it
+      return false;
+    });
 
     if (pos) {
       const sorted = [...filtered].sort((a, b) => {

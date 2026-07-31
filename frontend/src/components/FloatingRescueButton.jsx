@@ -7,8 +7,20 @@ import apiClient from '../services/api';
 import '../styles/FloatingRescueButton.css';
 import ambulanceImg from '../assets/images/ambulance.webp';
 
+const fetchEtaFromOsrm = async (fromLat, fromLng, toLat, toLng) => {
+    try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+            return Math.max(1, Math.ceil(data.routes[0].duration / 60));
+        }
+    } catch (_) { /* silent fail */ }
+    return null;
+};
+
 const FloatingRescueButton = () => {
-    const { activeRescue, startRescue, endRescue } = useRescueStore();
+    const { activeRescue, startRescue, endRescue, updateRescueEta } = useRescueStore();
     const { user, isLoggedIn } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -26,46 +38,64 @@ const FloatingRescueButton = () => {
         const syncActiveRescue = async () => {
             try {
                 if (user.role === 'RESCUER' || user.role === 'ADMIN') {
-                    // Fetch all reports to find active assigned rescues
                     const response = await apiClient.get('/reports', { signal: controller.signal });
                     const active = response.data?.find(r =>
                         r.assignedRescuerId === user.id &&
-                        (r.status === 'ASSIGNED' || r.status === 'RESCUED')
+                        (r.status === 'ASSIGNED' ||
+                         (r.status === 'RESCUED' && r.rescuePhase)) // RESCUED+no phase = handed off, hide button
                     );
                     if (active) {
-                        startRescue(active.id, 'rescuer', 8);
+                        const current = useRescueStore.getState().activeRescue;
+                        if (!current?.isActive || current.reportId !== active.id) {
+                            startRescue(active.id, 'rescuer', null);
+                        }
+                        // Compute ETA: rescuer's live position → report location
+                        if (active.rescuerLat && active.rescuerLng && active.locationLat && active.locationLng) {
+                            const eta = await fetchEtaFromOsrm(
+                                active.rescuerLat, active.rescuerLng,
+                                active.locationLat, active.locationLng
+                            );
+                            if (eta) updateRescueEta(eta);
+                        }
                     } else if (useRescueStore.getState().activeRescue?.isActive) {
                         endRescue();
                     }
                 } else {
-                    // Fetch user's own reports to check if active
                     const response = await apiClient.get('/reports/my-reports', { signal: controller.signal });
                     const active = response.data?.find(r =>
                         r.status === 'ASSIGNED' || r.status === 'RESCUED'
                     );
                     if (active) {
-                        startRescue(active.id, 'user', 10);
+                        const current = useRescueStore.getState().activeRescue;
+                        if (!current?.isActive || current.reportId !== active.id) {
+                            startRescue(active.id, 'user', null);
+                        }
+                        // Compute ETA: rescuer's live position → user's report location
+                        if (active.rescuerLat && active.rescuerLng && active.locationLat && active.locationLng) {
+                            const eta = await fetchEtaFromOsrm(
+                                active.rescuerLat, active.rescuerLng,
+                                active.locationLat, active.locationLng
+                            );
+                            if (eta) updateRescueEta(eta);
+                        }
                     } else if (useRescueStore.getState().activeRescue?.isActive) {
                         endRescue();
                     }
                 }
             } catch (err) {
-                if (axios.isCancel(err) || err.code === 'ERR_CANCELED') {
-                    // Ignore aborted requests
-                    return;
-                }
+                if (axios.isCancel(err) || err.code === 'ERR_CANCELED') return;
                 console.error("Failed to sync active rescue with DB:", err);
             }
         };
 
         syncActiveRescue();
-        const intervalId = setInterval(syncActiveRescue, 10000); // sync every 10 seconds
+        const intervalId = setInterval(syncActiveRescue, 15000); // sync every 15s
 
         return () => {
             clearInterval(intervalId);
             controller.abort();
         };
-    }, [isLoggedIn, user, startRescue, endRescue, activeRescue?.isActive]);
+    }, [isLoggedIn, user, startRescue, endRescue, updateRescueEta, activeRescue?.isActive]);
 
     // Don't show if no active rescue
     if (!activeRescue || !activeRescue.isActive) return null;
@@ -88,7 +118,7 @@ const FloatingRescueButton = () => {
         <div className="rescue-floating-container" onClick={handleClick}>
             <div className="rescue-pill">
                 <div className="rescue-text-section">
-                    <span className="rescue-eta">{activeRescue.eta || '5'} mins away</span>
+                    <span className="rescue-eta">{activeRescue.eta ? `${activeRescue.eta} mins` : '...'} away</span>
                     <span className="rescue-destination">from destination</span>
                 </div>
                 <div className="rescue-icon-circle pulsing">
