@@ -439,7 +439,7 @@ const verifyRescuerUpgradeOtp = async (req, res) => {
     });
 
     // Generate new token with updated role
-    const token = generateToken(updatedUser.id, updatedUser.role);
+    const token = generateToken(updatedUser.id, updatedUser.role, updatedUser.email, updatedUser.partnerId);
 
     res.json({ 
       message: 'Role upgraded successfully',
