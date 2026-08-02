@@ -152,6 +152,15 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Favicon dummy handler to prevent console clutter/CSP errors
 app.get('/favicon.webp', (req, res) => res.status(204).end());
 
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+
 // Attach io and proximity emitter to every request so route controllers can use them
 app.use((req, _res, next) => {
   req.io = io;
