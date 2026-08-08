@@ -248,6 +248,17 @@
         max-height: 250px;
     }
 
+    .chat-section {
+        max-height: 400px;
+        min-height: 300px;
+        overflow: hidden;
+    }
+
+    .chat-history {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .message-bubble {
         max-width: 90%;
         font-size: 1rem;

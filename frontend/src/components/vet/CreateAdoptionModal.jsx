@@ -10,6 +10,8 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
         gender: 'Male',
         description: '',
         healthStatus: '',
+        hobbies: '',
+        talents: '',
         image: null
     });
 
@@ -51,6 +53,8 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
             gender: 'Male',
             description: '',
             healthStatus: '',
+            hobbies: '',
+            talents: '',
             image: null
         });
         onClose();
@@ -58,6 +62,10 @@ const CreateAdoptionModal = ({ isOpen, onClose, onPublish }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!formData.image) {
+            alert('Please upload a pet photo.');
+            return;
+        }
         onPublish(formData);
         handleClose();
     };
