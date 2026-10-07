@@ -228,6 +228,7 @@ function Help({ openAuthModal }) {
     };
 
     const handleRefresh = async () => {
+        useCampaignStore.getState().invalidateCache();
         await Promise.all([
             fetchCampaigns(),
             fetchHighlights()

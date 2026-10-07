@@ -34,6 +34,10 @@ const mapPetData = (pet) => {
     image = pet.report.mediaUrls[0];
   }
 
+  if (!image) {
+    image = 'https://placehold.co/600x400/png?text=No+Image+Available';
+  }
+
   let ageGroup = 'Adult';
   const ageLower = age.toLowerCase();
   const speciesLower = type.toLowerCase();
