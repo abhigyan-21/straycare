@@ -60,7 +60,8 @@ function VetStatus() {
                       : r.rescuePhase === 'HEADING_TO_CLINIC'  ? 'on the way to clinic'
                       : r.status === 'RESCUED'                 ? 'on the way to clinic'
                       : r.status.toLowerCase().replace('_', ' '),
-                image: r.mediaUrls?.[0] || null
+                image: r.mediaUrls?.[0] || null,
+                aiVisionData: r.aiVisionData
             })));
 
             // Find reportIds that are already proper Pet records to avoid duplication

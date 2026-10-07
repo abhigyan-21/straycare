@@ -6,6 +6,7 @@ import ActionLoader from '../../components/ActionLoader';
 import { useAuthStore } from '../../store/authStore';
 import apiClient from '../../services/api';
 import io from 'socket.io-client';
+import AIVisionInsights from '../../components/AIVisionInsights';
 
 // Sub-component to reverse geocode lat/lng to readable address
 const ReportAddress = ({ lat, lng, fallbackAddress }) => {
@@ -275,6 +276,9 @@ function RescuerDashboard() {
                     <strong>Report:</strong>
                     <p>{report.type ? `${report.type}: ` : ''}{report.description}</p>
                   </div>
+                  {report.aiVisionData && (
+                    <AIVisionInsights aiData={report.aiVisionData} />
+                  )}
                   <div className="detail-block">
                     <strong>Location:</strong>
                     <p>

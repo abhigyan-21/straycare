@@ -5,6 +5,7 @@ import { useRescueStore } from '../../store/rescueStore';
 import { useAuthStore } from '../../store/authStore';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import AIVisionInsights from '../../components/AIVisionInsights';
 import '../../styles/user/RescuerPages.css';
 import apiClient, { getPartner } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
@@ -318,6 +319,11 @@ function RescuerNavigation() {
               <strong>Report:</strong>
               <p>{report.type ? `${report.type}: ` : ''}{report.description}</p>
             </div>
+            {report.aiVisionData && (
+              <div style={{ marginTop: '-5px', marginBottom: '10px' }}>
+                <AIVisionInsights aiData={report.aiVisionData} />
+              </div>
+            )}
             <div className="detail-block">
               <strong>Location:</strong>
               <p>{resolvedAddress}</p>

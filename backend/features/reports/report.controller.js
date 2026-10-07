@@ -1,5 +1,8 @@
 const prisma = require('../../db/prisma');
 const { sendPushNotification } = require('../../utils/firebase');
+const { analyzeAnimalImage } = require('../../services/animalVisionService');
+const { sendEmail } = require('../../services/email.service');
+const { cloudinary } = require('../../utils/cloudinary');
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
@@ -28,15 +31,97 @@ const createReport = async (req, res) => {
       return res.status(400).json({ error: 'Location and description are required' });
     }
 
+    // Upload base64 images to Cloudinary, store the resulting URL in DB.
+    // Keep the original base64 in memory for AI analysis (avoids a round-trip fetch).
+    let processedMediaUrls = [];
+    let base64ImageForAI = null;
+
+    if (mediaUrls && mediaUrls.length > 0) {
+      for (const url of mediaUrls) {
+        if (typeof url === 'string' && url.startsWith('data:image/')) {
+          if (!base64ImageForAI) base64ImageForAI = url; // hold for Gemini
+          try {
+            const result = await cloudinary.uploader.upload(url, {
+              folder: 'straycare/reports',
+              resource_type: 'image',
+            });
+            processedMediaUrls.push(result.secure_url);
+          } catch (uploadErr) {
+            console.error('Cloudinary upload error:', uploadErr.message);
+            // Skip this image — don't store raw base64 in DB
+          }
+        } else if (typeof url === 'string' && url.length > 0) {
+          // Already a real URL, keep as-is
+          processedMediaUrls.push(url);
+        }
+      }
+    }
+
     const report = await prisma.animalReport.create({
       data: {
         reporterId,
         locationLat: parseFloat(locationLat),
         locationLng: parseFloat(locationLng),
         description,
-        mediaUrls: mediaUrls || [],
+        mediaUrls: processedMediaUrls,
+        aiVisionData: { status: 'PENDING' },
       },
+      include: {
+        reporter: true
+      }
     });
+
+    if (base64ImageForAI) {
+      // Run AI vision processing asynchronously using the original base64
+      analyzeAnimalImage(base64ImageForAI, description)
+          .then(async (aiVisionData) => {
+            const updatedReport = await prisma.animalReport.update({
+              where: { id: report.id },
+              data: { aiVisionData },
+              include: {
+                reporter: true,
+                partner: true
+              }
+            });
+
+            // Emit socket event for real-time updates
+            if (req.emitToNearbyRescuers) {
+              req.emitToNearbyRescuers('report-updated', updatedReport, updatedReport.locationLat, updatedReport.locationLng);
+            }
+
+            // Send email to reporter
+            if (updatedReport.reporter?.email) {
+              let rescuerName = 'Not assigned yet';
+              if (updatedReport.assignedRescuerId) {
+                const rescuer = await prisma.user.findUnique({ where: { id: updatedReport.assignedRescuerId } });
+                if (rescuer) rescuerName = rescuer.name;
+              }
+              const clinicName = updatedReport.partner?.name || 'Not assigned yet';
+
+              const emailHtml = `
+                <h2>AI Rescue Report Analysis</h2>
+                <p><strong>Tracking ID:</strong> ${updatedReport.id}</p>
+                <p><strong>Rescuer Name:</strong> ${rescuerName}</p>
+                <p><strong>Clinic:</strong> ${clinicName}</p>
+                <h3>AI Report Details</h3>
+                <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap;">${JSON.stringify(aiVisionData, null, 2)}</pre>
+              `;
+
+              await sendEmail({
+                to: updatedReport.reporter.email,
+                subject: `AI Analysis Complete for Report #${updatedReport.id.split('-')[0]}`,
+                html: emailHtml
+              });
+            }
+          })
+          .catch(async (visionError) => {
+            console.error('AI Vision error:', visionError);
+            await prisma.animalReport.update({
+              where: { id: report.id },
+              data: { aiVisionData: { status: 'FAILED', error: visionError.message } }
+            }).catch(e => console.error('Failed to update report with AI error', e));
+          });
+    }
 
     if (req.emitToNearbyRescuers) {
       req.emitToNearbyRescuers('new-report', report, report.locationLat, report.locationLng);

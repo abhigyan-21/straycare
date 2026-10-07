@@ -1,5 +1,6 @@
 const prisma = require('../../db/prisma');
 const { sendEmail } = require('../../services/email.service');
+const { cloudinary } = require('../../utils/cloudinary');
 
 const mapPetData = (pet) => {
   if (!pet) return null;
@@ -195,6 +196,21 @@ const listPetForAdoption = async (req, res) => {
     const { reportId, name, breed, age, gender, size, description } = req.body;
     const ownerId = req.user.id;
 
+    // Upload pet image to Cloudinary if it's a base64 string
+    let imageUrl = req.body.image || null;
+    if (imageUrl && imageUrl.startsWith('data:image/')) {
+      try {
+        const result = await cloudinary.uploader.upload(imageUrl, {
+          folder: 'straycare/adoptions',
+          resource_type: 'image',
+        });
+        imageUrl = result.secure_url;
+      } catch (uploadErr) {
+        console.error('Cloudinary upload error (adoption):', uploadErr.message);
+        imageUrl = null;
+      }
+    }
+
     // Fetch the most up-to-date user info directly from the database to avoid stale JWT token claims
     const dbUser = await prisma.user.findUnique({
       where: { id: ownerId },
@@ -236,11 +252,11 @@ const listPetForAdoption = async (req, res) => {
       }
 
       // Sync the uploaded image to the report's mediaUrls if provided
-      if (req.body.image) {
+      if (imageUrl) {
         await prisma.animalReport.update({
           where: { id: reportId },
           data: {
-            mediaUrls: [req.body.image]
+            mediaUrls: [imageUrl]
           }
         });
       }
@@ -252,7 +268,7 @@ const listPetForAdoption = async (req, res) => {
       hobbies: req.body.hobbies || '',
       talents: req.body.talents || '',
       healthStatus: req.body.healthStatus || '',
-      image: req.body.image || null,
+      image: imageUrl,
       species: req.body.species || 'Dog',
       age: req.body.age || '',
     };

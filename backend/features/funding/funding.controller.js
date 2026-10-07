@@ -35,7 +35,11 @@ const getHubs = async (req, res) => {
       where: {
         requestType: 'SUPPORT_REQUEST',
         category: category.toUpperCase(),
-        status: { in: ['ACTIVE', 'ENDING_SOON'] }
+        status: { in: ['ACTIVE', 'ENDING_SOON'] },
+        OR: [
+          { deadline: null },
+          { deadline: { gte: new Date() } }
+        ]
       },
       include: {
         partner: true
@@ -74,7 +78,11 @@ const splitDonate = async (req, res) => {
       where: {
         requestType: 'SUPPORT_REQUEST',
         category: category.toUpperCase(),
-        status: { in: ['ACTIVE', 'ENDING_SOON'] }
+        status: { in: ['ACTIVE', 'ENDING_SOON'] },
+        OR: [
+          { deadline: null },
+          { deadline: { gte: new Date() } }
+        ]
       },
       include: {
         partner: true
@@ -606,6 +614,13 @@ const getCampaigns = async (req, res) => {
       where.status = 'ACTIVE';
     }
 
+    if (where.status === 'ACTIVE' || where.status === 'ENDING_SOON') {
+      where.OR = [
+        { deadline: null },
+        { deadline: { gte: new Date() } }
+      ];
+    }
+
     const campaigns = await prisma.campaign.findMany({
       where,
       include: {
@@ -761,7 +776,11 @@ const getFundingHighlights = async (req, res) => {
     try {
       const activeCampaigns = await prisma.campaign.findMany({
         where: {
-          status: 'ACTIVE'
+          status: 'ACTIVE',
+          OR: [
+            { deadline: null },
+            { deadline: { gte: new Date() } }
+          ]
         },
         include: {
           creator: {

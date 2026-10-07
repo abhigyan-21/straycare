@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/vet/VetDashboard.css';
 import { Inbox } from 'lucide-react';
+import AIVisionInsights from '../AIVisionInsights';
 
 function LiveStatusView({ rescues, title = "current pet being rescued" }) {
     const navigate = useNavigate();
@@ -48,6 +49,11 @@ function LiveStatusView({ rescues, title = "current pet being rescued" }) {
                                         <span className="info-label">Report:</span>
                                         <span className="info-value">{rescue.description}</span>
                                     </div>
+                                    {rescue.aiVisionData && (
+                                        <div style={{ marginLeft: '-8px', marginRight: '-8px' }}>
+                                            <AIVisionInsights aiData={rescue.aiVisionData} />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="status-section">

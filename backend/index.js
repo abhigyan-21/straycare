@@ -252,6 +252,60 @@ const cleanupRejectedUsers = async () => {
 cleanupRejectedUsers();
 setInterval(cleanupRejectedUsers, 24 * 60 * 60 * 1000);
 
+const cleanupExpiredCampaigns = async () => {
+  try {
+    const expiredCampaigns = await prisma.campaign.updateMany({
+      where: {
+        status: { in: ['ACTIVE', 'ENDING_SOON'] },
+        deadline: { lt: new Date() }
+      },
+      data: {
+        status: 'EXPIRED'
+      }
+    });
+    if (expiredCampaigns.count > 0) {
+      console.log(`[Cleanup] Marked ${expiredCampaigns.count} campaigns as EXPIRED.`);
+    }
+  } catch (error) {
+    console.error('[Cleanup Error] Failed to expire campaigns:', error);
+  }
+};
+cleanupExpiredCampaigns();
+setInterval(cleanupExpiredCampaigns, 60 * 60 * 1000);
+
+const cleanupExpiredReports = async () => {
+  try {
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+    const expiredReports = await prisma.animalReport.findMany({
+      where: {
+        status: { in: ['REPORTED', 'ASSIGNED'] },
+        createdAt: { lte: twentyFourHoursAgo }
+      },
+      select: { id: true }
+    });
+
+    let deletedCount = 0;
+    for (const report of expiredReports) {
+      try {
+        await prisma.animalReport.delete({ where: { id: report.id } });
+        deletedCount++;
+      } catch (err) {
+        console.warn(`[Cleanup] Could not delete report ${report.id} (may have linked records): ${err.message}`);
+      }
+    }
+
+    if (deletedCount > 0) {
+      console.log(`[Cleanup] Deleted ${deletedCount} expired rescue requests.`);
+    }
+  } catch (error) {
+    console.error('[Cleanup Error] Failed to cleanup expired reports:', error);
+  }
+};
+cleanupExpiredReports();
+setInterval(cleanupExpiredReports, 60 * 60 * 1000);
+
 server.listen(PORT, () => {
   console.log(`Backend server with Socket.io running on port ${PORT}`);
 });

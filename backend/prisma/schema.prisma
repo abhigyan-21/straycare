@@ -152,6 +152,9 @@ model AnimalReport {
   
   assignedPartnerId String?
 
+  /// AI vision processing results
+  aiVisionData      Json?
+
   /// Tracks the rescuer's current navigation phase while status is ASSIGNED.
   /// Values: "HEADING_TO_ANIMAL" | "HEADING_TO_CLINIC" | null
   rescuePhase       String?

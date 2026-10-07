@@ -3,10 +3,12 @@ import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { User, Phone, MapPin, Ambulance, Info, ArrowLeft, FileText } from 'lucide-react';
 import '../../styles/vet/VetTracking.css';
 import apiClient, { getPartner } from '../../services/api';
 import ActionLoader from '../../components/ActionLoader';
+import AIVisionInsights from '../../components/AIVisionInsights';
 
 // Icons
 import ambulanceImg from '../../assets/images/ambulance.webp';
@@ -173,6 +175,11 @@ function VetTracking() {
                     <span className="value">{report.description}</span>
                   </div>
                 </div>
+                {report.aiVisionData && (
+                  <div style={{ marginLeft: '24px', marginRight: '8px', marginBottom: '12px' }}>
+                    <AIVisionInsights aiData={report.aiVisionData} />
+                  </div>
+                )}
                 <div className="info-row">
                   <User size={16} />
                   <div>

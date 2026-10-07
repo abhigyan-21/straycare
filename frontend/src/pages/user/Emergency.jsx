@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Mic, CheckCircle } from 'lucide-react';
+import { Plus, Mic, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/user/Emergency.css';
 import { useAuthStore } from '../../store/authStore';
@@ -192,8 +192,8 @@ function Emergency({ openAuthModal }) {
                 <div className="emergency-right">
                     <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '30px' }}>
                         {errorMessage && (
-                            <div className="emergency-error-message" style={{ color: '#e74c3c', padding: '12px 16px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '12px', fontWeight: '600', textAlign: 'center', fontSize: '0.95rem' }}>
-                                ⚠️ {errorMessage}
+                            <div className="emergency-error-message" style={{ color: '#e74c3c', padding: '12px 16px', background: '#fdf2f2', border: '1px solid #fde2e2', borderRadius: '12px', fontWeight: '600', textAlign: 'center', fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                <AlertTriangle size={18} /> {errorMessage}
                             </div>
                         )}
                         <div className="description-box">
