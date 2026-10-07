@@ -1,3 +1,4 @@
+/* global process */
 export default async function handler(req, res) {
   const { id } = req.query;
   const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://straycare.onrender.com/api';

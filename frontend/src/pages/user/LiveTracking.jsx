@@ -191,7 +191,7 @@ function LiveTracking() {
 
     fetchRoute();
     startRescue(reportId || 'demo-123', 'user', null);
-  }, [journeyStage, reportId, startRescue, isLoadingReport, isDemo, isAssigned, reportUserPos, reportHospitalPos]);
+  }, [journeyStage, reportId, startRescue, updateRescueEta, isLoadingReport, isDemo, isAssigned, reportUserPos, reportHospitalPos]);
 
   useEffect(() => {
     socketRef.current = io(SOCKET_URL);

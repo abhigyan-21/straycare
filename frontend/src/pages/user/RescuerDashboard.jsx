@@ -70,7 +70,6 @@ const POLL_INTERVAL_MS = 15000;
 function RescuerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [rescuerPos, setRescuerPos] = useState(null);
   const rescuerPosRef = useRef(null); // stable ref so callbacks always have latest coords
   const [sortedReports, setSortedReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,7 +142,6 @@ function RescuerDashboard() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const pos = { lat: position.coords.latitude, lon: position.coords.longitude };
-          setRescuerPos(pos);
           rescuerPosRef.current = pos;
 
           // Save to backend for push notification radius checks

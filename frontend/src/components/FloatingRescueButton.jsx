@@ -15,7 +15,7 @@ const fetchEtaFromOsrm = async (fromLat, fromLng, toLat, toLng) => {
         if (data.routes && data.routes[0]) {
             return Math.max(1, Math.ceil(data.routes[0].duration / 60));
         }
-    } catch (_) { /* silent fail */ }
+    } catch { /* silent fail */ }
     return null;
 };
 
